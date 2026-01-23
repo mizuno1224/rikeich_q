@@ -1,6 +1,6 @@
 <h2 class="prob-title-sub">総合演習：様々な物理シミュレーション</h2>
 <p>
-  このページでは、<strong>Matter.js</strong>（物理演算）、<strong>JSXGraph</strong>（数学グラフ）、<strong>Chart.js</strong>（データ可視化）、<strong>p5.js</strong>（アニメーション）を1つの解説記事内で組み合わせて使用するサンプルを示します。
+  このページでは、<strong>Matter.js</strong>（物理演算）、<strong>JSXGraph</strong>（数学グラフ）、<strong>Chart.js</strong>（データ可視化）、<strong>p5.js</strong>（アニメーション）、そして <strong>Three.js</strong>（3Dグラフィックス）を1つの解説記事内で組み合わせて使用するサンプルを示します。
 </p>
 
 <h3>1. 剛体の衝突実験 (Matter.js)</h3>
@@ -84,8 +84,6 @@
     Render.run(render);
     const runner = Runner.create();
     Runner.run(runner, engine);
-    
-    // クリーンアップ用：ページ遷移時に停止などはシステム側で管理推奨だが、簡易的にはこれで動く
   })();
 </script>
 
@@ -188,7 +186,7 @@
 
 <h3>4. ベクトルアニメーション (p5.js)</h3>
 <p>
-  最後に、p5.jsを用いたシンプルな単振動のベクトル表示です。
+  p5.jsを用いたシンプルな単振動のベクトル表示です。
 </p>
 
 <div id="sim-sample-p5" class="sim-embed" style="height: 300px;"></div>
@@ -249,5 +247,105 @@
     const p5inst = new p5(sketch);
     if (!window.p5Instances) window.p5Instances = [];
     window.p5Instances.push(p5inst);
+  })();
+</script>
+
+
+<h3>5. 3D空間での実験 (Three.js)</h3>
+<p>
+  <strong>Three.js</strong> を使うと、空間的な配置や立体的な動きを表現できます。
+  電磁気学（磁場と電流）や、天体の運動などの解説に非常に有効です。<br>
+  （※マウスドラッグで回転、ホイールで拡大縮小が可能です）
+</p>
+
+<div id="sim-sample-three" class="sim-embed" style="height: 400px; background: #000;"></div>
+
+<script>
+  (function() {
+    const container = document.getElementById('sim-sample-three');
+    if (!container) return;
+
+    // 1. シーン・カメラ・レンダラー設定
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf1f5f9);
+
+    const w = container.clientWidth;
+    const h = container.clientHeight;
+    const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 100);
+    camera.position.set(4, 4, 6);
+    
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(w, h);
+    container.appendChild(renderer.domElement);
+
+    // 2. カメラコントロール (OrbitControls)
+    // viewer.html で読み込み済みのため直接利用可能
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    // 3. ライト設定
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(5, 10, 7);
+    scene.add(dirLight);
+
+    // 4. オブジェクト配置
+    const gridHelper = new THREE.GridHelper(10, 10, 0x94a3b8, 0xcbd5e1);
+    scene.add(gridHelper);
+    
+    const axesHelper = new THREE.AxesHelper(2);
+    scene.add(axesHelper);
+
+    // 球体
+    const sphereGeo = new THREE.SphereGeometry(0.8, 32, 32);
+    const sphereMat = new THREE.MeshStandardMaterial({ 
+      color: 0x3b82f6, 
+      roughness: 0.4,
+      metalness: 0.3
+    });
+    const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+    scene.add(sphere);
+
+    // 立方体
+    const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+    const boxMat = new THREE.MeshStandardMaterial({ color: 0xf43f5e });
+    const box = new THREE.Mesh(boxGeo, boxMat);
+    box.position.set(-2, 1, -2);
+    scene.add(box);
+
+    // 5. アニメーションループ
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      const t = clock.getElapsedTime();
+
+      // オブジェクトの動き
+      sphere.position.y = Math.abs(Math.sin(t * 3)) * 2 + 0.8; 
+      sphere.position.x = Math.cos(t) * 2;
+      sphere.position.z = Math.sin(t) * 2;
+
+      box.rotation.x += 0.01;
+      box.rotation.y += 0.02;
+
+      // コントロールの更新
+      controls.update();
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    // リサイズ対応
+    window.addEventListener('resize', () => {
+       if(!container) return;
+       const newW = container.clientWidth;
+       const newH = container.clientHeight;
+       renderer.setSize(newW, newH);
+       camera.aspect = newW / newH;
+       camera.updateProjectionMatrix();
+    });
   })();
 </script>
