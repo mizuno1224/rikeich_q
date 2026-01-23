@@ -1,0 +1,176 @@
+<h2 class="prob-title-sub">第1問：ドップラー効果と音の伝わり方</h2>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p>ドップラー効果の問題では、<strong>「波源が動くことで波長がどう変化するか」</strong>をイメージすることが重要です。公式を暗記するだけでなく、波の数と距離の関係から導けるようにしましょう。</p>
+</div>
+
+<h3>1. 問題の状況を整理する</h3>
+<p>
+  救急車（音源）が観測者に近づきながらサイレンを鳴らしています。<br>
+  <ul>
+    <li>音速 $V = 340 \, \text{m/s}$</li>
+    <li>救急車の速さ $v_s = 20 \, \text{m/s}$</li>
+    <li>距離 $OA = 720 \, \text{m}$</li>
+    <li>サイレンの振動数 $f = 960 \, \text{Hz}$（高い方の音）</li>
+  </ul>
+</p>
+
+<h3>2. シミュレーション：波の広がり</h3>
+<p>
+  救急車が右から左へ、観測者に向かって進む様子をシミュレーションしてみましょう。<br>
+  下のスライダーで<strong>救急車の速さ</strong>を変えてみてください。速くなるほど、進行方向（観測者側）の波の間隔（波長）が詰まる様子が確認できます。
+</p>
+
+<div id="sim-2025-q1-doppler" class="sim-embed" style="height: 350px;"></div>
+
+<script>
+  (function() {
+    // ターゲット要素の取得
+    const targetId = 'sim-2025-q1-doppler';
+    const el = document.getElementById(targetId);
+    if (!el) return;
+
+    // p5.js Sketch
+    const sketch = (p) => {
+      let waves = [];
+      let sourceX;
+      const sourceY = 150; // キャンバス中央付近
+      let timer = 0;
+      
+      // パラメータ
+      const V_SOUND = 2.0; // 画面上の音速
+      let v_source = 0.5;  // 画面上の音源速度(初期値)
+      let freqInterval = 30; // 波が出る間隔(フレーム数)
+
+      // UI
+      let sliderSpeed;
+
+      p.setup = () => {
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+        p.createCanvas(w, h).parent(el);
+        
+        // 初期位置（右側）
+        sourceX = w * 0.8;
+
+        // コントローラー生成 (自作UIヘルパーがある前提、なければp5標準DOMで簡易実装)
+        if (window.SimUtils) {
+          const { container } = SimUtils.createControls(el, {
+            onPlay: () => p.loop(),
+            onPause: () => p.noLoop(),
+            onReset: () => resetSim()
+          });
+          // スライダー追加
+          sliderSpeed = SimUtils.addSlider(container, "救急車の速さ", 0, 1.5, 0.5, 0.1, (val) => {
+            v_source = val;
+          });
+        } else {
+          // フォールバック（スライダーなし）
+        }
+      };
+
+      function resetSim() {
+        waves = [];
+        sourceX = p.width * 0.8;
+        timer = 0;
+      }
+
+      p.draw = () => {
+        p.background(248, 250, 252); // var(--col-bg)
+
+        // 1. 説明描画
+        p.noStroke();
+        p.fill(51);
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(14);
+        p.text("← 観測者 (O)", 20, 20);
+        
+        // 2. 観測者
+        p.fill(59, 130, 246); // Blue
+        p.circle(50, sourceY, 20);
+        
+        // 3. 音源の移動
+        sourceX -= v_source;
+        
+        // ループさせる
+        if (sourceX < 100) {
+          sourceX = p.width * 0.8;
+          waves = []; // リセット
+        }
+
+        // 4. 波の発生
+        if (p.frameCount % freqInterval === 0) {
+          waves.push({ x: sourceX, y: sourceY, r: 0 });
+        }
+
+        // 5. 波の描画と更新
+        p.noFill();
+        p.stroke(244, 63, 94, 150); // Red transparent
+        p.strokeWeight(2);
+        
+        for (let i = waves.length - 1; i >= 0; i--) {
+          let w = waves[i];
+          w.r += V_SOUND;
+          p.circle(w.x, w.y, w.r * 2);
+          
+          // 画面外に出たら消す
+          if (w.r > p.width) {
+            waves.splice(i, 1);
+          }
+        }
+
+        // 6. 音源の描画
+        p.noStroke();
+        p.fill(244, 63, 94); // Red
+        p.circle(sourceX, sourceY, 15);
+        p.fill(0);
+        p.textAlign(p.CENTER);
+        p.text("救急車", sourceX, sourceY - 15);
+        
+      };
+      
+      p.windowResized = () => {
+        const parent = document.getElementById(targetId);
+        if(parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+      };
+    };
+
+    // インスタンス管理に追加
+    const myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+</script>
+
+<h3>3. 解法のプロセス</h3>
+
+<h4>(ア) 音が届くまでの時間</h4>
+<p>
+  音は点Aから点Oまで一定の速さ $V = 340 \, \text{m/s}$ で進みます。<br>
+  距離は $720 \, \text{m}$ なので、かかる時間 $t$ は、
+</p>
+<p>
+  $$ t = \frac{\text{距離}}{\text{速さ}} = \frac{720}{340} \approx \strong{2.1 \, \text{s}} $$
+</p>
+
+<h4>(イ) 観測者が聞く振動数</h4>
+<p>
+  音源が観測者に<strong>近づく</strong>場合、ドップラー効果により振動数は高く聞こえます。<br>
+  観測者が聞く振動数 $f'$ の公式は以下の通りです。
+</p>
+<p>
+  $$ f' = f \frac{V}{V - v_s} $$
+</p>
+<p>
+  ここに値を代入します。
+</p>
+<p>
+  $$ f' = 960 \times \frac{340}{340 - 20} $$
+  $$ \quad = 960 \times \frac{340}{320} $$
+  $$ \quad = 960 \times \frac{17}{16} $$
+  $$ \quad = 60 \times 17 = \strong{1020 \, \text{Hz}} $$
+</p>
+<p>
+  よって、正解の組合せは <strong>ア：2.1, イ：1020</strong> となります。
+</p>

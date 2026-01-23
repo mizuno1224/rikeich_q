@@ -1,0 +1,45 @@
+data/
+└── explanations/
+    ├── textbook/                  # 教科書
+    │   ├── physics_basic/         # 物理基礎
+    │   │   ├── 01_mechanics/
+    │   │   │   ├── 001_all_in_one_sample.html
+    │   │   │   └── ...
+    │   │   └── 03_waves/
+    │   │       └── 005_wave_yx_to_yt.html
+    │   └── physics/               # 物理
+    │       └── 01_mechanics/
+    │           └── 001_sample.html
+    │
+    ├── lead_alpha/                # リードα
+    │   ├── physics_basic/
+    │   │   └── 01_mechanics/
+    │   │       └── 012_lead_basic_mech.html
+    │   └── physics/
+    │       └── ...
+    │
+    ├── lead_light/                # リードLight
+    │   └── physics_basic/
+    │       └── ...
+    │
+    ├── exam_common/               # 共通テスト
+    │   ├── 2025/
+    │   │   ├── q1.html            # 第1問
+    │   │   ├── q2.html
+    │   │   └── ...
+    │   └── 2024/
+    │       └── ...
+    │
+    ├── exam_private/              # 私立大学
+    │   ├── waseda/                # 大学ID
+    │   │   ├── 2024_sci_zenki.html  # 年度_学部_方式
+    │   │   └── ...
+    │   └── keio/
+    │       └── ...
+    │
+    └── exam_national/             # 国公立大学
+        ├── tokyo/
+        │   ├── 2024_zenki_q1.html
+        │   └── ...
+        └── kyoto/
+            └── ...

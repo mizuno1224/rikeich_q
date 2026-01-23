@@ -1,0 +1,206 @@
+<h2 class="prob-title-sub">問題の背景：ドップラー効果と音の伝わり方</h2>
+
+<p>
+  この問題は、救急車が観測者に近づく際の「音の伝搬遅延」と「ドップラー効果による振動数の変化」の2つを扱っています。<br>
+  まずは、シミュレーションで状況を再現してみましょう。<br>
+  （※シミュレーションでは見やすくするため、実際の数値よりも速度や距離のスケールを調整しています）
+</p>
+
+<div id="sim-common-doppler" class="sim-embed" style="height: 400px; border: 1px solid #e2e8f0; background: #fff;"></div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p>
+    <strong>波の密集度（波長の変化）</strong>に注目してください。<br>
+    救急車の進行方向（右側）では、波と波の間隔が狭くなり、波長が短くなっていることがわかります。<br>
+    これが振動数が高く聞こえる原因です。
+  </p>
+</div>
+
+<script>
+  (function() {
+    // ターゲット要素の取得
+    const el = document.getElementById('sim-common-doppler');
+    if (!el) return;
+
+    // p5.js Sketch
+    const sketch = (p) => {
+      let t = 0;
+      let isRunning = true;
+      let waves = []; // 波のリスト {x: 発生源X座標, emitTime: 発生時刻}
+      
+      // パラメータ
+      const V_SOUND = 100; // 画面上の音速 (px/s)
+      const V_SOURCE_DEFAULT = 40; // 音源の速さ (px/s)
+      let vSource = V_SOURCE_DEFAULT;
+      
+      const FREQ = 1.5; // 波の発生頻度 (回/s)
+      let lastEmitTime = -1;
+
+      // 座標設定
+      let sourceX = 50;
+      const OBSERVER_X = p.width ? p.width * 0.8 : 300;
+      
+      p.setup = () => {
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+        p.createCanvas(w, h).parent(el);
+        
+        // コントロール類（SimUtils利用）
+        if(window.SimUtils) {
+          const ctrls = SimUtils.createControls(el, {
+            onPlay: () => isRunning = true,
+            onPause: () => isRunning = false,
+            onReset: () => resetSim()
+          });
+          
+          // スライダー追加 (音源の速さ)
+          SimUtils.addSlider(ctrls.container, "救急車の速さ", 0, 80, V_SOURCE_DEFAULT, 10, (val) => {
+            vSource = val;
+          });
+        }
+        
+        resetSim();
+      };
+
+      function resetSim() {
+        t = 0;
+        sourceX = 50;
+        waves = [];
+        lastEmitTime = -1;
+        isRunning = true;
+      }
+
+      p.draw = () => {
+        p.background(248, 250, 252);
+        
+        // 1. 更新処理
+        if (isRunning) {
+          const dt = 1 / 60;
+          t += dt;
+          sourceX += vSource * dt; // 等速直線運動
+          
+          // 波の発生判定
+          if (t - lastEmitTime > 1 / FREQ) {
+            waves.push({ x: sourceX, emitTime: t });
+            lastEmitTime = t;
+          }
+        }
+        
+        // 画面外に出たらリセットループ
+        if (sourceX > p.width + 50) {
+          resetSim();
+        }
+
+        // 2. 描画処理
+        p.noFill();
+        p.strokeWeight(2);
+        
+        // 観測者
+        const obsX = p.width * 0.8;
+        p.stroke(0);
+        p.fill(59, 130, 246);
+        p.circle(obsX, p.height/2, 20);
+        p.textAlign(p.CENTER);
+        p.fill(0);
+        p.noStroke();
+        p.text("観測者", obsX, p.height/2 - 20);
+
+        // 波面
+        p.stroke(59, 130, 246, 150); // 青半透明
+        p.noFill();
+        for (let w of waves) {
+          const timeAlive = t - w.emitTime;
+          if (timeAlive > 0) {
+            const radius = V_SOUND * timeAlive;
+            p.circle(w.x, p.height/2, radius * 2);
+          }
+        }
+
+        // 音源（救急車）
+        p.fill(244, 63, 94); // 赤
+        p.noStroke();
+        p.rectMode(p.CENTER);
+        p.rect(sourceX, p.height/2, 40, 20, 4);
+        p.fill(255);
+        p.text("🚑", sourceX, p.height/2 + 5);
+        
+        // 情報表示
+        p.fill(0);
+        p.textAlign(p.LEFT);
+        p.text(`Time: ${t.toFixed(2)} s`, 20, 30);
+        p.text(`Source Speed: ${vSource} px/s`, 20, 50);
+        
+        // ドップラー効果の式表示
+        const fRatio = V_SOUND / (V_SOUND - vSource);
+        p.text(`振動数倍率: ${fRatio.toFixed(2)} 倍`, 20, 70);
+      };
+
+      p.windowResized = () => {
+        p.resizeCanvas(el.clientWidth, el.clientHeight);
+      };
+    };
+
+    // p5インスタンス管理への登録
+    const myp5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myp5);
+  })();
+</script>
+
+<hr style="margin: 40px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+<h3>Step 1. 音が届くまでの時間（空欄ア）</h3>
+<p>
+  まずはドップラー効果を考える前に、単純に「音が伝わる速さと時間」の関係を計算します。<br>
+  点 $\text{O}$ にいる観測者と、サイレンを鳴らし始めた点 $\text{A}$ の距離は $720\,\text{m}$ です。<br>
+  音速を $V = 340\,\text{m/s}$ とすると、時間は「距離 ÷ 速さ」で求められます。
+</p>
+<p>
+  $$ t = \frac{720}{340} = \frac{36}{17} \approx \strong{2.1} \, [\text{s}] $$
+</p>
+<p>
+  よって、空欄 ア には <strong>2.1</strong> が入ります。
+</p>
+
+
+<h3>Step 2. 観測される振動数（空欄イ）</h3>
+<p>
+  次に、ドップラー効果の公式を用いて振動数を求めます。<br>
+  音源が観測者に<strong>近づく</strong>場合、公式は以下のようになります。
+</p>
+
+<div class="box-alert">
+  <span class="box-alert-label">公式</span>
+  <p>
+    $$ f' = \frac{V}{V - v_s} f $$
+    <ul>
+      <li>$V$: 音速 ($340\,\text{m/s}$)</li>
+      <li>$v_s$: 音源の速さ ($20\,\text{m/s}$)</li>
+      <li>$f$: 元の振動数 ($960\,\text{Hz}$)</li>
+    </ul>
+  </p>
+</div>
+
+<p>
+  この式に値を代入して計算します。
+</p>
+<p>
+  $$ \begin{align}
+     f' &= \frac{340}{340 - 20} \times 960 \\
+        &= \frac{340}{320} \times 960 \\
+        &= \frac{17}{16} \times 960 \\
+        &= 17 \times 60 \\
+        &= \strong{1020} \, [\text{Hz}]
+     \end{align}
+  $$
+</p>
+<p>
+  よって、空欄 イ には <strong>1020</strong> が入ります。<br>
+  （もう一つの振動数 $770\,\text{Hz}$ についても同様に計算すると約 $820\,\text{Hz}$ となり、問題文と整合します。）
+</p>
+
+<h3>まとめ</h3>
+<p>
+  以上より、正解の組み合わせは <strong>⑤ (2.1, 1020)</strong> となります。
+</p>
