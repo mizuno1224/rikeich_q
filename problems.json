@@ -10,33 +10,37 @@
             "fieldName": "力学",
             "folderId": "01_mechanics",
             "problems": [
-  {
-  "id": "sample_all_in_one",
-  "title": "★機能全部入りサンプル",
-  "desc": "Matter.js, JSXGraph, Chart.js, p5.js をすべて使用した記事型レイアウトのサンプルです。",
-  "explanationPath": "data/explanations/physics_basic/01_mechanics/all_in_one_sample.html",
-  "layout": "article"
-}
+              {
+                "id": "sample_all_in_one",
+                "title": "★機能全部入りサンプル",
+                "desc": "Matter.js, JSXGraph, Chart.js, p5.js をすべて使用した記事型レイアウトのサンプルです。",
+                "explanationPath": "data/explanations/physics_basic/01_mechanics/all_in_one_sample.html",
+                "layout": "article"
+              }
             ]
           },
           {
             "fieldName": "波動",
             "folderId": "03_waves",
             "problems": [
-              {
-                "id": "prob_wave_graph_trans",
-                "title": "例題5: 斜面上の物体",
-                "desc": "教科書 P.45 類題",
-                "jsPath": "js/problems/physics_basic/03_waves/prob_wave_graph_trans.js"
-              },
-              {
-                "id": "prob_wave_yx_to_yt",
-                "title": "y-x図からy-t図を描く",
-                "desc": "波のグラフの変換問題です。ある瞬間の波形から、特定の位置における媒質の振動グラフ（y-t図）を作成する手順を解説します。",
-                "jsPath": "js/problems/physics_basic/03_waves/prob_wave_yx_to_yt.js",
-                "explanationPath": "data/explanations/physics_basic/03_waves/prob_wave_yx_to_yt.html"
-              }
+
             ]
+          }
+        ]
+      },
+      {
+        "subjectName": "物理",
+        "folderName": "physics",
+        "fields": [
+          {
+            "fieldName": "力学",
+            "folderId": "01_mechanics",
+            "problems": []
+          },
+          {
+            "fieldName": "電磁気",
+            "folderId": "04_electromagnetism",
+            "problems": []
           }
         ]
       }
@@ -122,11 +126,33 @@
     "materialName": "入試問題",
     "subjects": [
       {
-        "subjectName": "総合",
-        "folderName": "physics",
+        "subjectName": "共通テスト",
+        "folderName": "exam_common",
         "fields": [
           {
-            "fieldName": "力学（難関大）",
+            "fieldName": "力学",
+            "folderId": "01_mechanics",
+            "problems": []
+          }
+        ]
+      },
+      {
+        "subjectName": "私立大学",
+        "folderName": "exam_private",
+        "fields": [
+          {
+            "fieldName": "力学",
+            "folderId": "01_mechanics",
+            "problems": []
+          }
+        ]
+      },
+      {
+        "subjectName": "国公立大学",
+        "folderName": "exam_national",
+        "fields": [
+          {
+            "fieldName": "力学",
             "folderId": "01_mechanics",
             "problems": [
               {
