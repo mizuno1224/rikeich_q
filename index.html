@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>物理問題集アプリ</title>
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    /* index.html 専用スタイル */
+    body { padding: 20px; background: var(--col-bg); }
+    
+    .container { max-width: 1200px; margin: 0 auto; }
+    
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 40px;
+      color: var(--col-text);
+      letter-spacing: 0.1em;
+    }
+
+    /* --- 教材切り替えタブ --- */
+    .material-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      font-family: var(--font-base);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--col-text-sub);
+      background: #fff;
+      border: 2px solid #e2e8f0;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 140px;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--col-primary-light);
+      background: #f8fafc;
+    }
+
+    .tab-btn.active {
+      background: var(--col-primary);
+      color: #fff;
+      border-color: var(--col-primary);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* --- 科目・分野リスト --- */
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .subject-card {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 30px;
+      box-shadow: var(--card-shadow);
+    }
+
+    .subject-name {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--col-primary);
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .field-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .field-item { margin-bottom: 25px; }
+    
+    .field-name {
+      font-weight: 700;
+      color: var(--col-text);
+      margin-bottom: 10px;
+      display: block;
+      font-size: 1.1rem;
+      border-left: 4px solid var(--col-accent);
+      padding-left: 10px;
+    }
+
+    .prob-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* 1列 */
+      gap: 8px;
+    }
+
+    .prob-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+      color: var(--col-text);
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+    .prob-link:hover {
+      background: #fff;
+      border-color: var(--col-primary);
+      color: var(--col-primary);
+      transform: translateX(5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    .prob-link::after { content: "→"; opacity: 0.5; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Physics Lab.</h1>
+
+    <div class="material-tabs" id="tab-container">
+      </div>
+
+    <div id="content-area"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tabContainer = document.getElementById('tab-container');
+      const contentArea = document.getElementById('content-area');
+      
+      let problemData = [];
+      let currentMaterialIndex = 0;
+
+      // 0. JSONデータの取得
+      fetch('problems.json')
+        .then(res => {
+          if (!res.ok) throw new Error('Network response was not ok');
+          return res.json();
+        })
+        .then(data => {
+          problemData = data;
+          initTabs();
+          // 初回描画
+          if(problemData.length > 0) {
+            renderContent(problemData[0]);
+          }
+        })
+        .catch(error => {
+          console.error('Error loading problems:', error);
+          contentArea.innerHTML = '<p style="text-align:center; color:red;">データの読み込みに失敗しました。</p>';
+        });
+
+      // 1. タブ生成
+      function initTabs() {
+        problemData.forEach((mat, index) => {
+          const btn = document.createElement('button');
+          btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
+          btn.textContent = mat.materialName;
+          btn.onclick = () => switchMaterial(index);
+          tabContainer.appendChild(btn);
+        });
+      }
+
+      // 2. 表示切り替え関数
+      function switchMaterial(index) {
+        currentMaterialIndex = index;
+        
+        // タブのアクティブ化
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach((t, i) => {
+          if(i === index) t.classList.add('active');
+          else t.classList.remove('active');
+        });
+
+        // コンテンツ再描画
+        renderContent(problemData[index]);
+      }
+
+      // 3. コンテンツ描画関数
+      function renderContent(material) {
+        let html = `<div class="subject-grid">`;
+
+        material.subjects.forEach(subject => {
+          html += `
+            <div class="subject-card">
+              <h3 class="subject-name">
+                <span>${subject.subjectName}</span>
+              </h3>
+              <ul class="field-list">
+          `;
+
+          let hasProblem = false;
+          subject.fields.forEach(field => {
+            if(field.problems.length > 0) {
+              hasProblem = true;
+              html += `<li class="field-item">
+                <span class="field-name">${field.fieldName}</span>
+                <div class="prob-grid">`;
+              
+              field.problems.forEach(p => {
+                html += `
+                  <a href="viewer.html?id=${p.id}" class="prob-link">
+                    <span>${p.title}</span>
+                  </a>
+                `;
+              });
+              html += `</div></li>`;
+            }
+          });
+
+          if(!hasProblem) {
+            html += `<li style="color:var(--col-text-sub); font-size:0.9rem;">(問題準備中)</li>`;
+          }
+
+          html += `</ul></div>`;
+        });
+
+        html += `</div>`;
+        contentArea.innerHTML = html;
+      }
+    });
+  </script>
+</body>
+</html>

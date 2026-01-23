@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>問題解説ビューアー</title>
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/viewer.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+
+  <div class="viewer-container">
+
+    <header class="prob-header-top">
+      <div class="header-left">
+        <a href="index.html" class="btn-back-circle" title="一覧へ戻る">❮</a>
+        <h1 id="prob-title-header">Loading...</h1>
+      </div>
+      <div class="header-right">
+        <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
+      </div>
+    </header>
+
+    <div class="viewer-split-content">
+      <div id="sim-target" class="simulation-area"></div>
+
+      <div id="text-target" class="explanation-area"></div>
+    </div>
+
+  </div>
+
+  <canvas id="pointer-canvas"></canvas>
+
+  <script src="js/data.js"></script>
+  <script src="js/sim-utils.js"></script>
+  <script src="js/pointer.js"></script>
+  <script src="js/viewer.js"></script>
+  </body>
+
+</html>

@@ -1,0 +1,126 @@
+/* css/components.css */
+
+/* --- Card Containers --- */
+.card {
+  max-width: var(--card-width);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 40px auto;
+  background: var(--card-bg);
+  backdrop-filter: var(--card-backdrop);
+  -webkit-backdrop-filter: var(--card-backdrop);
+  border: var(--card-border-width) solid var(--card-border);
+  border-radius: var(--card-radius);
+  padding: 40px;
+  box-shadow: var(--card-shadow);
+  transition: all 0.4s;
+}
+
+/* --- Alert Box (Fixed) --- */
+.box-alert {
+  max-width: var(--card-width);
+  width: 100%;
+  box-sizing: border-box;
+  margin: 40px auto;
+  border: 2px solid var(--col-warning);
+  background: rgba(245, 158, 11, 0.05);
+  border-radius: 16px;
+  padding: 25px;
+  position: relative;
+}
+
+.box-alert-label {
+  position: absolute;
+  top: -14px;
+  left: 20px;
+  background: var(--col-warning);
+  color: #fff;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  line-height: 1;
+}
+
+[data-theme="dark"] .box-alert {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: #fbbf24;
+}
+[data-theme="dark"] .box-alert-label {
+  background: #fbbf24;
+  color: #000;
+}
+
+/* --- Educational Elements --- */
+strong { font-size: 1.1em; color: var(--col-primary); }
+
+.highlight {
+  background: var(--col-highlight);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+/* --- Images & Sub-Simulations (Proposal B) --- */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 40vh; /* 画面が高すぎないように制限 */
+  object-fit: contain;
+  border-radius: 12px;
+  margin: 20px auto;
+  display: block;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sub-sim-area {
+  width: 100%;
+  min-height: 250px;
+  max-height: 40vh; /* グラフも高さを制限 */
+  margin: 20px 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+/* --- Buttons & Controls --- */
+.sim-btn {
+  /* JS生成ボタンのスタイル */
+  display: flex; align-items: center; justify-content: center;
+  background: #fff !important; 
+  border: 1px solid #cbd5e1 !important;
+  color: var(--col-text) !important;
+  padding: 0; width: 40px; height: 40px; border-radius: 50%;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.sim-btn:hover {
+  background: var(--col-primary) !important;
+  color: #fff !important;
+  border-color: var(--col-primary) !important;
+}
+
+/* --- Details / Summary --- */
+details {
+  margin: 20px 0;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+summary {
+  padding: 15px 20px;
+  font-weight: bold;
+  cursor: pointer;
+  list-style: none;
+  outline: none;
+}
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: "▶"; display: inline-block; margin-right: 10px;
+  transition: transform 0.2s; color: var(--col-primary);
+}
+details[open] summary::before { transform: rotate(90deg); }
+.details-content { padding: 20px; border-top: 1px solid var(--card-border); }

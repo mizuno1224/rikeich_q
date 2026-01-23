@@ -1,0 +1,139 @@
+/* css/viewer.css */
+
+/* 全体レイアウト */
+body {
+  height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background: var(--col-bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ポインターモード時のカーソル変更 */
+body.pointer-active {
+  cursor: crosshair; /* 描画できることを示す */
+}
+/* ポインターモード時は、ボタンなどへの誤操作を防ぐ */
+body.pointer-active .explanation-area,
+body.pointer-active .simulation-area {
+  user-select: none;
+}
+
+.viewer-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* --- 1. 上部ヘッダー --- */
+.prob-header-top {
+  flex-shrink: 0;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #fff;
+  border-bottom: 1px solid #cbd5e1;
+  z-index: var(--z-header, 100);
+}
+
+.header-left {
+  display: flex; align-items: center; gap: 15px; width: 100%;
+}
+
+.btn-back-circle {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #f1f5f9; color: var(--col-text-sub);
+  font-weight: bold; transition: all 0.2s;
+  text-decoration: none;
+}
+.btn-back-circle:hover { background: var(--col-primary); color: #fff; }
+
+#prob-title-header {
+  margin: 0; font-size: 1.6rem; color: var(--col-text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.btn-sm {
+  white-space: nowrap; font-size: 0.9rem; padding: 8px 16px;
+  border-radius: 20px; border: 1px solid var(--col-primary);
+  background: #fff; color: var(--col-primary); cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-sm:hover { background: var(--col-primary); color: #fff; }
+
+/* ポインターON時のボタン状態 */
+.btn-sm.active {
+  background: var(--col-accent);
+  border-color: var(--col-accent);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.4);
+}
+
+
+/* --- 2. メインエリア (左右分割) --- */
+.viewer-split-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  padding: 20px;
+  gap: 20px;
+  position: relative;
+}
+
+/* 左: シミュレーション */
+.simulation-area {
+  flex: 2;
+  background: #fff;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid #fff;
+  box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
+}
+
+/* シミュレーション操作パネル */
+.sim-controls-panel {
+  position: absolute; bottom: 20px; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(5px);
+  padding: 8px 20px; border-radius: 50px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  display: flex; gap: 15px; align-items: center;
+  z-index: var(--z-sim-controls, 200);
+  transition: opacity 0.3s;
+}
+.simulation-area:not(:hover) .sim-controls-panel { opacity: 0.5; }
+.sim-slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; }
+
+
+/* 右: 解説エリア (常に縦スクロール) */
+.explanation-area {
+  flex: 3;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  position: relative;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 40px;
+}
+
+/* --- ポインター用キャンバス --- */
+#pointer-canvas {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  z-index: var(--z-pointer, 1000);
+  pointer-events: none; /* デフォルトは操作を通す */
+  touch-action: none; 
+}
+/* モードON時は、JS制御でイベントをキャプチャしますが、
+   CSS的には none のままで JS の window event で拾う方式を維持します */
+
+/* --- MathJax --- */
+mjx-container { font-size: 1.15em !important; }

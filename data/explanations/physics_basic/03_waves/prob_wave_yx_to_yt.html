@@ -1,0 +1,50 @@
+<h2 class="prob-title-sub">問題のポイント</h2>
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p><strong>$y-x$図は「ある瞬間の波の写真」</strong>、<strong>$y-t$図は「ある1点の媒質の動きの記録」</strong>です。波を少しだけ進めた状態をイメージして、媒質が次にどちらへ動くかを判断しましょう。</p>
+</div>
+
+<div class="prob-step">
+  <h3>STEP 1: 波の基本量を読み取る</h3>
+  <p>
+    与えられた $y-x$ 図（$t=0$）から、以下の情報を読み取ります。<br>
+    グラフは $x=0$ から始まり、一度下がって $x=3.0$ で $0$ に戻り、上がって $x=6.0$ で再び $0$ に戻っています。これが1波長分に相当します。
+  </p>
+  <ul>
+    <li>波長： $\lambda = 6.0 \, \mathrm{m}$</li>
+    <li>振幅： $A = 2.5 \, \mathrm{m}$</li>
+  </ul>
+  <p>
+    また、問題文より速さは $v = 1.5 \, \mathrm{m/s}$ です。<br>
+    これらから、周期 $T$ を求めます。
+  </p>
+  <p>
+    $$ T = \frac{\lambda}{v} = \frac{6.0}{1.5} = \strong{4.0 \, \mathrm{s}} $$
+  </p>
+</div>
+
+<div class="prob-step">
+  <h3>STEP 2: $x=3.0\,\mathrm{m}$ での初期の動きを予測する</h3>
+  <p>
+    波は<strong>$x$ 軸の正の向き</strong>に進んでいます。<br>
+    $t=0$ のグラフにおいて、$x=3.0\,\mathrm{m}$ の<strong>すぐ左側（後ろ）</strong>を見ると、波形は $y < 0$（谷の部分）になっています。<br>
+    波が右へ進むと、この「負の変位」が $x=3.0\,\mathrm{m}$ の地点にやってきます。
+  </p>
+  <p>
+    つまり、$x=3.0\,\mathrm{m}$ の媒質は、<span class="highlight">時刻 $t=0$ の直後に下向き（負の方向）に動く</span>ことがわかります。
+  </p>
+</div>
+
+<div class="card">
+  <h3>結論</h3>
+  <p>
+    求める $y-t$ 図は以下の特徴を持つ正弦波となります。
+  </p>
+  <ul>
+    <li>原点 $(0, 0)$ を通る</li>
+    <li>周期 $4.0\,\mathrm{s}$ （$t=4.0$ で一回転）</li>
+    <li>振幅 $2.5\,\mathrm{m}$</li>
+    <li><strong>グラフは下向きにスタートする</strong>（$-\sin$ の形）</li>
+  </ul>
+  <div id="sub-sim-prob_wave_yx_to_yt" style="width:100%; height:200px; margin-top:1em;"></div>
+</div>

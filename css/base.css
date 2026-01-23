@@ -1,0 +1,77 @@
+/* css/base.css */
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700&family=Nunito:wght@600;800&display=swap');
+
+:root {
+  /* --- Colors (Pop & Modern) --- */
+  --col-bg: #f8fafc;         /* 背景：非常に薄い青グレー */
+  --col-text: #334155;       /* 文字：ダークスレート */
+  --col-text-sub: #64748b;
+  
+  --col-primary: #3b82f6;    /* メイン：鮮やかな青 */
+  --col-primary-light: #dbeafe;
+  --col-accent: #f43f5e;     /* アクセント：ピンク赤 */
+  --col-success: #10b981;    /* 緑 */
+  --col-warning: #f59e0b;    /* 警告：オレンジ */
+  
+  /* --- Compatibility Aliases --- */
+  --col-main: var(--col-primary);
+  --col-sub: var(--col-text-sub);
+  --text-main: var(--col-text);
+  --text-sub: var(--col-text-sub);
+  --col-highlight: #fef08a;
+
+  /* --- Z-Index Layer Management (Proposal A) --- */
+  --z-header: 100;
+  --z-sim-controls: 200;
+  --z-slide-nav: 500;    /* スライド操作矢印 */
+  --z-pointer: 1000;     /* レーザーポインター */
+  --z-modal: 2000;       /* 目次やオーバーレイ */
+  --z-toast: 15000;      /* 通知・カウンター */
+
+  /* --- Component Settings --- */
+  --card-bg: #ffffff;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+  --card-radius: 24px;
+  --card-border: #e2e8f0;
+  --card-border-width: 1px;
+  --card-backdrop: blur(10px);
+  
+  --card-width: 900px;       /* 記事・スライドの最大幅 */
+  
+  --font-base: "M PLUS Rounded 1c", "Nunito", sans-serif;
+}
+
+/* --- Base Styles --- */
+body {
+  font-family: var(--font-base);
+  background-color: var(--col-bg);
+  color: var(--col-text);
+  margin: 0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* スクロールバー装飾 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+h1, h2, h3, button, input {
+  font-family: var(--font-base);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}

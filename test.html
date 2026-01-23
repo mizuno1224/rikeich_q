@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>解説コード 即時テスト環境</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/viewer.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
+  <style>
+    /* テスト環境専用レイアウト */
+    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    
+    .test-toolbar {
+      flex-shrink: 0;
+      background: #1e293b;
+      padding: 10px 20px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: #fff;
+      border-bottom: 1px solid #334155;
+      z-index: 1000;
+    }
+    .test-toolbar h1 { margin: 0; font-size: 1rem; margin-right: 20px; color: #94a3b8; }
+    
+    .btn-run { background: #10b981; color: white; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-run:hover { background: #059669; }
+    .btn-clear { background: #64748b; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; }
+    
+    .split-view {
+      flex: 1;
+      display: flex;
+      height: calc(100vh - 50px);
+    }
+    
+    /* 左側：コード入力エリア */
+    .editor-pane {
+      width: 40%;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #cbd5e1;
+      background: #f8fafc;
+    }
+    
+    #code-input {
+      flex: 1;
+      width: 100%;
+      font-family: monospace;
+      font-size: 14px;
+      padding: 10px;
+      border: none;
+      resize: none;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      outline: none;
+    }
+    
+    /* 右側：プレビューエリア */
+    .preview-pane {
+      width: 60%;
+      position: relative;
+      background: #fff;
+    }
+    
+    .viewer-container { height: 100%; }
+    .viewer-split-content { height: 100%; padding: 10px; }
+    .simulation-area, .explanation-area { height: 100%; overflow: hidden; }
+    .explanation-area { overflow-y: auto; }
+
+    /* エラー表示 */
+    #error-log {
+      color: #f43f5e;
+      font-size: 0.85rem;
+      margin-left: auto;
+      background: rgba(0,0,0,0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="test-toolbar">
+    <h1>🛠️ Test Runner</h1>
+    <button class="btn-run" onclick="runTest()">▶ 実行 (Ctrl+Enter)</button>
+    <button class="btn-clear" onclick="clearEditor()">クリア</button>
+    <span id="error-log"></span>
+  </div>
+
+  <div class="split-view">
+    <div class="editor-pane">
+      <textarea id="code-input" placeholder="// ここにAIが生成したJSコード（window.setup_... または PhysicsLab.problems[...] = ...）を貼り付けてください"></textarea>
+    </div>
+    
+    <div class="preview-pane">
+      <div class="viewer-container">
+        <div class="viewer-split-content">
+          <div id="sim-target" class="simulation-area"></div>
+          <div id="text-target" class="explanation-area">
+            <div class="placeholder-text" style="margin-top: 50px;">
+              ここに解説が表示されます。<br>左にコードを貼って「実行」を押してください。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/sim-utils.js"></script>
+
+  <script>
+    const codeInput = document.getElementById('code-input');
+    const simTarget = document.getElementById('sim-target');
+    const textTarget = document.getElementById('text-target');
+    const errorLog = document.getElementById('error-log');
+
+    // ショートカットキー
+    codeInput.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter') {
+        runTest();
+      }
+    });
+
+    function clearEditor() {
+      if(confirm('エディタをクリアしますか？')) codeInput.value = '';
+    }
+
+    function runTest() {
+      // 1. リセット
+      resetEnvironment();
+
+      // 2. コード取得
+      const rawCode = codeInput.value;
+      if (!rawCode.trim()) return;
+
+      try {
+        // 3. コードの評価
+        const runScript = new Function(rawCode);
+        runScript();
+
+        // 4. 関数実行 (新旧対応)
+        let targetFunc = null;
+        let funcNameStr = "";
+
+        // 新: PhysicsLab.problems に追加された最後のキーを探す
+        // (キー順序は保証されないが、通常追加順)
+        if (window.PhysicsLab && window.PhysicsLab.problems) {
+           const keys = Object.keys(window.PhysicsLab.problems);
+           if(keys.length > 0) {
+             funcNameStr = keys[keys.length - 1];
+             targetFunc = window.PhysicsLab.problems[funcNameStr];
+           }
+        }
+
+        // 旧: setup_... を探す
+        if (!targetFunc) {
+           const keys = Object.keys(window).filter(k => k.startsWith('setup_'));
+           if (keys.length > 0) {
+             funcNameStr = keys[keys.length - 1];
+             targetFunc = window[funcNameStr];
+           }
+        }
+
+        if (!targetFunc) {
+          throw new Error("実行可能な関数が見つかりません (PhysicsLab.problems または window.setup_...)");
+        }
+
+        console.log(`Executing: ${funcNameStr}`);
+        targetFunc('sim-target', 'text-target');
+
+        // MathJax適用
+        if(window.MathJax) {
+          MathJax.typesetPromise ? MathJax.typesetPromise([textTarget]) : MathJax.Hub.Queue(["Typeset", MathJax.Hub, textTarget]);
+        }
+        
+        showError(null); 
+
+      } catch (e) {
+        console.error(e);
+        showError(e.message);
+      }
+    }
+
+    function resetEnvironment() {
+      if (window.p5Instances) {
+        window.p5Instances.forEach(p => p.remove());
+        window.p5Instances = [];
+      }
+      simTarget.innerHTML = '';
+      textTarget.innerHTML = '';
+    }
+
+    function showError(msg) {
+      if(msg) {
+        errorLog.textContent = "⚠️ " + msg;
+        errorLog.style.display = 'inline-block';
+      } else {
+        errorLog.style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
