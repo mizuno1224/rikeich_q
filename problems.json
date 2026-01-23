@@ -10,12 +10,13 @@
             "fieldName": "力学",
             "folderId": "01_mechanics",
             "problems": [
-              {
-                "id": "prob_slope_normal",
-                "title": "例題5: 斜面上の物体の運動",
-                "desc": "教科書 P.45 類題",
-                "jsPath": "js/problems/physics_basic/01_mechanics/prob_slope_normal.js"
-              }
+  {
+  "id": "sample_all_in_one",
+  "title": "★機能全部入りサンプル",
+  "desc": "Matter.js, JSXGraph, Chart.js, p5.js をすべて使用した記事型レイアウトのサンプルです。",
+  "explanationPath": "data/explanations/physics_basic/01_mechanics/all_in_one_sample.html",
+  "layout": "article"
+}
             ]
           },
           {

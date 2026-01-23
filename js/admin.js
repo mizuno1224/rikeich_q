@@ -126,18 +126,32 @@ document.addEventListener('DOMContentLoaded', () => {
       let meta;
       try { meta = JSON.parse(jsonStr); } catch(e) { throw new Error("JSONの形式が不正です"); }
 
-      if (!meta.id || !meta.jsPath || !meta.explanationPath) {
-        throw new Error("JSONに必要なキー(id, jsPath, explanationPath)がありません");
+      // 必須チェック修正: jsPath は任意とする
+      if (!meta.id || !meta.explanationPath) {
+        throw new Error("JSONに必要なキー(id, explanationPath)がありません");
       }
 
-      // パス解析 (js/problems/科目/分野/ID.js)
-      const pathParts = meta.jsPath.split('/');
-      if (pathParts.length < 5) throw new Error("jsPathの形式が不正です");
+      // パス解析
+      // jsPathが無い場合は explanationPath から科目・分野ディレクトリを推定する
+      // explanationPath: data/explanations/科目/分野/ID.html
+      // pathParts: [data, explanations, 科目, 分野, ID.html]
+      // インデックス: 2=科目, 3=分野
+      let subjectDir, fieldDir, fileNameHTML, fileNameJS;
+
+      const explParts = meta.explanationPath.split('/');
+      if (explParts.length < 5) throw new Error("explanationPathの形式が不正です(data/explanations/科目/分野/ファイル.html である必要があります)");
       
-      const subjectDir = pathParts[2];
-      const fieldDir = pathParts[3];
-      const fileNameJS = pathParts[4];
-      const fileNameHTML = meta.explanationPath.split('/').pop();
+      subjectDir = explParts[2];
+      fieldDir = explParts[3];
+      fileNameHTML = explParts[4];
+
+      // JSがある場合のみ解析
+      if (meta.jsPath) {
+        const jsParts = meta.jsPath.split('/');
+        if (jsParts.length >= 5) {
+            fileNameJS = jsParts[4];
+        }
+      }
 
       // ファイル保存
       // 1. HTML
@@ -151,8 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
         await writable.close();
       }
 
-      // 2. JS
-      if (jsContent) {
+      // 2. JS (中身があり、パスも指定されている場合のみ)
+      if (jsContent && fileNameJS) {
         let dir = jsProblemsDirHandle;
         dir = await dir.getDirectoryHandle(subjectDir, { create: true });
         dir = await dir.getDirectoryHandle(fieldDir, { create: true });
@@ -163,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // 3. データ登録
-      // 選択された教材データを使用
       const materialObj = currentData[targetMatIdx];
       
       // 科目検索or作成
@@ -182,16 +195,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // 重複チェック
       const existingIdx = fieldObj.problems.findIndex(p => p.id === meta.id);
+      
+      // jsPathは無ければ登録しない (undefined)
       const newProb = {
         id: meta.id,
-        title: meta.title,
-        desc: meta.desc,
-        jsPath: meta.jsPath,
-        explanationPath: meta.explanationPath
+        title: meta.title || "無題",
+        desc: meta.desc || "",
+        explanationPath: meta.explanationPath,
+        layout: meta.layout // 記事型レイアウト設定を保持
       };
+      if (meta.jsPath) newProb.jsPath = meta.jsPath;
 
       if (existingIdx >= 0) {
-        fieldObj.problems[existingIdx] = newProb;
+        // 既存のプロパティを維持しつつ更新
+        fieldObj.problems[existingIdx] = { ...fieldObj.problems[existingIdx], ...newProb };
       } else {
         fieldObj.problems.push(newProb);
       }
@@ -226,7 +243,6 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.onclick = () => { saveOpenStates(); activeMaterialIndex = idx; renderApp(); };
       tabsArea.appendChild(btn);
     });
-    // 追加ボタン略
   }
 
   function renderTree() {
@@ -251,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
           pDiv.className = `prob-item ${currentProblem === prob ? 'active' : ''}`;
           pDiv.innerHTML = `<span>${prob.title || '(無題)'}</span>`;
           pDiv.onclick = () => openEditor(prob, sub.folderName, fld.folderId);
-          // 削除ボタン等は略
           fldContent.appendChild(pDiv);
         });
         fldDetails.appendChild(fldContent);
@@ -263,7 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
     restoreOpenStates();
   }
 
-  // --- エディタ機能 (Wordライク & MathJaxプレビュー) ---
+  // --- エディタ機能 ---
   async function openEditor(problem, subjectDir, fieldDir) {
     currentProblem = problem;
     currentProblemContext = { subjectDir, fieldDir };
@@ -283,13 +298,28 @@ document.addEventListener('DOMContentLoaded', () => {
     basicSec.innerHTML = `<h3>📝 基本情報</h3>`;
     basicSec.appendChild(createInput('タイトル', problem.title, v => { problem.title = v; renderApp(); }));
     basicSec.appendChild(createInput('説明', problem.desc, v => problem.desc = v));
+    
+    // レイアウト設定 (記事型かどうか)
+    const layoutDiv = document.createElement('div');
+    layoutDiv.className = 'form-group';
+    layoutDiv.innerHTML = `<label>レイアウト</label>`;
+    const select = document.createElement('select');
+    select.className = 'form-control';
+    select.innerHTML = `
+      <option value="">左右分割 (旧式)</option>
+      <option value="article">記事型 (1カラム)</option>
+    `;
+    select.value = problem.layout || "";
+    select.onchange = (e) => problem.layout = e.target.value;
+    layoutDiv.appendChild(select);
+    basicSec.appendChild(layoutDiv);
+
     container.appendChild(basicSec);
 
-    // B. 解説エディタ (WYSIWYG強化版)
+    // B. 解説エディタ
     const explSec = document.createElement('div');
     explSec.className = 'form-section';
     
-    // ヘッダー + 保存ボタン
     const headerDiv = document.createElement('div');
     headerDiv.style.display = 'flex'; headerDiv.style.justifyContent = 'space-between'; headerDiv.style.marginBottom = '10px';
     headerDiv.innerHTML = `<h3 style="margin:0; border:none;">📖 解説文エディタ</h3>`;
@@ -320,31 +350,18 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // --- 拡張ツールバー ---
+    // ツールバー
     const toolbar = document.createElement('div');
     toolbar.className = 'toolbar';
+    const exec = (cmd, val = null) => { document.execCommand(cmd, false, val); editorDiv.focus(); };
 
-    // コマンド実行ヘルパー
-    const exec = (cmd, val = null) => {
-      document.execCommand(cmd, false, val);
-      editorDiv.focus();
-    };
-
-    // ボタン定義
     const tools = [
-      { label: '↩', cmd: 'undo', title: '元に戻す' },
-      { label: '↪', cmd: 'redo', title: 'やり直す' },
+      { label: '↩', cmd: 'undo' },
+      { label: '↪', cmd: 'redo' },
       { sep: true },
-      { label: '<b>B</b>', cmd: 'bold', title: '太字' },
-      { label: '<u>U</u>', cmd: 'underline', title: '下線' },
-      { label: '<i>I</i>', cmd: 'italic', title: '斜体' },
-      { sep: true },
-      { label: '文字色', cmd: 'foreColor', val: '#f43f5e', type: 'color' }, // 赤
-      { label: '蛍光ペン', cmd: 'hiliteColor', val: '#fef08a', type: 'color' }, // 黄色
-      { sep: true },
-      { label: '左寄', cmd: 'justifyLeft' },
-      { label: '中央', cmd: 'justifyCenter' },
-      { label: '右寄', cmd: 'justifyRight' },
+      { label: '<b>B</b>', cmd: 'bold' },
+      { label: '<u>U</u>', cmd: 'underline' },
+      { label: '<i>I</i>', cmd: 'italic' },
       { sep: true },
       { label: 'H3', cmd: 'formatBlock', val: '<h3>' },
       { label: 'P', cmd: 'formatBlock', val: '<p>' },
@@ -355,20 +372,12 @@ document.addEventListener('DOMContentLoaded', () => {
     tools.forEach(t => {
       if (t.sep) {
         const sep = document.createElement('div'); sep.className = 'tb-sep';
-        toolbar.appendChild(sep);
-        return;
+        toolbar.appendChild(sep); return;
       }
-      
       const btn = document.createElement('button');
       btn.className = 'tb-btn';
       btn.innerHTML = t.label;
-      if(t.title) btn.title = t.title;
-      
-      if (t.type === 'color') {
-        // カラーピッカー実装は簡易的に固定色クリック
-        btn.onclick = () => exec(t.cmd, t.val);
-        // ※必要なら <input type="color"> を埋め込むことも可能
-      } else if (t.custom === 'insertPointBox') {
+      if (t.custom === 'insertPointBox') {
         btn.innerHTML = '✨Point';
         btn.onclick = () => {
           const html = `<div class="box-alert"><span class="box-alert-label">Point</span><p>ここに着眼点を入力</p></div><p></p>`;
@@ -380,68 +389,21 @@ document.addEventListener('DOMContentLoaded', () => {
       toolbar.appendChild(btn);
     });
 
-    // プレビュー切り替えボタン
-    const togglePreviewBtn = document.createElement('button');
-    togglePreviewBtn.className = 'tb-btn';
-    togglePreviewBtn.style.marginLeft = 'auto';
-    togglePreviewBtn.style.background = '#e0f2fe';
-    togglePreviewBtn.style.color = '#0369a1';
-    togglePreviewBtn.innerHTML = '👁️ プレビュー';
-    
-    let isPreview = false;
-    togglePreviewBtn.onclick = () => {
-      isPreview = !isPreview;
-      if (isPreview) {
-        // プレビューモードへ: MathJaxレンダリング
-        const content = editorDiv.innerHTML;
-        previewDiv.innerHTML = content;
-        editorDiv.style.display = 'none';
-        previewDiv.style.display = 'block';
-        togglePreviewBtn.innerHTML = '✏️ 編集に戻る';
-        togglePreviewBtn.style.background = '#fef3c7';
-        
-        // MathJax適用
-        if(window.MathJax) {
-           MathJax.typesetPromise([previewDiv]).catch(err => console.error(err));
-        }
-      } else {
-        // 編集モードへ
-        editorDiv.style.display = 'block';
-        previewDiv.style.display = 'none';
-        togglePreviewBtn.innerHTML = '👁️ プレビュー';
-        togglePreviewBtn.style.background = '#e0f2fe';
-      }
-    };
-    toolbar.appendChild(togglePreviewBtn);
-    
-    // エディタ領域
     const editorWrap = document.createElement('div');
     editorWrap.className = 'editor-wrapper';
 
-    // 編集用DIV (contentEditable)
     const editorDiv = document.createElement('div');
     editorDiv.className = 'visual-editor';
     editorDiv.contentEditable = true;
-    editorDiv.innerHTML = initialExpl; // 初期ロード
-
-    // プレビュー用DIV
-    const previewDiv = document.createElement('div');
-    previewDiv.className = 'visual-editor preview-mode';
-    previewDiv.style.display = 'none';
+    editorDiv.innerHTML = initialExpl;
 
     editorWrap.appendChild(toolbar);
     editorWrap.appendChild(editorDiv);
-    editorWrap.appendChild(previewDiv);
     explSec.appendChild(editorWrap);
     container.appendChild(explSec);
 
-    // 解説保存処理
     saveExplBtn.onclick = async () => {
-      // プレビュー中ならプレビューの中身ではなく、エディタ(ソース)の中身を保存したい
-      // ただしMathJax変換後のDOMはぐちゃぐちゃなので、必ずeditorDivから取る
-      // もしプレビュー中なら一旦戻してもいいが、editorDivは裏で保持されているのでそのまま取得
       const content = editorDiv.innerHTML;
-      
       try {
         const subHandle = await explanationsDirHandle.getDirectoryHandle(currentProblemContext.subjectDir, { create: true });
         const fieldHandle = await subHandle.getDirectoryHandle(currentProblemContext.fieldDir, { create: true });
@@ -453,21 +415,27 @@ document.addEventListener('DOMContentLoaded', () => {
         await writable.close();
         
         showToast('解説を保存しました！');
-      } catch (e) {
-        showToast("保存エラー: " + e, true);
-      }
+      } catch (e) { showToast("保存エラー: " + e, true); }
     };
     
-    // JS編集ボタン（既存）もここに追加
-    const simSec = document.createElement('div');
-    simSec.className = 'form-section';
-    simSec.innerHTML = `<h3>⚙️ JSコード</h3>`;
-    const btnEditJs = document.createElement('button');
-    btnEditJs.className = 'btn-code-edit';
-    btnEditJs.textContent = 'JSファイルを編集';
-    btnEditJs.onclick = () => window.openJsEditor(problem.jsPath);
-    simSec.appendChild(btnEditJs);
-    container.appendChild(simSec);
+    // C. JSコード編集 (JSパスがある場合のみ表示)
+    if (problem.jsPath) {
+      const simSec = document.createElement('div');
+      simSec.className = 'form-section';
+      simSec.innerHTML = `<h3>⚙️ JSコード（旧式）</h3>`;
+      const btnEditJs = document.createElement('button');
+      btnEditJs.className = 'btn-code-edit';
+      btnEditJs.textContent = 'JSファイルを編集';
+      btnEditJs.onclick = () => window.openJsEditor(problem.jsPath);
+      simSec.appendChild(btnEditJs);
+      container.appendChild(simSec);
+    } else {
+      const simSec = document.createElement('div');
+      simSec.className = 'form-section';
+      simSec.style.opacity = '0.7';
+      simSec.innerHTML = `<h3>⚙️ シミュレーション</h3><p style="font-size:0.9rem; color:#666;">※ 記事型レイアウトのため、JSは解説HTML内に直接記述されています。編集は上の「解説文エディタ」で行ってください。</p>`;
+      container.appendChild(simSec);
+    }
   }
 
   // --- ヘルパー関数 ---
@@ -509,13 +477,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(()=>t.remove(), 3000);
   }
 
-  // JSモーダル系 (既存のまま利用)
+  // JSモーダル系
   window.openJsEditor = async (jsPath) => {
     if(!rootDirHandle) return;
     try {
-      // 簡易パス解析
       const parts = jsPath.split('/'); 
-      // js/problems/sub/field/file.js -> parts[4] is file
       let dir = jsProblemsDirHandle;
       dir = await dir.getDirectoryHandle(parts[2]);
       dir = await dir.getDirectoryHandle(parts[3]);

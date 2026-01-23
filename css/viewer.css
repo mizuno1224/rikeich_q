@@ -4,19 +4,25 @@
 body {
   height: 100vh;
   margin: 0;
-  overflow: hidden;
+  overflow: hidden; /* デフォルトは左右分割用（PC） */
   background: var(--col-bg);
   display: flex;
   flex-direction: column;
 }
 
+/* 記事型レイアウト（全体スクロール）の場合 */
+body.layout-article {
+  overflow-y: auto; /* 縦スクロール有効 */
+  height: auto;
+}
+
 /* ポインターモード時のカーソル変更 */
 body.pointer-active {
-  cursor: crosshair; /* 描画できることを示す */
+  cursor: crosshair;
 }
-/* ポインターモード時は、ボタンなどへの誤操作を防ぐ */
 body.pointer-active .explanation-area,
-body.pointer-active .simulation-area {
+body.pointer-active .simulation-area,
+body.pointer-active .sim-embed {
   user-select: none;
 }
 
@@ -38,6 +44,11 @@ body.pointer-active .simulation-area {
   background: #fff;
   border-bottom: 1px solid #cbd5e1;
   z-index: var(--z-header, 100);
+}
+/* 記事モード時はヘッダーを追従させる */
+body.layout-article .prob-header-top {
+  position: sticky;
+  top: 0;
 }
 
 .header-left {
@@ -65,8 +76,6 @@ body.pointer-active .simulation-area {
   transition: all 0.2s;
 }
 .btn-sm:hover { background: var(--col-primary); color: #fff; }
-
-/* ポインターON時のボタン状態 */
 .btn-sm.active {
   background: var(--col-accent);
   border-color: var(--col-accent);
@@ -75,7 +84,7 @@ body.pointer-active .simulation-area {
 }
 
 
-/* --- 2. メインエリア (左右分割) --- */
+/* --- 2. メインエリア (デフォルト: 左右分割) --- */
 .viewer-split-content {
   flex: 1;
   display: flex;
@@ -85,7 +94,14 @@ body.pointer-active .simulation-area {
   position: relative;
 }
 
-/* 左: シミュレーション */
+/* 記事型レイアウトの場合のオーバーライド */
+body.layout-article .viewer-split-content {
+  display: block;
+  padding: 0;
+  overflow: visible;
+}
+
+/* 左: シミュレーション (デフォルト) */
 .simulation-area {
   flex: 2;
   background: #fff;
@@ -95,6 +111,11 @@ body.pointer-active .simulation-area {
   display: flex; align-items: center; justify-content: center;
   border: 2px solid #fff;
   box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
+}
+
+/* 記事型レイアウトでは左側の固定エリアは隠す (解説内の埋め込みを使うため) */
+body.layout-article .simulation-area {
+  display: none;
 }
 
 /* シミュレーション操作パネル */
@@ -109,11 +130,14 @@ body.pointer-active .simulation-area {
   z-index: var(--z-sim-controls, 200);
   transition: opacity 0.3s;
 }
-.simulation-area:not(:hover) .sim-controls-panel { opacity: 0.5; }
+.simulation-area:not(:hover) .sim-controls-panel,
+.sim-embed:not(:hover) .sim-controls-panel { 
+  opacity: 0.5; 
+}
 .sim-slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; }
 
 
-/* 右: 解説エリア (常に縦スクロール) */
+/* 右: 解説エリア (デフォルト) */
 .explanation-area {
   flex: 3;
   background: #fff;
@@ -123,17 +147,77 @@ body.pointer-active .simulation-area {
   overflow-y: auto;
   scroll-behavior: smooth;
   padding: 40px;
+  scroll-snap-type: y proximity;
+}
+
+.explanation-area > div, 
+.explanation-area > .prob-step, 
+.explanation-area > .card {
+  scroll-snap-align: start;
+  scroll-margin-top: 20px;
+}
+
+/* 記事型レイアウトの場合の解説エリア */
+body.layout-article .explanation-area {
+  width: 100%;
+  max-width: 900px; /* 読みやすい幅に制限 */
+  margin: 0 auto;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+  padding: 40px 20px 100px 20px; /* 下に余白 */
+  scroll-snap-type: none; /* 全体スクロールなのでスナップ解除 */
+}
+
+/* --- 埋め込みシミュレーション (Inline Simulation) --- */
+.sim-embed {
+  width: 100%;
+  min-height: 300px; /* 最低高さを確保 */
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  margin: 30px 0;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
 }
 
 /* --- ポインター用キャンバス --- */
 #pointer-canvas {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
   z-index: var(--z-pointer, 1000);
-  pointer-events: none; /* デフォルトは操作を通す */
+  pointer-events: none;
   touch-action: none; 
 }
-/* モードON時は、JS制御でイベントをキャプチャしますが、
-   CSS的には none のままで JS の window event で拾う方式を維持します */
 
 /* --- MathJax --- */
 mjx-container { font-size: 1.15em !important; }
+
+/* --- レスポンシブ対応 (スマホ・タブレット) --- */
+@media (max-width: 768px) {
+  body { overflow: auto; height: auto; background: #fff; }
+  .viewer-container { height: auto; min-height: 100vh; }
+  .prob-header-top { position: sticky; top: 0; width: 100%; }
+
+  /* デフォルト(左右分割)モードのレスポンシブ */
+  .viewer-split-content {
+    flex-direction: column; height: auto; overflow: visible; padding: 10px; gap: 15px;
+  }
+  .simulation-area {
+    flex: none; width: 100%; height: 50vh; min-height: 300px;
+    position: sticky; top: 70px; z-index: 50; border: 1px solid #e2e8f0;
+  }
+  .explanation-area {
+    flex: none; width: 100%; height: auto;
+    overflow-y: visible; padding: 20px 15px; box-shadow: none;
+  }
+  
+  /* 記事型モードの調整 */
+  body.layout-article .simulation-area { display: none; }
+  body.layout-article .explanation-area { padding: 10px; }
+  
+  :root { --card-width: 100%; }
+}

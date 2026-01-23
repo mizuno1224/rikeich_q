@@ -34,6 +34,15 @@ class LaserPointer {
     this.canvas.height = window.innerHeight;
   }
 
+  // 描画クリア用メソッド
+  clear() {
+    this.strokes = [];
+    this.isDrawing = false;
+    this.state = 'idle';
+    this.opacity = 0;
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  }
+
   addGlobalEvents() {
     const handleStart = (e) => {
       if (this.shouldDraw(e)) {
