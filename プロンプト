@@ -12,39 +12,40 @@
 
 ## 2. フォルダ構成・ファイル命名ルール（厳守）
 
-保存パスは `data/explanations/...` 以下に、教材の種類に応じて厳格に分類してください。
-**章フォルダは「01」「02」のように必ず2桁の数値のみを使用してください。**
+保存パスは `data/explanations/...` 以下に、教材の種類とJSON定義の `folderId` に応じて分類してください。
 
 ### A. 教科書 (Textbook)
-**構成**: `data/explanations/textbook/{科目}/{章ID}/{3桁番号}_{ID}.html`
-* **科目**: `physics_basic` (物理基礎), `physics` (物理)
-* **章ID**: `01`, `02`, `03` ... (**2桁の数値フォルダのみ**)
-* **ファイル名**: `001_falling.html` など（3桁通し番号）
+JSONの `folderId` が `01/01`（編/章）のように階層化されています。
+**構成**: `data/explanations/textbook/{科目フォルダ}/{編ID}/{章ID}/{ファイル名}.html`
+* **科目フォルダ**: `physics_basic` (物理基礎), `physics` (物理)
+* **編ID/章ID**: JSONの定義に従う (例: `01/01`, `02/03`)
+* **ファイル名**: `001_motion.html` など（3桁通し番号推奨）
+* **例**: `data/explanations/textbook/physics_basic/01/01/001_position.html`
 
 ### B. リードα・リードLight (Workbook)
 **構成**: `data/explanations/{教材ID}/{章ID}/{ファイル名}.html`
 * **教材ID**: `lead_alpha`, `lead_light`
-* **章ID**: `01`, `02` ... (**2桁の数値フォルダのみ**。科目は区別しません)
+* **章ID**: `01`, `02` ... (JSON定義の `folderId`)
 * **ファイル名**: `alpha_001.html`, `light_102.html` など
 
 ### C. 共通テスト (Common Test)
 **構成**: `data/explanations/exam_common/{年度}/{ファイル名}.html`
-* **年度**: `2025` など
-* **ファイル名**: `main_q1.html` (本試), `supp_q1.html` (追試)
-* ※年度フォルダ直下にファイルを配置（中間の分類フォルダなし）
+* **年度**: `2025`, `2024` など
+* **ファイル名**: `2025_main_q1.html` など
 
 ### D. 私立・国公立大学 (Entrance Exams)
 **構成**: `data/explanations/{区分}/{大学ID}/{年度}/{ファイル名}.html`
-* **区分**: `exam_private`, `exam_national`
-* **大学ID**: `waseda`, `tokyo` など
-* **年度**: `2025` など
+* **区分**: `exam_private` (私立), `exam_national` (国公立)
+* **大学ID**: `waseda_sci`, `tokyo` など (JSON定義の `folderName`)
+* **年度**: `2024` など
+* **ファイル名**: `tokyo_2024_1.html` など
 
 ---
 
 ## 出力フォーマット例
 
 ### 【ブロック1】 解説HTML (JS含む)
-**保存先**: `data/explanations/lead_alpha/01/alpha_012.html`
+**保存先**: `data/explanations/textbook/physics_basic/01/01/001_sample.html`
 ```html
 <h3>物理演算の実験</h3>
 ...
@@ -57,8 +58,8 @@
 JSON
 
 {
-  "id": "alpha_012",
+  "id": "001_sample",
   "title": "問題タイトル",
-  "explanationPath": "data/explanations/lead_alpha/01/alpha_012.html",
+  "explanationPath": "data/explanations/textbook/physics_basic/01/01/001_sample.html",
   "layout": "article"
 }

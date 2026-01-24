@@ -11,7 +11,7 @@ let explanationsDirHandle = null;
 
 let activeMaterialIndex = 0;
 let openPaths = new Set();
-let currentProblem = null;
+let currentProblem = null; // 現在編集中の問題オブジェクト
 let currentVisualEditor = null;
 
 // Drag & Drop State
@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // UI Elements
   const btnOpen = document.getElementById('btn-open');
   const btnSave = document.getElementById('btn-save');
-  const btnImportAI = document.getElementById('btn-import-ai');
   const btnAddSubject = document.getElementById('btn-add-subject'); 
+  const sidebarTools = document.querySelector('.sidebar-tools');
   
   const mainUi = document.getElementById('main-ui');
   const initialMsg = document.getElementById('initial-msg');
@@ -33,6 +33,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const editorMainWrapper = document.getElementById('editor-main-wrapper');
   const tabEdit = document.getElementById('tab-edit');
   const container = document.getElementById('form-container');
+
+  // --- ツールバーボタン生成 ---
+  
+  // 1. フォルダ同期ボタン
+  const btnSyncFolders = document.createElement('button');
+  btnSyncFolders.className = 'btn-tool';
+  btnSyncFolders.title = 'JSON定義に基づいてフォルダを一括生成';
+  btnSyncFolders.textContent = '📂同期';
+  btnSyncFolders.onclick = handleSyncFolders;
+
+  // 2. AI取込ボタン
+  const btnSmartImport = document.createElement('button');
+  btnSmartImport.className = 'btn-tool';
+  btnSmartImport.title = 'AIの出力(HTMLとJSON)を取り込み';
+  btnSmartImport.textContent = '🤖AI取込';
+  btnSmartImport.style.backgroundColor = '#8b5cf6'; // 紫色
+  btnSmartImport.onclick = openSmartImportModal;
+
+  if(sidebarTools) {
+      sidebarTools.appendChild(btnSyncFolders);
+      sidebarTools.appendChild(btnSmartImport);
+  }
 
   // --- 1. Initialize & Open Project ---
   btnOpen.addEventListener('click', async () => {
@@ -63,7 +85,6 @@ document.addEventListener('DOMContentLoaded', () => {
       initialMsg.style.display = 'none';
       mainUi.style.display = 'flex';
       btnSave.disabled = false;
-      btnImportAI.style.display = 'inline-block';
       btnOpen.textContent = "📂 " + rootDirHandle.name;
 
       renderTabs();
@@ -124,6 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`「${currentMaterialData.materialName}」を保存しました`);
       }
     } catch (e) { showToast('保存失敗: ' + e, true); }
+    renderTree(); 
   }
   
   async function saveManifest() {
@@ -181,8 +203,48 @@ document.addEventListener('DOMContentLoaded', () => {
       const subContent = document.createElement('div');
       subContent.className = 'tree-content';
 
+      let currentPartName = null;
+      let currentPartContainer = null;
+
       sub.fields.forEach((fld, fIdx) => {
-        const fldDetails = createTreeItem(labelField, fld.fieldName, `${subPath}-f-${fIdx}`);
+        const nameParts = fld.fieldName.split(' / ');
+        const isGrouped = nameParts.length > 1;
+        const partName = isGrouped ? nameParts[0] : null;
+        const chapName = isGrouped ? nameParts[1] : fld.fieldName;
+
+        let targetContainer = subContent;
+
+        if (isGrouped) {
+          if (partName !== currentPartName) {
+            currentPartName = partName;
+            const partDetails = document.createElement('details');
+            partDetails.open = true;
+            partDetails.dataset.path = `${subPath}-part-${partName}`;
+            partDetails.style.marginBottom = '5px';
+            partDetails.style.border = 'none';
+            
+            const partSummary = document.createElement('summary');
+            partSummary.innerHTML = `<span style="font-weight:bold; color:#475569;">📂 ${partName}</span>`;
+            partSummary.style.background = '#f1f5f9';
+            partSummary.style.borderRadius = '6px';
+            
+            partDetails.appendChild(partSummary);
+            
+            const partInner = document.createElement('div');
+            partInner.style.paddingLeft = '10px';
+            partDetails.appendChild(partInner);
+            
+            subContent.appendChild(partDetails);
+            currentPartContainer = partInner;
+          }
+          targetContainer = currentPartContainer;
+        } else {
+          currentPartName = null;
+          currentPartContainer = null;
+        }
+
+        const fldPath = `${subPath}-f-${fIdx}`;
+        const fldDetails = createTreeItem(labelField, chapName, fldPath);
         
         addActions(fldDetails.querySelector('summary'),
           () => handleRenameField(sub, fld, labelField),
@@ -202,7 +264,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fld.problems.forEach((prob, pIdx) => {
           const pDiv = document.createElement('div');
-          pDiv.className = `prob-item ${currentProblem === prob ? 'active' : ''}`;
+          const isActive = (currentProblem && currentProblem.id === prob.id && currentProblem.explanationPath === prob.explanationPath);
+          pDiv.className = `prob-item ${isActive ? 'active' : ''}`;
+          
           pDiv.innerHTML = `<span>${prob.title || '(無題)'}</span><span style="font-size:0.8em;color:#999;">${prob.id}</span>`;
           pDiv.draggable = true;
           
@@ -225,6 +289,8 @@ document.addEventListener('DOMContentLoaded', () => {
                   return;
               }
               openEditor(prob);
+              document.querySelectorAll('.prob-item').forEach(el => el.classList.remove('active'));
+              pDiv.classList.add('active');
           };
           fldContent.appendChild(pDiv);
         });
@@ -237,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fldContent.appendChild(btnAdd);
 
         fldDetails.appendChild(fldContent);
-        subContent.appendChild(fldDetails);
+        targetContainer.appendChild(fldDetails);
       });
 
       subDetails.appendChild(subContent);
@@ -245,6 +311,176 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     restoreOpenStates();
   }
+
+  // ============================================================
+  // --- AI Smart Import Functionality ---
+  // ============================================================
+
+  function openSmartImportModal() {
+    const modalOverlay = document.createElement('div');
+    modalOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;justify-content:center;align-items:center;';
+    
+    // モーダルのコンテンツ (2カラムレイアウト)
+    const modalContent = document.createElement('div');
+    modalContent.style.cssText = 'background:white;padding:20px;width:95%;height:90%;border-radius:8px;display:flex;flex-direction:column;gap:10px;';
+    
+    modalContent.innerHTML = `
+      <h3>🤖 AI生成コンテンツ取り込み</h3>
+      <p style="font-size:0.9em;color:#666;margin:0;">AIが出力した「解説HTML」と「登録用JSON」をそれぞれの欄に貼り付けてください。コードブロック記号 (\`\`\`html 等) は自動的に削除されます。</p>
+      
+      <div style="display:flex; gap:20px; flex:1; min-height:0;">
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <label style="font-weight:bold;margin-bottom:5px;color:#334155;">1. 解説HTML ( &lt;div&gt;... )</label>
+          <textarea id="ai-import-html" style="flex:1;padding:10px;font-family:monospace;font-size:12px;resize:none;border:1px solid #cbd5e1;border-radius:4px;" placeholder="ここにHTMLブロックを貼り付け..."></textarea>
+        </div>
+        
+        <div style="flex:1; display:flex; flex-direction:column;">
+          <label style="font-weight:bold;margin-bottom:5px;color:#334155;">2. 登録用JSON ( { "id": ... } )</label>
+          <textarea id="ai-import-json" style="flex:1;padding:10px;font-family:monospace;font-size:12px;resize:none;border:1px solid #cbd5e1;border-radius:4px;" placeholder="ここにJSONブロックを貼り付け..."></textarea>
+        </div>
+      </div>
+      
+      <div style="text-align:right; margin-top:10px;">
+        <button id="btn-cancel-import" style="padding:10px 20px;margin-right:10px;border:1px solid #cbd5e1;border-radius:4px;background:white;cursor:pointer;">キャンセル</button>
+        <button id="btn-exec-import" style="padding:10px 20px;background:#8b5cf6;color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;">取り込み実行</button>
+      </div>
+    `;
+    
+    modalOverlay.appendChild(modalContent);
+    document.body.appendChild(modalOverlay);
+
+    modalContent.querySelector('#btn-cancel-import').onclick = () => document.body.removeChild(modalOverlay);
+    
+    modalContent.querySelector('#btn-exec-import').onclick = async () => {
+      const htmlText = modalContent.querySelector('#ai-import-html').value;
+      const jsonText = modalContent.querySelector('#ai-import-json').value;
+      
+      if(!jsonText.trim()) { 
+        alert("エラー: 「登録用JSON」は必須です。"); 
+        return; 
+      }
+      
+      try {
+        await executeSmartImport(htmlText, jsonText);
+        document.body.removeChild(modalOverlay);
+      } catch(e) {
+        alert("取り込みエラー:\n" + e.message);
+      }
+    };
+  }
+
+  // 取り込み実行ロジック (引数でHTMLとJSONを受け取る)
+  async function executeSmartImport(htmlRaw, jsonRaw) {
+    // 1. クリーニング処理 (Markdown記法の除去)
+    // ```json ... ``` や ```html ... ``` を削除する
+    const jsonClean = jsonRaw.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const htmlClean = htmlRaw.replace(/```html/gi, '').replace(/```/g, '').trim();
+
+    let metaData;
+    try {
+      metaData = JSON.parse(jsonClean);
+    } catch(e) { throw new Error("JSONのパースに失敗しました。\n形式が正しいか確認してください。"); }
+
+    if (!metaData.explanationPath) throw new Error("JSONに explanationPath が含まれていません");
+
+    // 2. パス解析
+    const pathParts = metaData.explanationPath.split('/');
+    const expIndex = pathParts.indexOf('explanations');
+    if (expIndex === -1 || pathParts.length < expIndex + 4) {
+      throw new Error("無効なパス形式です。data/explanations/... である必要があります");
+    }
+    
+    const relevantPath = pathParts.slice(expIndex + 1); 
+    const matId = relevantPath[0];
+    const subFolder = relevantPath[1];
+    const fileName = relevantPath[relevantPath.length - 1];
+    const folderIds = relevantPath.slice(2, relevantPath.length - 1); // 中間のフォルダ群
+    
+    // 3. 教材データの特定
+    const targetMatIndex = manifestData.findIndex(m => m.id === matId);
+    if (targetMatIndex === -1) throw new Error(`教材ID "${matId}" が manifest.json に見つかりません`);
+    
+    // ターゲット教材に切り替え
+    if (activeMaterialIndex !== targetMatIndex) {
+      await loadMaterial(targetMatIndex);
+    }
+
+    // 4. 科目・分野の特定
+    let targetSubject = currentMaterialData.subjects.find(s => s.folderName === subFolder);
+    
+    if (!targetSubject) {
+      if(!confirm(`科目フォルダ "${subFolder}" が見つかりません。新規作成しますか？`)) return;
+      targetSubject = { subjectName: subFolder, folderName: subFolder, fields: [] };
+      currentMaterialData.subjects.push(targetSubject);
+      const matDir = await getMaterialDirHandle();
+      await matDir.getDirectoryHandle(subFolder, {create: true});
+    }
+
+    // 分野IDの結合
+    const targetFolderId = folderIds.join('/');
+    let targetField = targetSubject.fields.find(f => f.folderId === targetFolderId);
+
+    if (!targetField) {
+      const confirmMsg = `分野ID "${targetFolderId}" が見つかりません。\n新規作成しますか？\n(表示名はIDと同じになります)`;
+      if(!confirm(confirmMsg)) return;
+      
+      targetField = {
+        fieldName: `新規分野 ${targetFolderId}`,
+        folderId: targetFolderId,
+        problems: []
+      };
+      targetSubject.fields.push(targetField);
+      
+      const matDir = await getMaterialDirHandle();
+      const subDir = await matDir.getDirectoryHandle(subFolder, {create:true});
+      await getDeepDirectoryHandle(subDir, targetFolderId, true);
+    }
+
+    // 5. 問題データの追加/更新
+    const existingProbIndex = targetField.problems.findIndex(p => p.id === metaData.id);
+    const newProbData = {
+      id: metaData.id,
+      title: metaData.title,
+      desc: metaData.desc || "",
+      explanationPath: metaData.explanationPath,
+      layout: metaData.layout || "article"
+    };
+
+    if (existingProbIndex !== -1) {
+      if(!confirm(`問題ID "${metaData.id}" は既に存在します。上書きしますか？`)) return;
+      targetField.problems[existingProbIndex] = newProbData;
+    } else {
+      targetField.problems.push(newProbData);
+    }
+
+    // 6. HTMLファイルの書き込み
+    if (htmlClean) {
+      try {
+        const matDir = await getMaterialDirHandle();
+        const subDir = await matDir.getDirectoryHandle(subFolder);
+        const fieldDir = await getDeepDirectoryHandle(subDir, targetFolderId, true);
+        const fileHandle = await fieldDir.getFileHandle(fileName, {create: true});
+        const w = await fileHandle.createWritable();
+        await w.write(htmlClean);
+        await w.close();
+      } catch(e) {
+        console.warn("HTML書き込みエラー: ", e);
+        alert("HTMLファイルの保存に失敗しましたが、メタデータは更新します。");
+      }
+    } else {
+      // HTMLが空でもメタデータだけ更新したい場合があるので警告のみ
+      console.log("HTML input was empty, skipping file write.");
+    }
+
+    // 7. 保存と反映
+    await saveAll(); 
+    currentProblem = newProbData; 
+    renderTree(); 
+    openEditor(newProbData);
+    
+    showToast(`取り込み完了: ${metaData.title}`);
+  }
+
 
   // ============================================================
   // --- File System Operations ---
@@ -256,6 +492,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function getDeepDirectoryHandle(root, pathStr, create=false) {
+    if(!pathStr) return root;
     let dir = root;
     const parts = pathStr.split('/').filter(p => p.length > 0);
     for (const part of parts) {
@@ -267,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
   async function fsRenameFolder(parentHandle, oldName, newName) {
     if(!oldName || !newName || oldName === newName) return;
     try {
-      // 簡易実装: 同一階層のリネームのみ
       if (oldName.includes('/') || newName.includes('/')) {
           console.warn("パスを含むリネームは現在サポートしていません");
           return;
@@ -323,6 +559,31 @@ document.addEventListener('DOMContentLoaded', () => {
       }
   }
 
+  // フォルダ構成の一括同期
+  async function handleSyncFolders() {
+    if (!currentMaterialData) return;
+    const matName = currentMaterialData.materialName;
+    if (!confirm(`「${matName}」のJSON定義に基づいて、未作成のフォルダを一括生成しますか？`)) return;
+
+    try {
+      const matDir = await getMaterialDirHandle(); 
+
+      for (const sub of currentMaterialData.subjects) {
+        if (!sub.folderName) continue;
+        const subDir = await matDir.getDirectoryHandle(sub.folderName, { create: true });
+        
+        for (const fld of sub.fields) {
+          if (!fld.folderId) continue;
+          await getDeepDirectoryHandle(subDir, fld.folderId, true);
+        }
+      }
+      showToast("✅ フォルダ構成の同期が完了しました");
+    } catch (e) {
+      alert("フォルダ生成エラー: " + e);
+      console.error(e);
+    }
+  }
+
   // ============================================================
   // --- Action Handlers ---
   // ============================================================
@@ -367,12 +628,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function handleAddField(sub, label) {
-    // ★修正: デフォルト値を「01」または「01/01」に変更
+    let defaultName = `新規${label}`;
+    if(manifestData[activeMaterialIndex].id === 'textbook') {
+      defaultName = "第〇編 編名 / 第〇章 章名";
+    }
+    const nameInput = prompt(`新しい${label}名:\n※「第1編 / 第1章」のように入力すると階層化されます`, defaultName);
+    if(!nameInput) return;
+
     let hint = '01';
-    if(currentMaterialType === 'exam_year') hint = 'main';
-    if(manifestData[activeMaterialIndex].id === 'textbook') hint = '01/01'; // 編/章の例
+    if(manifestData[activeMaterialIndex].id === 'textbook') hint = '01/01'; 
+    else if(currentMaterialType === 'exam_year') hint = 'main';
     
-    const folderId = prompt(`新しい${label}ID (フォルダ名):\n※「01/01」のようにスラッシュで階層化可能`, hint);
+    const folderId = prompt(`フォルダID (パス):\n※「01/01」のようにスラッシュで階層化可能`, hint);
     if(!folderId) return;
 
     try {
@@ -387,7 +654,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch(e) { console.warn("FS Create Warn:", e); }
 
-    const displayName = folderId.split('/').pop() || folderId;
+    const displayName = nameInput;
     sub.fields.push({
         fieldName: displayName,
         folderId: folderId,
@@ -398,20 +665,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function handleRenameField(sub, fld, label) {
-    const newName = prompt(`${label}ID(フォルダパス)を変更:`, fld.folderId);
-    if (!newName || newName === fld.folderId) return;
-
-    const oldFolder = fld.folderId;
-    fld.fieldName = newName.split('/').pop(); 
-    fld.folderId = newName;
-
-    fld.problems.forEach(p => {
-        if(currentMaterialType === 'exam_year') return;
-        if (p.explanationPath.includes(`/${oldFolder}/`)) {
-            p.explanationPath = p.explanationPath.replace(`/${oldFolder}/`, `/${newName}/`);
-        }
-    });
-
+    const newName = prompt(`${label}名(表示名)を変更:\n※「編 / 章」形式も可能`, fld.fieldName);
+    if (!newName || newName === fld.fieldName) return;
+    
+    fld.fieldName = newName;
     renderTree();
     saveAll();
   }
@@ -471,12 +728,14 @@ document.addEventListener('DOMContentLoaded', () => {
       await w.close();
     } catch(e) { console.warn("File Create Warn:", e); }
 
+    currentProblem = newProb; 
     renderTree();
     openEditor(newProb);
     saveAll();
   }
 
   async function handleDeleteProblem(sub, fld, prob, idx) {
+      if(!confirm(`問題「${prob.title}」を削除しますか？`)) return;
       fld.problems.splice(idx, 1);
       try {
           const parts = prob.explanationPath.split('/');
@@ -530,9 +789,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (srcIdx > -1) dragSrcField.problems.splice(srcIdx, 1);
     targetFld.problems.push(dragSrcProb);
 
+    currentProblem = dragSrcProb;
     dragSrcProb = null;
     dragSrcField = null;
     renderTree();
+    openEditor(currentProblem);
     saveAll();
   }
 
@@ -575,7 +836,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const basicSec = document.createElement('div');
     basicSec.className = 'form-section';
     basicSec.innerHTML = '<h3>📝 基本情報</h3>';
-    basicSec.appendChild(createInput('タイトル', problem.title, v=>{ problem.title=v; document.getElementById('editing-title').textContent=v; }));
+    
+    basicSec.appendChild(createInput('タイトル', problem.title, v=>{ 
+        problem.title=v; 
+        document.getElementById('editing-title').textContent=v; 
+        const activeItem = treeRoot.querySelector('.prob-item.active span:first-child');
+        if(activeItem) activeItem.textContent = v;
+    }));
     
     const layoutDiv = document.createElement('div'); layoutDiv.className = 'form-group';
     layoutDiv.innerHTML = '<label>レイアウト</label><select class="form-control"><option value="article">記事型</option></select>';

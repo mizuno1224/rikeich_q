@@ -6,38 +6,48 @@
       "folderName": "physics_basic",
       "fields": [
         {
-          "fieldName": "第1編 物体の運動とエネルギー / 第1章 運動の表し方",
+          "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
           "folderId": "01/01",
           "problems": []
         },
         {
-          "fieldName": "第1編 物体の運動とエネルギー / 第2章 力と運動",
+          "fieldName": "第1編 運動とエネルギー / 第2章 運動の法則",
           "folderId": "01/02",
           "problems": []
         },
         {
-          "fieldName": "第1編 物体の運動とエネルギー / 第3章 仕事と力学的エネルギー",
+          "fieldName": "第1編 運動とエネルギー / 第3章 仕事と力学的エネルギー",
           "folderId": "01/03",
           "problems": []
         },
         {
-          "fieldName": "第1編 物体の運動とエネルギー / 第4章 熱とエネルギー",
-          "folderId": "01/04",
-          "problems": []
-        },
-        {
-          "fieldName": "第2編 様々な物理現象とエネルギー / 第1章 波の性質",
+          "fieldName": "第2編 熱 / 第1章 熱とエネルギー",
           "folderId": "02/01",
           "problems": []
         },
         {
-          "fieldName": "第2編 様々な物理現象とエネルギー / 第2章 電気と磁気",
-          "folderId": "02/02",
+          "fieldName": "第3編 波 / 第1章 波の性質",
+          "folderId": "03/01",
           "problems": []
         },
         {
-          "fieldName": "第2編 様々な物理現象とエネルギー / 第3章 エネルギーの利用",
-          "folderId": "02/03",
+          "fieldName": "第3編 波 / 第2章 音",
+          "folderId": "03/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気 / 第1章 物質と電気",
+          "folderId": "04/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気 / 第2章 磁場と交流",
+          "folderId": "04/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第5編 物理学と社会 / 第1章 エネルギーの利用",
+          "folderId": "05/01",
           "problems": []
         }
       ]
