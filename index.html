@@ -53,24 +53,33 @@
       margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; 
     }
 
+    /* Part (編) Grouping */
+    .part-group { margin-bottom: 25px; }
+    .part-title {
+      font-size: 1.1rem; font-weight: bold; color: #475569;
+      margin-bottom: 10px; padding: 6px 10px; background: #f1f5f9; border-radius: 8px;
+    }
+
     .field-list { list-style: none; padding: 0; margin: 0; }
-    .field-item { margin-bottom: 25px; }
+    .field-item { margin-bottom: 15px; padding-left: 10px; }
     .field-name { 
-      font-weight: 700; color: var(--col-text); margin-bottom: 10px; 
-      display: block; font-size: 1.1rem; border-left: 4px solid #f43f5e; padding-left: 10px; 
+      font-weight: 700; color: var(--col-text); margin-bottom: 8px; 
+      display: block; font-size: 1rem; border-left: 4px solid #f43f5e; padding-left: 8px; 
     }
 
     .prob-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
     .prob-link { 
       display: flex; justify-content: space-between; align-items: center; 
-      padding: 12px 16px; background: #f8fafc; border-radius: 12px; 
-      color: var(--col-text); font-weight: 500; text-decoration: none; transition: all 0.2s; 
+      padding: 10px 14px; background: #f8fafc; border-radius: 10px; 
+      color: var(--col-text); font-weight: 500; text-decoration: none; transition: all 0.2s; font-size: 0.95rem;
     }
     .prob-link:hover { 
       background: #fff; color: var(--col-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
     }
+    .prob-empty {
+        color: #94a3b8; font-size: 0.85rem; padding: 6px 10px; font-style: italic;
+    }
 
-    /* エラー/空メッセージ */
     .empty-msg { text-align: center; color: #94a3b8; padding: 20px; background: #f8fafc; border-radius: 12px; }
 
     @keyframes fadeIn { 
@@ -88,7 +97,6 @@
 
   <script src="js/data.js"></script>
   <script>
-    // タブ構成の定義 (ここで表示グループを制御します)
     const TAB_CONFIG = [
       { label: "教科書",     ids: ["textbook"] },
       { label: "リードα",   ids: ["lead_alpha"] },
@@ -102,13 +110,11 @@
       
       let manifest = [];
       
-      // 1. マニフェスト取得
       try {
         const res = await fetch('data/manifest.json');
         if (!res.ok) throw new Error('Manifest not found');
         manifest = await res.json();
       } catch (e) {
-        // フォールバック: 旧 problems.json
         try {
           const res = await fetch('problems.json');
           if(res.ok) {
@@ -116,17 +122,15 @@
             manifest = legacy.map(m => ({ 
               id: "legacy", name: m.materialName, path: 'problems.json', _legacyData: m 
             }));
-            // レガシーの場合はConfigを無視してそのまま表示
             TAB_CONFIG.length = 0;
             manifest.forEach((m, i) => TAB_CONFIG.push({ label: m.name, ids: ["legacy"], _legacyIndex: i }));
           }
         } catch(e2) {
-          contentArea.innerHTML = '<p class="empty-msg">データが見つかりません。管理画面でデータを保存してください。</p>';
+          contentArea.innerHTML = '<p class="empty-msg">データが見つかりません。</p>';
           return;
         }
       }
 
-      // 2. タブ生成
       TAB_CONFIG.forEach((config, idx) => {
         const btn = document.createElement('button');
         btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
@@ -135,11 +139,9 @@
         tabContainer.appendChild(btn);
       });
 
-      // 初回ロード
       renderTab(0);
 
       async function renderTab(tabIndex) {
-        // タブのアクティブ切り替え
         Array.from(tabContainer.children).forEach((b, i) => {
           b.classList.toggle('active', i === tabIndex);
         });
@@ -149,29 +151,23 @@
         const config = TAB_CONFIG[tabIndex];
         const htmlParts = [];
 
-        // Configに含まれるIDに対応するマニフェストを探してデータをロード
-        // (入試問題の場合は3つのJSONをロードして結合表示)
         for (const targetId of config.ids) {
           const item = manifest.find(m => m.id === targetId);
           if (!item && targetId !== "legacy") continue;
 
-          // データロード
           let data = null;
           if (config._legacyIndex !== undefined) {
-             data = manifest[config._legacyIndex]._legacyData; // Legacy handling
+             data = manifest[config._legacyIndex]._legacyData; 
           } else if (item) {
              try {
                const res = await fetch(item.path);
                if (res.status === 404) {
-                 // 404エラーの場合は「準備中」扱いにしてスキップ (エラーで止めない)
-                 console.warn(`File not found: ${item.path}`);
                  htmlParts.push(renderSection(item.name, null, true));
                  continue; 
                }
                if (!res.ok) throw new Error("Load failed");
                data = await res.json();
              } catch(e) {
-               console.error(e);
                htmlParts.push(renderSection(item.name, null, true));
                continue;
              }
@@ -187,16 +183,10 @@
 
       function renderSection(title, data, isEmpty, jsonPath) {
         if (isEmpty) {
-          return `
-            <div class="group-section">
-              <h2 class="group-title">${title}</h2>
-              <p class="empty-msg">データ準備中 (ファイルが未作成です)</p>
-            </div>`;
+          return `<div class="group-section"><h2 class="group-title">${title}</h2><p class="empty-msg">データ準備中</p></div>`;
         }
 
         let html = `<div class="group-section">`;
-        // タブ名とセクション名が重複する場合はタイトルを省略しても良いが、
-        // 「入試問題」の中に「共通テスト」などの見出しが欲しいので表示する
         html += `<h2 class="group-title">${title}</h2>`;
         html += `<div class="subject-grid">`;
 
@@ -204,30 +194,81 @@
            html += `<div class="subject-card"><p>問題が登録されていません</p></div>`;
         } else {
           data.subjects.forEach(sub => {
-            html += `<div class="subject-card">
-              <h3 class="subject-name">${sub.subjectName}</h3>
-              <ul class="field-list">`;
+            html += `<div class="subject-card">`;
+            html += `<h3 class="subject-name">${sub.subjectName}</h3>`;
             
+            // ★変更: 編(Part)ごとにグループ化するロジック
+            // fieldNameが "第1編 ... / 第1章 ..." の形式なら分割する
+            let currentPart = null;
+            let partFields = [];
+
+            // 1. まずデータを構造化
+            const structure = [];
             sub.fields.forEach(fld => {
-              if(fld.problems.length > 0) {
-                html += `<li class="field-item">
-                  <span class="field-name">${fld.fieldName}</span>
-                  <div class="prob-grid">`;
-                fld.problems.forEach(p => {
-                  const srcParam = jsonPath === 'problems.json' ? '' : `&src=${encodeURIComponent(jsonPath)}`;
-                  html += `<a href="viewer.html?id=${p.id}${srcParam}" class="prob-link">
-                    <span>${p.title}</span>
-                    <span style="font-size:0.9em;color:#cbd5e1;">→</span>
-                  </a>`;
-                });
-                html += `</div></li>`;
+              const parts = fld.fieldName.split(' / ');
+              if (parts.length > 1) {
+                // "編 / 章" の形式
+                const partName = parts[0];
+                const chapName = parts[1];
+                
+                // 新しい編が始まったら
+                if (partName !== currentPart) {
+                  currentPart = partName;
+                  structure.push({ type: 'part', title: partName, chapters: [] });
+                }
+                // 現在の編に章を追加
+                structure[structure.length - 1].chapters.push({ ...fld, displayName: chapName });
+              } else {
+                // "章" のみ（編がない、またはその他）
+                if (currentPart !== null) {
+                   currentPart = null; // 編ブロック終了
+                }
+                structure.push({ type: 'single', ...fld, displayName: fld.fieldName });
               }
             });
-            html += `</ul></div>`;
+
+            // 2. HTML生成
+            structure.forEach(group => {
+              if (group.type === 'part') {
+                html += `<div class="part-group">`;
+                html += `<div class="part-title">${group.title}</div>`;
+                html += `<ul class="field-list">`;
+                group.chapters.forEach(chap => {
+                  html += renderFieldItem(chap, chap.displayName, jsonPath);
+                });
+                html += `</ul></div>`;
+              } else {
+                html += `<ul class="field-list">`;
+                html += renderFieldItem(group, group.displayName, jsonPath);
+                html += `</ul>`;
+              }
+            });
+
+            html += `</div>`;
           });
         }
         html += `</div></div>`;
         return html;
+      }
+
+      function renderFieldItem(fld, name, jsonPath) {
+        let h = `<li class="field-item">`;
+        h += `<span class="field-name">${name}</span>`;
+        h += `<div class="prob-grid">`;
+        
+        if (fld.problems.length === 0) {
+            h += `<div class="prob-empty">(準備中)</div>`;
+        } else {
+            fld.problems.forEach(p => {
+              const srcParam = jsonPath === 'problems.json' ? '' : `&src=${encodeURIComponent(jsonPath)}`;
+              h += `<a href="viewer.html?id=${p.id}${srcParam}" class="prob-link">`;
+              h += `<span>${p.title}</span>`;
+              h += `<span style="font-size:0.9em;color:#cbd5e1;">→</span>`;
+              h += `</a>`;
+            });
+        }
+        h += `</div></li>`;
+        return h;
       }
     });
   </script>

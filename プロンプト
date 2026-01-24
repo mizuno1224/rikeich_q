@@ -8,64 +8,57 @@
 * **記事型レイアウト**: 解説文の合間にシミュレーション、グラフ、図解を埋め込み、1つのHTMLファイルで完結させます。
 * **1ファイル完結**: JSファイルを分けず、HTMLファイル内にスクリプトを記述します。
 * **視覚的・対話的な理解の追求**:
-    * **ライブラリの活用**: 以下のライブラリを適宜使い分け、視覚的に直感的な教材を作成してください。
-        * **Matter.js**: 物理演算（衝突、落下、摩擦など）
-        * **JSXGraph**: 数学グラフ（関数の可視化、接線など）
-        * **Chart.js**: データ可視化（実験データのグラフ化）
-        * **p5.js**: 2Dアニメーション、ベクトル描画
-        * **Three.js**: 3Dグラフィックス（空間的な配置、電磁気、天体など）
-    * **ユーザー操作の実装**: スライダーやボタン等を用いて、ユーザーが変数（初速度、角度、質量、摩擦係数など）を自分で操作し、その結果どう挙動が変わるかを確認して理解を深められる仕組みを必ず盛り込んでください。
+    * **ライブラリの活用**: Matter.js, JSXGraph, Chart.js, p5.js, Three.js 等を活用してください。
 
 ## 2. フォルダ構成・ファイル命名ルール（厳守）
 
 保存パスは `data/explanations/...` 以下に、教材の種類に応じて厳格に分類してください。
+**章フォルダは「01」「02」のように必ず2桁の数値のみを使用してください。**
 
-### A. 教科書・リードα・リードLight
-**構成**: `data/explanations/{教材フォルダ}/{科目}/{章フォルダ}/{3桁番号}_{ID}.html`
-* **教材フォルダ**: `textbook` (教科書), `lead_alpha` (リードα), `lead_light` (リードLight)
+### A. 教科書 (Textbook)
+**構成**: `data/explanations/textbook/{科目}/{章ID}/{3桁番号}_{ID}.html`
 * **科目**: `physics_basic` (物理基礎), `physics` (物理)
-* **章フォルダ**: `01_mechanics`, `02_waves` など
-* **ファイル名**: 必ず **3桁の通し番号** を先頭につけること。（例: `001_falling.html`, `012_reflection.html`）
+* **章ID**: `01`, `02`, `03` ... (**2桁の数値フォルダのみ**)
+* **ファイル名**: `001_falling.html` など（3桁通し番号）
 
-### B. 共通テスト (Common Test)
-**構成**: `data/explanations/exam_common/{年度}/{大問番号}.html`
-* **年度**: `2025`, `2024` など
-* **ファイル名**: `q1.html`, `q2.html`, `main_q1.html` (本試), `supp_q1.html` (追試) など
+### B. リードα・リードLight (Workbook)
+**構成**: `data/explanations/{教材ID}/{章ID}/{ファイル名}.html`
+* **教材ID**: `lead_alpha`, `lead_light`
+* **章ID**: `01`, `02` ... (**2桁の数値フォルダのみ**。科目は区別しません)
+* **ファイル名**: `alpha_001.html`, `light_102.html` など
 
-### C. 私立・国公立大学 (Entrance Exams)
-**構成**: `data/explanations/{区分}/{大学ID}/{年度}_{学部}_{方式}.html`
-* **区分**: `exam_private` (私立), `exam_national` (国公立)
-* **大学ID**: `waseda`, `keio`, `tokyo`, `kyoto` など
-* **ファイル名**: `2025_sci_zenki.html` (2025年_理学部_前期), `2024_med_typeA.html` (2024年_医学部_A方式) など
+### C. 共通テスト (Common Test)
+**構成**: `data/explanations/exam_common/{年度}/{ファイル名}.html`
+* **年度**: `2025` など
+* **ファイル名**: `main_q1.html` (本試), `supp_q1.html` (追試)
+* ※年度フォルダ直下にファイルを配置（中間の分類フォルダなし）
+
+### D. 私立・国公立大学 (Entrance Exams)
+**構成**: `data/explanations/{区分}/{大学ID}/{年度}/{ファイル名}.html`
+* **区分**: `exam_private`, `exam_national`
+* **大学ID**: `waseda`, `tokyo` など
+* **年度**: `2025` など
 
 ---
 
 ## 出力フォーマット例
 
 ### 【ブロック1】 解説HTML (JS含む)
-**保存先**: `data/explanations/textbook/physics_basic/01_mechanics/001_sample.html`
+**保存先**: `data/explanations/lead_alpha/01/alpha_012.html`
 ```html
 <h3>物理演算の実験</h3>
-<p>Matter.jsを使って箱を落としてみましょう。スライダーで反発係数を変えてみてください。</p>
-<div id="sim-001_sample-box" class="sim-embed" style="height: 400px;"></div>
+...
 <script>
-  (function(){
-    const el = document.getElementById('sim-001_sample-box');
-    if (!el) return;
-    
-    // Matter.js や p5.js などを使ったシミュレーションコード
-    // スライダー等のUI作成とイベントリスナーの設定も含める
-  })();
+  (function(){ ... })();
 </script>
-
-
-### 【ブロック2】 登録用JSON
+【ブロック2】 登録用JSON
 注意: explanationPath は上記の命名ルールに基づいたパスを記述してください。
 
 JSON
+
 {
-  "id": "001_sample",
+  "id": "alpha_012",
   "title": "問題タイトル",
-  "explanationPath": "data/explanations/textbook/physics_basic/01_mechanics/001_sample.html",
+  "explanationPath": "data/explanations/lead_alpha/01/alpha_012.html",
   "layout": "article"
 }

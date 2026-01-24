@@ -6,48 +6,125 @@
       "folderName": "physics_basic",
       "fields": [
         {
-          "fieldName": "第1章 物体の運動",
-          "folderId": "01_motion",
-          "problems": [
-            {
-              "id": "p12_ex1",
-              "title": "例題1 平均の速さ",
-              "desc": "変位と移動距離の違いについて",
-              "explanationPath": "data/explanations/textbook/physics_basic/01_motion/p12_ex1.html",
-              "layout": "article"
-            },
-            {
-              "id": "p15_q3",
-              "title": "問3 等速直線運動",
-              "desc": "x-tグラフの読み取り",
-              "explanationPath": "data/explanations/textbook/physics_basic/01_motion/p15_q3.html",
-              "layout": "article"
-            }
-          ]
+          "fieldName": "第1編 物体の運動とエネルギー / 第1章 運動の表し方",
+          "folderId": "01/01",
+          "problems": []
         },
         {
-          "fieldName": "第2章 力と運動",
-          "folderId": "02_force",
+          "fieldName": "第1編 物体の運動とエネルギー / 第2章 力と運動",
+          "folderId": "01/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 物体の運動とエネルギー / 第3章 仕事と力学的エネルギー",
+          "folderId": "01/03",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 物体の運動とエネルギー / 第4章 熱とエネルギー",
+          "folderId": "01/04",
+          "problems": []
+        },
+        {
+          "fieldName": "第2編 様々な物理現象とエネルギー / 第1章 波の性質",
+          "folderId": "02/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第2編 様々な物理現象とエネルギー / 第2章 電気と磁気",
+          "folderId": "02/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第2編 様々な物理現象とエネルギー / 第3章 エネルギーの利用",
+          "folderId": "02/03",
           "problems": []
         }
       ]
     },
     {
       "subjectName": "物理",
-      "folderName": "physics_adv",
+      "folderName": "physics",
       "fields": [
         {
-          "fieldName": "第1章 円運動",
-          "folderId": "01_circular",
-          "problems": [
-            {
-              "id": "p80_ex5",
-              "title": "例題5 鉛直面内の円運動",
-              "desc": "最高点・最下点での張力の違い",
-              "explanationPath": "data/explanations/textbook/physics_adv/01_circular/p80_ex5.html",
-              "layout": "article"
-            }
-          ]
+          "fieldName": "第1編 力と運動 / 第1章 剛体にはたらく力",
+          "folderId": "01/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 力と運動 / 第2章 平面内の運動",
+          "folderId": "01/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 力と運動 / 第3章 運動量と力積",
+          "folderId": "01/03",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 力と運動 / 第4章 円運動と万有引力",
+          "folderId": "01/04",
+          "problems": []
+        },
+        {
+          "fieldName": "第1編 力と運動 / 第5章 単振動",
+          "folderId": "01/05",
+          "problems": []
+        },
+        {
+          "fieldName": "第2編 熱と気体 / 第1章 気体の分子運動",
+          "folderId": "02/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第2編 熱と気体 / 第2章 熱力学の法則",
+          "folderId": "02/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第3編 波 / 第1章 波の伝わり方",
+          "folderId": "03/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第3編 波 / 第2章 音",
+          "folderId": "03/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第3編 波 / 第3章 光",
+          "folderId": "03/03",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気と磁気 / 第1章 電場",
+          "folderId": "04/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気と磁気 / 第2章 電流",
+          "folderId": "04/02",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気と磁気 / 第3章 電流と磁場",
+          "folderId": "04/03",
+          "problems": []
+        },
+        {
+          "fieldName": "第4編 電気と磁気 / 第4章 電磁誘導と電磁波",
+          "folderId": "04/04",
+          "problems": []
+        },
+        {
+          "fieldName": "第5編 原子 / 第1章 電子と光",
+          "folderId": "05/01",
+          "problems": []
+        },
+        {
+          "fieldName": "第5編 原子 / 第2章 原子と原子核",
+          "folderId": "05/02",
+          "problems": []
         }
       ]
     }

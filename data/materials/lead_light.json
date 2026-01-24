@@ -2,41 +2,31 @@
   "materialName": "リードLight",
   "subjects": [
     {
-      "subjectName": "物理基礎",
-      "folderName": "physics_basic",
+      "subjectName": "収録問題",
+      "folderName": "",
       "fields": [
         {
           "fieldName": "第1章 運動の表し方",
-          "folderId": "ch1_motion",
+          "folderId": "01",
           "problems": [
             {
               "id": "light_005",
               "title": "5 加速度",
-              "desc": "v-tグラフの傾き",
-              "explanationPath": "data/explanations/lead_light/physics_basic/ch1_motion/light_005.html",
+              "explanationPath": "data/explanations/lead_light/01/light_005.html",
               "layout": "article"
             }
           ]
-        }
-      ]
-    },
-    {
-      "subjectName": "物理",
-      "folderName": "physics_adv",
-      "fields": [
-        {
-          "fieldName": "第5章 波の性質",
-          "folderId": "ch5_waves",
-          "problems": [
-            {
-              "id": "light_102",
-              "title": "102 波の干渉",
-              "desc": "強め合う条件と弱め合う条件",
-              "explanationPath": "data/explanations/lead_light/physics_adv/ch5_waves/light_102.html",
-              "layout": "article"
-            }
-          ]
-        }
+        },
+        { "fieldName": "第2章 落体の運動", "folderId": "02", "problems": [] },
+        { "fieldName": "第3章 力のつりあい", "folderId": "03", "problems": [] },
+        { "fieldName": "第4章 運動の法則", "folderId": "04", "problems": [] },
+        { "fieldName": "第5章 仕事と力学的エネルギー", "folderId": "05", "problems": [] },
+        { "fieldName": "第6章 熱とエネルギー", "folderId": "06", "problems": [] },
+        { "fieldName": "第7章 波の性質", "folderId": "07", "problems": [] },
+        { "fieldName": "第8章 音の伝わり方と発音体の振動", "folderId": "08", "problems": [] },
+        { "fieldName": "第9章 物質と電気抵抗", "folderId": "09", "problems": [] },
+        { "fieldName": "第10章 交流と電磁波", "folderId": "10", "problems": [] },
+        { "fieldName": "第11章 エネルギーの利用", "folderId": "11", "problems": [] }
       ]
     }
   ]

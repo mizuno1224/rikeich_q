@@ -1,27 +1,29 @@
 /* js/admin.js */
 
-// Global State
+// --- Global State ---
 let manifestData = [];      
 let currentMaterialData = null; 
 let currentMaterialPath = null;
-let currentMaterialType = 'standard'; // 'standard' | 'exam_year' | 'exam_univ'
+let currentMaterialType = 'standard'; 
 
-let isLegacyMode = false;
 let rootDirHandle = null;
 let explanationsDirHandle = null;
-let jsProblemsDirHandle = null;
 
 let activeMaterialIndex = 0;
 let openPaths = new Set();
 let currentProblem = null;
 let currentVisualEditor = null;
 
+// Drag & Drop State
+let dragSrcProb = null;
+let dragSrcField = null;
+
 document.addEventListener('DOMContentLoaded', () => {
   // UI Elements
   const btnOpen = document.getElementById('btn-open');
   const btnSave = document.getElementById('btn-save');
   const btnImportAI = document.getElementById('btn-import-ai');
-  const btnAddSubject = document.getElementById('btn-add-subject'); // 科目/大学/年度 追加ボタン
+  const btnAddSubject = document.getElementById('btn-add-subject'); 
   
   const mainUi = document.getElementById('main-ui');
   const initialMsg = document.getElementById('initial-msg');
@@ -30,183 +32,111 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const editorMainWrapper = document.getElementById('editor-main-wrapper');
   const tabEdit = document.getElementById('tab-edit');
-  const tabPreview = document.getElementById('tab-preview');
-  const viewEditor = document.getElementById('view-editor');
-  const viewPreview = document.getElementById('view-preview');
-  const previewContainer = document.getElementById('preview-container');
+  const container = document.getElementById('form-container');
 
-  // Modals
-  const codeModal = document.getElementById('code-modal');
-  const btnCloseModal = document.getElementById('btn-close-modal');
-  const btnSaveCode = document.getElementById('btn-save-code');
-  const codeEditor = document.getElementById('code-editor');
-
-  const importModal = document.getElementById('import-modal');
-  const btnCloseImport = document.getElementById('btn-close-import');
-  const btnExecImport = document.getElementById('btn-exec-import');
-  const impSelect = document.getElementById('import-target-material');
-  const impHtml = document.getElementById('imp-html');
-  const impJs = document.getElementById('imp-js');
-  const impJson = document.getElementById('imp-json');
-
-  // --- 1. プロジェクトを開く ---
+  // --- 1. Initialize & Open Project ---
   btnOpen.addEventListener('click', async () => {
     try {
       rootDirHandle = await window.showDirectoryPicker();
       
-      // フォルダハンドル取得チェック
       try {
-        const dataDir = await rootDirHandle.getDirectoryHandle('data', { create: true });
-        explanationsDirHandle = await dataDir.getDirectoryHandle('explanations', { create: true });
-        // jsフォルダは任意（旧互換）
-        try {
-          const jsDir = await rootDirHandle.getDirectoryHandle('js');
-          jsProblemsDirHandle = await jsDir.getDirectoryHandle('problems');
-        } catch(e) {}
+        const dataDir = await rootDirHandle.getDirectoryHandle('data');
+        explanationsDirHandle = await dataDir.getDirectoryHandle('explanations');
       } catch (e) {
-        showToast("フォルダ構成エラー: data/explanations が必要です", true);
+        showToast("エラー: data/explanations フォルダが見つかりません", true);
         return;
       }
 
-      // マニフェスト読み込み
       try {
         const dataDir = await rootDirHandle.getDirectoryHandle('data');
         const manifestHandle = await dataDir.getFileHandle('manifest.json');
         const file = await manifestHandle.getFile();
         manifestData = JSON.parse(await file.text());
-        isLegacyMode = false;
-        showToast("manifest.json を読み込みました");
+        showToast("プロジェクトを読み込みました");
       } catch (e) {
-        // マニフェストがない場合、旧 problems.json を探す（移行モード）
-        try {
-          const legacyHandle = await rootDirHandle.getFileHandle('problems.json');
-          const file = await legacyHandle.getFile();
-          const legacyData = JSON.parse(await file.text());
-          
-          isLegacyMode = true;
-          // 旧データをメモリ上で新形式にマップ
-          manifestData = legacyData.map(mat => {
-            // 簡易的なタイプ判定
-            let type = 'standard';
-            if(mat.materialName.includes('共通')) type = 'exam_year';
-            else if(mat.materialName.includes('入試') || mat.materialName.includes('大学')) type = 'exam_univ';
-
-            return {
-              id: mat.materialFolder || `mat_${Date.now()}_${Math.random().toString(36).substr(2,5)}`,
-              name: mat.materialName,
-              path: `data/materials/${mat.materialFolder || 'common'}.json`,
-              type: type,
-              _tempData: mat
-            };
-          });
-          
-          alert("旧形式(problems.json)を検出しました。\n「全体保存」を押すと、推奨構成（data/manifest.json + 教材別ファイル）へ変換保存されます。");
-        } catch (err2) {
-           if(confirm("データファイルが見つかりません。新規プロジェクトとして初期化しますか？")) {
-             manifestData = []; isLegacyMode = false;
-           } else { return; }
-        }
+         if(confirm("manifest.jsonが見つかりません。新規作成しますか？")) {
+           manifestData = [];
+           await saveManifest();
+         } else { return; }
       }
 
       initialMsg.style.display = 'none';
       mainUi.style.display = 'flex';
       btnSave.disabled = false;
       btnImportAI.style.display = 'inline-block';
-      btnOpen.textContent = "✅ " + rootDirHandle.name;
+      btnOpen.textContent = "📂 " + rootDirHandle.name;
 
+      renderTabs();
       if (manifestData.length > 0) {
         await loadMaterial(0);
       } else {
-        renderTabs();
-        treeRoot.innerHTML = '<div style="padding:20px; color:#666;">教材がありません。data/manifest.jsonを作成してください。</div>';
+        treeRoot.innerHTML = '<div style="padding:20px; color:#666;">教材がありません。「＋」ボタンで追加してください。</div>';
       }
 
     } catch (err) { console.error(err); }
   });
 
-  // --- 教材データのロード ---
+  // --- 2. Material Loading ---
   async function loadMaterial(index) {
+    if(index < 0 || index >= manifestData.length) return;
     activeMaterialIndex = index;
     const item = manifestData[index];
     currentMaterialPath = item.path;
     currentMaterialType = item.type || 'standard';
 
-    // UI調整: 追加ボタンのラベル変更
     if(currentMaterialType === 'exam_year') btnAddSubject.textContent = '＋年度を追加';
     else if(currentMaterialType === 'exam_univ') btnAddSubject.textContent = '＋大学を追加';
     else btnAddSubject.textContent = '＋科目を追加';
 
-    if (item._tempData) {
-      currentMaterialData = item._tempData;
-    } else {
-      try {
-        // path: "data/materials/textbook.json" -> 分割してロード
-        const parts = item.path.split('/');
-        let dir = rootDirHandle;
-        for(let i=0; i<parts.length-1; i++) {
-           dir = await dir.getDirectoryHandle(parts[i]);
-        }
-        const fh = await dir.getFileHandle(parts[parts.length-1]);
-        const file = await fh.getFile();
-        currentMaterialData = JSON.parse(await file.text());
-      } catch (e) {
-        console.error(e);
-        showToast(`教材読込失敗: ${item.name}`, true);
-        currentMaterialData = { materialName: item.name, subjects: [] };
+    try {
+      const parts = item.path.split('/');
+      let dir = rootDirHandle;
+      for(let i=0; i<parts.length-1; i++) {
+          dir = await dir.getDirectoryHandle(parts[i]);
       }
+      const fh = await dir.getFileHandle(parts[parts.length-1]);
+      const file = await fh.getFile();
+      currentMaterialData = JSON.parse(await file.text());
+    } catch (e) {
+      console.error(e);
+      showToast(`教材読込失敗: ${item.name}`, true);
+      currentMaterialData = { materialName: item.name, subjects: [] };
     }
     renderApp();
   }
 
-  // --- 保存処理 (各教材1ファイル) ---
-  btnSave.addEventListener('click', async () => {
+  // --- 3. Save Logic ---
+  async function saveAll() {
     if (!rootDirHandle) return;
     saveOpenStates();
 
     try {
-      const dataDir = await rootDirHandle.getDirectoryHandle('data', { create: true });
-      
-      // 1. マニフェスト保存
-      const cleanManifest = manifestData.map(m => ({
-        id: m.id, name: m.name, path: m.path, type: m.type
-      }));
-      const manifestHandle = await dataDir.getFileHandle('manifest.json', { create: true });
-      const mw = await manifestHandle.createWritable();
-      await mw.write(JSON.stringify(cleanManifest, null, 2));
-      await mw.close();
+      await saveManifest();
 
-      // 2. 教材ファイル保存
+      const dataDir = await rootDirHandle.getDirectoryHandle('data');
       const matDir = await dataDir.getDirectoryHandle('materials', { create: true });
-
-      if (isLegacyMode) {
-        // 移行モード: 全データを個別ファイルに書き出し
-        for (let i = 0; i < manifestData.length; i++) {
-           const m = manifestData[i];
-           const data = m._tempData || currentMaterialData; 
-           const filename = m.path.split('/').pop();
-           const fh = await matDir.getFileHandle(filename, { create: true });
-           const w = await fh.createWritable();
-           await w.write(JSON.stringify(data, null, 2));
-           await w.close();
-           delete m._tempData;
-        }
-        isLegacyMode = false;
-        showToast("データ移行完了: manifest + 分割JSON形式で保存しました");
-      } else {
-        // 通常モード: 現在の教材のみ保存（効率化）
-        if (currentMaterialData && currentMaterialPath) {
-          const filename = currentMaterialPath.split('/').pop();
-          const fh = await matDir.getFileHandle(filename, { create: true });
-          const w = await fh.createWritable();
-          await w.write(JSON.stringify(currentMaterialData, null, 2));
-          await w.close();
-          showToast(`「${currentMaterialData.materialName}」を保存しました`);
-        }
+      if (currentMaterialData && currentMaterialPath) {
+        const filename = currentMaterialPath.split('/').pop();
+        const fh = await matDir.getFileHandle(filename, { create: true });
+        const w = await fh.createWritable();
+        await w.write(JSON.stringify(currentMaterialData, null, 2));
+        await w.close();
+        showToast(`「${currentMaterialData.materialName}」を保存しました`);
       }
     } catch (e) { showToast('保存失敗: ' + e, true); }
-  });
+  }
+  
+  async function saveManifest() {
+    const dataDir = await rootDirHandle.getDirectoryHandle('data', { create: true });
+    const fh = await dataDir.getFileHandle('manifest.json', { create: true });
+    const w = await fh.createWritable();
+    await w.write(JSON.stringify(manifestData, null, 2));
+    await w.close();
+  }
 
-  // --- UI Render ---
+  btnSave.addEventListener('click', saveAll);
+
+  // --- 4. Rendering ---
   function renderApp() {
     renderTabs();
     renderTree();
@@ -221,75 +151,84 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.onclick = () => { saveOpenStates(); loadMaterial(idx); };
       tabsArea.appendChild(btn);
     });
+
+    const btnAdd = document.createElement('button');
+    btnAdd.id = 'btn-add-material';
+    btnAdd.className = 'tab-btn';
+    btnAdd.textContent = '＋';
+    btnAdd.onclick = createNewMaterial;
+    tabsArea.appendChild(btnAdd);
   }
 
   function renderTree() {
     treeRoot.innerHTML = '';
     if (!currentMaterialData) return;
 
-    // タイプに応じたラベル定義
-    let labelSubj = "科目"; // Subject階層
-    let labelField = "分野"; // Field階層
-    
-    if (currentMaterialType === 'exam_year') {
-      labelSubj = "年度"; labelField = "試験区分";
-    } else if (currentMaterialType === 'exam_univ') {
-      labelSubj = "大学"; labelField = "年度";
-    }
+    let labelSubj = "科目"; let labelField = "分野";
+    if (currentMaterialType === 'exam_year') { labelSubj = "年度"; labelField = "区分"; }
+    else if (currentMaterialType === 'exam_univ') { labelSubj = "大学"; labelField = "年度"; }
 
-    // Subjects Loop
     currentMaterialData.subjects.forEach((sub, sIdx) => {
       const subPath = `s-${sIdx}`;
       const subDetails = createTreeItem(labelSubj, sub.subjectName, subPath);
       
-      // Actions
       addActions(subDetails.querySelector('summary'), 
-        () => { // Rename
-           const n = prompt(`${labelSubj}名を変更:`, sub.subjectName);
-           if(n) { sub.subjectName = n; renderTree(); }
-        },
-        () => { // Delete
-           if(confirm("削除しますか？")) { currentMaterialData.subjects.splice(sIdx, 1); renderTree(); }
-        },
-        () => { // Add Child (Field)
-           const ex = currentMaterialType==='standard' ? '01_mechanics' : (currentMaterialType==='exam_univ'?'2025':'main');
-           const f = prompt(`新しい${labelField}のフォルダIDを入力:\n(例: ${ex})`);
-           if(f) {
-             // 表示名もとりあえずIDと同じにする
-             sub.fields.push({ fieldName: f, folderId: f, problems: [] });
-             // フォルダ実体作成
-             createFolder(sub.folderName, f);
-             renderTree();
-             setTimeout(() => { subDetails.open = true; }, 50);
-           }
-        }
+        () => handleRenameSubject(sub, labelSubj),
+        () => handleDeleteSubject(sub, sIdx),
+        () => handleAddField(sub, labelField)
       );
 
       const subContent = document.createElement('div');
       subContent.className = 'tree-content';
 
-      // Fields Loop
       sub.fields.forEach((fld, fIdx) => {
         const fldDetails = createTreeItem(labelField, fld.fieldName, `${subPath}-f-${fIdx}`);
         
         addActions(fldDetails.querySelector('summary'),
-          () => { const n = prompt(`${labelField}名を変更:`, fld.fieldName); if(n) { fld.fieldName=n; renderTree(); } },
-          () => { if(confirm("削除しますか？")) { sub.fields.splice(fIdx, 1); renderTree(); } },
+          () => handleRenameField(sub, fld, labelField),
+          () => handleDeleteField(sub, fld, fIdx),
           null 
         );
 
         const fldContent = document.createElement('div');
         fldContent.className = 'tree-content';
+        
+        fldContent.addEventListener('dragover', e => {
+            e.preventDefault();
+            fldContent.classList.add('drag-over');
+        });
+        fldContent.addEventListener('dragleave', () => fldContent.classList.remove('drag-over'));
+        fldContent.addEventListener('drop', e => handleDropProblem(e, sub, fld));
 
-        fld.problems.forEach((prob) => {
+        fld.problems.forEach((prob, pIdx) => {
           const pDiv = document.createElement('div');
           pDiv.className = `prob-item ${currentProblem === prob ? 'active' : ''}`;
           pDiv.innerHTML = `<span>${prob.title || '(無題)'}</span><span style="font-size:0.8em;color:#999;">${prob.id}</span>`;
-          pDiv.onclick = () => openEditor(prob, sub.folderName, fld.folderId);
+          pDiv.draggable = true;
+          
+          pDiv.addEventListener('dragstart', e => {
+              dragSrcProb = prob;
+              dragSrcField = fld;
+              pDiv.classList.add('dragging');
+              e.dataTransfer.effectAllowed = 'move';
+          });
+          pDiv.addEventListener('dragend', () => {
+             pDiv.classList.remove('dragging');
+             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+          });
+          
+          pDiv.onclick = (e) => {
+              if(e.ctrlKey) {
+                  if(confirm(`問題「${prob.title}」を削除しますか？`)) {
+                      handleDeleteProblem(sub, fld, prob, pIdx);
+                  }
+                  return;
+              }
+              openEditor(prob);
+          };
           fldContent.appendChild(pDiv);
         });
 
-        // Add Problem Button
         const btnAdd = document.createElement('div');
         btnAdd.className = 'prob-item';
         btnAdd.style.color = '#10b981';
@@ -306,28 +245,207 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     restoreOpenStates();
   }
-  
-  // --- Folder Creation Helper ---
-  async function createFolder(subFolder, fieldFolder) {
-    if(!explanationsDirHandle) return;
-    try {
-      const matId = manifestData[activeMaterialIndex].id; // id = フォルダ名
-      let d = explanationsDirHandle;
-      d = await d.getDirectoryHandle(matId, {create:true});
-      d = await d.getDirectoryHandle(subFolder, {create:true});
-      await d.getDirectoryHandle(fieldFolder, {create:true});
-    } catch(e) { console.warn("Folder create warn:", e); }
+
+  // ============================================================
+  // --- File System Operations ---
+  // ============================================================
+
+  async function getMaterialDirHandle() {
+    const matId = manifestData[activeMaterialIndex].id;
+    return await explanationsDirHandle.getDirectoryHandle(matId, {create: true});
   }
 
-  // --- Create New Problem Logic ---
+  async function getDeepDirectoryHandle(root, pathStr, create=false) {
+    let dir = root;
+    const parts = pathStr.split('/').filter(p => p.length > 0);
+    for (const part of parts) {
+      dir = await dir.getDirectoryHandle(part, {create: create});
+    }
+    return dir;
+  }
+
+  async function fsRenameFolder(parentHandle, oldName, newName) {
+    if(!oldName || !newName || oldName === newName) return;
+    try {
+      // 簡易実装: 同一階層のリネームのみ
+      if (oldName.includes('/') || newName.includes('/')) {
+          console.warn("パスを含むリネームは現在サポートしていません");
+          return;
+      }
+      const oldDir = await parentHandle.getDirectoryHandle(oldName);
+      const newDir = await parentHandle.getDirectoryHandle(newName, {create: true});
+      
+      for await (const [name, handle] of oldDir.entries()) {
+        if (handle.kind === 'file') {
+          const file = await handle.getFile();
+          const newFileHandle = await newDir.getFileHandle(name, {create: true});
+          const writable = await newFileHandle.createWritable();
+          await writable.write(file);
+          await writable.close();
+        }
+      }
+      await parentHandle.removeEntry(oldName, {recursive: true});
+    } catch(e) { console.error("FS Rename Error:", e); }
+  }
+
+  async function fsMoveFile(currentPath, targetFolderHandle, newFileName) {
+    try {
+        const parts = currentPath.split('/');
+        const fileName = parts.pop();
+        let dir = rootDirHandle;
+        for(const p of parts) dir = await dir.getDirectoryHandle(p);
+        const fileHandle = await dir.getFileHandle(fileName);
+
+        const file = await fileHandle.getFile();
+        const content = await file.text();
+
+        const newHandle = await targetFolderHandle.getFileHandle(newFileName || fileName, {create: true});
+        const w = await newHandle.createWritable();
+        await w.write(content);
+        await w.close();
+
+        await dir.removeEntry(fileName);
+        return true;
+    } catch(e) {
+        console.error("Move File Error:", e);
+        return false;
+    }
+  }
+
+  async function fsDelete(parentHandle, name) {
+      if (name.includes('/')) {
+          const parts = name.split('/');
+          const targetName = parts.pop();
+          const dir = await getDeepDirectoryHandle(parentHandle, parts.join('/'));
+          await dir.removeEntry(targetName, {recursive: true});
+      } else {
+          await parentHandle.removeEntry(name, {recursive: true});
+      }
+  }
+
+  // ============================================================
+  // --- Action Handlers ---
+  // ============================================================
+
+  async function handleRenameSubject(sub, label) {
+    const newName = prompt(`${label}名を変更:`, sub.subjectName);
+    if (!newName || newName === sub.subjectName) return;
+
+    if (sub.folderName && sub.folderName.length > 0 && !sub.folderName.includes('/')) {
+      try {
+        const matDir = await getMaterialDirHandle();
+        await fsRenameFolder(matDir, sub.folderName, newName);
+      } catch(e) { alert("フォルダリネーム失敗: " + e); }
+    }
+    
+    const oldFolder = sub.folderName;
+    sub.subjectName = newName;
+    sub.folderName = newName;
+
+    if (oldFolder && oldFolder.length > 0) {
+        sub.fields.forEach(f => {
+            f.problems.forEach(p => {
+                p.explanationPath = p.explanationPath.replace(`/${oldFolder}/`, `/${newName}/`);
+            });
+        });
+    }
+    renderTree();
+    saveAll();
+  }
+
+  async function handleDeleteSubject(sub, idx) {
+    if(!confirm(`【警告】${sub.subjectName} を削除しますか？`)) return;
+    if (sub.folderName && sub.folderName.length > 0) {
+        try {
+            const matDir = await getMaterialDirHandle();
+            await fsDelete(matDir, sub.folderName);
+        } catch(e) { console.warn("FS Delete Warn:", e); }
+    }
+    currentMaterialData.subjects.splice(idx, 1);
+    renderTree();
+    saveAll();
+  }
+
+  async function handleAddField(sub, label) {
+    // ★修正: デフォルト値を「01」または「01/01」に変更
+    let hint = '01';
+    if(currentMaterialType === 'exam_year') hint = 'main';
+    if(manifestData[activeMaterialIndex].id === 'textbook') hint = '01/01'; // 編/章の例
+    
+    const folderId = prompt(`新しい${label}ID (フォルダ名):\n※「01/01」のようにスラッシュで階層化可能`, hint);
+    if(!folderId) return;
+
+    try {
+        const matDir = await getMaterialDirHandle();
+        let subDir = matDir;
+        if (sub.folderName && sub.folderName.length > 0) {
+            subDir = await matDir.getDirectoryHandle(sub.folderName, {create:true});
+        }
+        
+        if(currentMaterialType !== 'exam_year') {
+            await getDeepDirectoryHandle(subDir, folderId, true);
+        }
+    } catch(e) { console.warn("FS Create Warn:", e); }
+
+    const displayName = folderId.split('/').pop() || folderId;
+    sub.fields.push({
+        fieldName: displayName,
+        folderId: folderId,
+        problems: []
+    });
+    renderTree();
+    saveAll();
+  }
+
+  async function handleRenameField(sub, fld, label) {
+    const newName = prompt(`${label}ID(フォルダパス)を変更:`, fld.folderId);
+    if (!newName || newName === fld.folderId) return;
+
+    const oldFolder = fld.folderId;
+    fld.fieldName = newName.split('/').pop(); 
+    fld.folderId = newName;
+
+    fld.problems.forEach(p => {
+        if(currentMaterialType === 'exam_year') return;
+        if (p.explanationPath.includes(`/${oldFolder}/`)) {
+            p.explanationPath = p.explanationPath.replace(`/${oldFolder}/`, `/${newName}/`);
+        }
+    });
+
+    renderTree();
+    saveAll();
+  }
+
+  async function handleDeleteField(sub, fld, idx) {
+    if(!confirm(`分野「${fld.fieldName}」とファイルを削除しますか？`)) return;
+    
+    if (currentMaterialType !== 'exam_year') {
+        try {
+            const matDir = await getMaterialDirHandle();
+            let subDir = matDir;
+            if (sub.folderName) subDir = await matDir.getDirectoryHandle(sub.folderName);
+            await fsDelete(subDir, fld.folderId);
+        } catch(e) { console.warn(e); }
+    }
+    
+    sub.fields.splice(idx, 1);
+    renderTree();
+    saveAll();
+  }
+
   async function createNewProblem(subject, field) {
-    const id = prompt("問題IDを入力 (例: q1, 001_motion):");
+    const id = prompt("問題ID/ファイル名 (例: 001_motion):");
     if (!id) return;
     if (field.problems.find(p => p.id === id)) { alert("ID重複"); return; }
     
-    // パス構築: data/explanations/{material_id}/{subject}/{field}/{id}.html
     const matId = manifestData[activeMaterialIndex].id;
-    const path = `data/explanations/${matId}/${subject.folderName}/${field.folderId}/${id}.html`;
+    let pathParts = [];
+    if (currentMaterialType === 'exam_year') {
+        pathParts = ['data/explanations', matId, subject.folderName, `${id}.html`];
+    } else {
+        pathParts = ['data/explanations', matId, subject.folderName, field.folderId, `${id}.html`];
+    }
+    const path = pathParts.filter(p => p && p.length > 0).join('/').replace(/\/\//g, '/');
     
     const newProb = {
       id: id,
@@ -338,24 +456,113 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     field.problems.push(newProb);
 
-    // ファイル作成
     try {
-      let dir = explanationsDirHandle;
-      dir = await dir.getDirectoryHandle(matId, {create:true});
-      dir = await dir.getDirectoryHandle(subject.folderName, {create:true});
-      dir = await dir.getDirectoryHandle(field.folderId, {create:true});
-      const fh = await dir.getFileHandle(`${id}.html`, {create:true});
+      const matDir = await getMaterialDirHandle();
+      let targetDir = matDir;
+      if(subject.folderName && subject.folderName.length > 0) {
+          targetDir = await targetDir.getDirectoryHandle(subject.folderName, {create:true});
+      }
+      if(currentMaterialType !== 'exam_year' && field.folderId && field.folderId.length > 0) {
+          targetDir = await getDeepDirectoryHandle(targetDir, field.folderId, true);
+      }
+      const fh = await targetDir.getFileHandle(`${id}.html`, {create:true});
       const w = await fh.createWritable();
-      await w.write(`<h3>${id}</h3><p>ここに解説を記述...</p>`);
+      await w.write(`<h3>${id}</h3><p>解説...</p>`);
       await w.close();
-    } catch(e) { console.warn("File create warn:", e); }
+    } catch(e) { console.warn("File Create Warn:", e); }
 
     renderTree();
-    openEditor(newProb, subject.folderName, field.folderId);
+    openEditor(newProb);
+    saveAll();
   }
 
-  // --- Editor & Preview Logic ---
-  async function openEditor(problem, subjectDir, fieldDir) {
+  async function handleDeleteProblem(sub, fld, prob, idx) {
+      fld.problems.splice(idx, 1);
+      try {
+          const parts = prob.explanationPath.split('/');
+          const fileName = parts.pop();
+          let dir = rootDirHandle;
+          for(const p of parts) dir = await dir.getDirectoryHandle(p);
+          await dir.removeEntry(fileName);
+      } catch(e) { console.warn("File delete error:", e); }
+      
+      if(currentProblem === prob) {
+          editorMainWrapper.style.display = 'none';
+          currentProblem = null;
+      }
+      renderTree();
+      saveAll();
+  }
+
+  async function handleDropProblem(e, targetSub, targetFld) {
+    e.preventDefault();
+    document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+    
+    if (!dragSrcProb || !dragSrcField) return;
+    if (dragSrcField === targetFld) return;
+
+    if (!confirm(`「${dragSrcProb.title}」を「${targetFld.fieldName}」へ移動しますか？`)) return;
+
+    const matId = manifestData[activeMaterialIndex].id;
+    try {
+        const matDir = await getMaterialDirHandle();
+        let targetDir = matDir;
+        if(targetSub.folderName && targetSub.folderName.length > 0) {
+            targetDir = await targetDir.getDirectoryHandle(targetSub.folderName);
+        }
+        if(currentMaterialType !== 'exam_year' && targetFld.folderId && targetFld.folderId.length > 0) {
+            targetDir = await getDeepDirectoryHandle(targetDir, targetFld.folderId, true);
+        }
+        const success = await fsMoveFile(dragSrcProb.explanationPath, targetDir);
+        if(!success) throw new Error("File move failed");
+    } catch(e) { alert("移動失敗: " + e); return; }
+
+    const fileName = dragSrcProb.explanationPath.split('/').pop();
+    let newPathParts = [];
+    if(currentMaterialType === 'exam_year') {
+        newPathParts = ['data/explanations', matId, targetSub.folderName, fileName];
+    } else {
+        newPathParts = ['data/explanations', matId, targetSub.folderName, targetFld.folderId, fileName];
+    }
+    dragSrcProb.explanationPath = newPathParts.filter(p => p && p.length > 0).join('/').replace(/\/\//g, '/');
+
+    const srcIdx = dragSrcField.problems.indexOf(dragSrcProb);
+    if (srcIdx > -1) dragSrcField.problems.splice(srcIdx, 1);
+    targetFld.problems.push(dragSrcProb);
+
+    dragSrcProb = null;
+    dragSrcField = null;
+    renderTree();
+    saveAll();
+  }
+
+  async function createNewMaterial() {
+      const name = prompt("新しい教材名:");
+      if(!name) return;
+      const id = prompt("教材ID:", "chemistry");
+      if(!id) return;
+      const type = prompt("タイプ (standard / exam_year / exam_univ):", "standard");
+      
+      const newMat = { id: id, name: name, path: `data/materials/${id}.json`, type: type || 'standard' };
+      manifestData.push(newMat);
+      
+      const newJson = { materialName: name, subjects: [] };
+      try {
+          const dataDir = await rootDirHandle.getDirectoryHandle('data');
+          const matDir = await dataDir.getDirectoryHandle('materials');
+          const fh = await matDir.getFileHandle(`${id}.json`, {create: true});
+          const w = await fh.createWritable();
+          await w.write(JSON.stringify(newJson, null, 2));
+          await w.close();
+          const expDir = await dataDir.getDirectoryHandle('explanations');
+          await expDir.getDirectoryHandle(id, {create: true});
+      } catch(e) { alert("作成エラー: " + e); return; }
+
+      await saveManifest();
+      loadMaterial(manifestData.length - 1);
+  }
+
+  async function openEditor(problem) {
     currentProblem = problem;
     editorMainWrapper.style.display = 'flex';
     document.querySelector('.empty-state').style.display = 'none';
@@ -363,54 +570,42 @@ document.addEventListener('DOMContentLoaded', () => {
     tabEdit.click();
     document.getElementById('editing-title').textContent = problem.title;
     document.getElementById('editing-id').textContent = problem.id;
-    const container = document.getElementById('form-container');
     container.innerHTML = '';
 
-    // Basic Info
     const basicSec = document.createElement('div');
     basicSec.className = 'form-section';
     basicSec.innerHTML = '<h3>📝 基本情報</h3>';
     basicSec.appendChild(createInput('タイトル', problem.title, v=>{ problem.title=v; document.getElementById('editing-title').textContent=v; }));
-    basicSec.appendChild(createInput('ID (参照のみ)', problem.id, null, true));
     
-    // Layout Select
     const layoutDiv = document.createElement('div'); layoutDiv.className = 'form-group';
     layoutDiv.innerHTML = '<label>レイアウト</label><select class="form-control"><option value="article">記事型</option></select>';
     basicSec.appendChild(layoutDiv);
     container.appendChild(basicSec);
 
-    // HTML Editor
     const explSec = document.createElement('div');
     explSec.className = 'form-section';
-    explSec.innerHTML = '<div style="display:flex;justify-content:space-between;"><h3>📖 解説HTML</h3><button id="btn-save-expl" class="btn-save" style="padding:4px 10px;font-size:0.9rem;">💾 解説保存</button></div>';
+    explSec.innerHTML = `<div style="display:flex;justify-content:space-between;"><h3>📖 解説HTML <span style="font-size:0.8em;color:#999;">(${problem.explanationPath})</span></h3><button id="btn-save-expl" class="btn-save">💾 解説保存</button></div>`;
     
     const editorDiv = document.createElement('div');
     editorDiv.className = 'visual-editor';
     editorDiv.contentEditable = true;
+    editorDiv.style.minHeight = '300px';
     editorDiv.style.border = '1px solid #ccc';
-    editorDiv.style.marginTop = '10px';
+    editorDiv.style.padding = '10px';
     
-    // Load Content
     if (problem.explanationPath && rootDirHandle) {
       try {
-        // "data/explanations/..." -> parts
         const parts = problem.explanationPath.split('/');
         let d = rootDirHandle;
-        // pathの先頭から順にディレクトリを辿る
-        for(let i=0; i<parts.length-1; i++) {
-          // dataなどのフォルダ名が変わっている可能性への対処は省略(マニフェスト正前提)
-          d = await d.getDirectoryHandle(parts[i]);
-        }
+        for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i]);
         const f = await d.getFileHandle(parts[parts.length-1]);
         editorDiv.innerHTML = await (await f.getFile()).text();
       } catch(e) { editorDiv.innerText = "読込エラーまたは新規: " + e.message; }
     }
-    
     currentVisualEditor = editorDiv;
     explSec.appendChild(editorDiv);
     container.appendChild(explSec);
 
-    // Save HTML
     explSec.querySelector('#btn-save-expl').onclick = async () => {
       try {
         const parts = problem.explanationPath.split('/');
@@ -425,36 +620,11 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // --- Tab Switching ---
-  tabEdit.onclick = () => {
-    tabEdit.classList.add('active'); tabPreview.classList.remove('active');
-    viewEditor.style.display='block'; viewPreview.style.display='none';
-  };
-  tabPreview.onclick = () => {
-    tabEdit.classList.remove('active'); tabPreview.classList.add('active');
-    viewEditor.style.display='none'; viewPreview.style.display='block';
-    if(currentVisualEditor) {
-      previewContainer.innerHTML = currentVisualEditor.innerHTML;
-      if(window.MathJax) MathJax.typesetPromise([previewContainer]);
-      executeInlineScripts(previewContainer);
-    }
-  };
-  
-  function executeInlineScripts(el) {
-    Array.from(el.querySelectorAll('script')).forEach(s => {
-      const ns = document.createElement('script');
-      Array.from(s.attributes).forEach(a => ns.setAttribute(a.name, a.value));
-      ns.textContent = s.textContent;
-      try{ s.parentNode.replaceChild(ns, s); }catch(e){}
-    });
-  }
-
-  // --- Helpers ---
-  function createInput(label, val, onChange, disabled=false) {
+  function createInput(label, val, onChange) {
     const g = document.createElement('div'); g.className='form-group';
     g.innerHTML = `<label>${label}</label>`;
     const i = document.createElement('input'); i.className='form-control'; 
-    i.value=val||''; i.disabled=disabled;
+    i.value=val||'';
     if(onChange) i.oninput = (e) => onChange(e.target.value);
     g.appendChild(i);
     return g;
@@ -468,9 +638,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function addActions(summaryEl, onRename, onDelete, onAdd) {
     const div = document.createElement('div'); div.className = 'tree-actions';
-    if(onRename) div.innerHTML += `<button class="tree-btn">✎</button>`;
-    if(onDelete) div.innerHTML += `<button class="tree-btn del">🗑</button>`;
-    if(onAdd)    div.innerHTML += `<button class="tree-btn add">＋</button>`;
+    if(onRename) div.innerHTML += `<button class="tree-btn" title="名前変更">✎</button>`;
+    if(onDelete) div.innerHTML += `<button class="tree-btn del" title="削除">🗑</button>`;
+    if(onAdd)    div.innerHTML += `<button class="tree-btn add" title="追加">＋</button>`;
     
     const btns = div.querySelectorAll('button');
     let idx=0;
@@ -491,29 +661,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('toast-container').appendChild(t);
     setTimeout(()=>t.remove(), 3000);
   }
-
-  // Header Button (Add Subject/Univ/Year)
+  
   btnAddSubject.addEventListener('click', () => {
-    let promptMsg = "新しい科目名:";
-    if(currentMaterialType === 'exam_year') promptMsg = "新しい年度 (例: 2025):";
-    if(currentMaterialType === 'exam_univ') promptMsg = "新しい大学ID (例: waseda):";
-    
-    const name = prompt(promptMsg);
-    if(!name) return;
-    
-    // 追加
-    currentMaterialData.subjects.push({
-      subjectName: name, 
-      folderName: name, // フォルダ名も同一にする
-      fields: []
-    });
-    
-    // フォルダ作成
-    const matId = manifestData[activeMaterialIndex].id;
-    if(explanationsDirHandle) {
-      explanationsDirHandle.getDirectoryHandle(matId, {create:true})
-        .then(d => d.getDirectoryHandle(name, {create:true}));
-    }
-    renderTree();
+      let promptMsg = "新しい科目名:";
+      if(currentMaterialType === 'exam_year') promptMsg = "新しい年度 (例: 2025):";
+      else if(currentMaterialType === 'exam_univ') promptMsg = "新しい大学ID (例: waseda):";
+      const name = prompt(promptMsg);
+      if(!name) return;
+      const folderName = prompt("フォルダ名 (英数字推奨):", name);
+      currentMaterialData.subjects.push({ subjectName: name, folderName: folderName || name, fields: [] });
+      if(folderName && explanationsDirHandle) {
+          getMaterialDirHandle().then(d => d.getDirectoryHandle(folderName, {create:true}));
+      }
+      renderTree();
+      saveAll();
   });
 });
