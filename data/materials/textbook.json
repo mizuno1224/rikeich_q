@@ -1,0 +1,55 @@
+{
+  "materialName": "教科書",
+  "subjects": [
+    {
+      "subjectName": "物理基礎",
+      "folderName": "physics_basic",
+      "fields": [
+        {
+          "fieldName": "第1章 物体の運動",
+          "folderId": "01_motion",
+          "problems": [
+            {
+              "id": "p12_ex1",
+              "title": "例題1 平均の速さ",
+              "desc": "変位と移動距離の違いについて",
+              "explanationPath": "data/explanations/textbook/physics_basic/01_motion/p12_ex1.html",
+              "layout": "article"
+            },
+            {
+              "id": "p15_q3",
+              "title": "問3 等速直線運動",
+              "desc": "x-tグラフの読み取り",
+              "explanationPath": "data/explanations/textbook/physics_basic/01_motion/p15_q3.html",
+              "layout": "article"
+            }
+          ]
+        },
+        {
+          "fieldName": "第2章 力と運動",
+          "folderId": "02_force",
+          "problems": []
+        }
+      ]
+    },
+    {
+      "subjectName": "物理",
+      "folderName": "physics_adv",
+      "fields": [
+        {
+          "fieldName": "第1章 円運動",
+          "folderId": "01_circular",
+          "problems": [
+            {
+              "id": "p80_ex5",
+              "title": "例題5 鉛直面内の円運動",
+              "desc": "最高点・最下点での張力の違い",
+              "explanationPath": "data/explanations/textbook/physics_adv/01_circular/p80_ex5.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

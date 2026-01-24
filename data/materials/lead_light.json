@@ -1,0 +1,43 @@
+{
+  "materialName": "リードLight",
+  "subjects": [
+    {
+      "subjectName": "物理基礎",
+      "folderName": "physics_basic",
+      "fields": [
+        {
+          "fieldName": "第1章 運動の表し方",
+          "folderId": "ch1_motion",
+          "problems": [
+            {
+              "id": "light_005",
+              "title": "5 加速度",
+              "desc": "v-tグラフの傾き",
+              "explanationPath": "data/explanations/lead_light/physics_basic/ch1_motion/light_005.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "物理",
+      "folderName": "physics_adv",
+      "fields": [
+        {
+          "fieldName": "第5章 波の性質",
+          "folderId": "ch5_waves",
+          "problems": [
+            {
+              "id": "light_102",
+              "title": "102 波の干渉",
+              "desc": "強め合う条件と弱め合う条件",
+              "explanationPath": "data/explanations/lead_light/physics_adv/ch5_waves/light_102.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

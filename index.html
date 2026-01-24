@@ -3,242 +3,231 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>物理問題集アプリ</title>
+  <title>Physics Lab.</title>
   <link rel="stylesheet" href="css/base.css">
   <style>
-    /* index.html 専用スタイル */
-    body { padding: 20px; background: var(--col-bg); }
-    
+    /* 基本スタイル */
+    body { padding: 20px; background: var(--col-bg); min-height: 100vh; }
     .container { max-width: 1200px; margin: 0 auto; }
     
-    h1 {
-      text-align: center;
-      font-size: 2.2rem;
-      margin-bottom: 40px;
-      color: var(--col-text);
-      letter-spacing: 0.1em;
+    /* ヘッダー */
+    h1 { 
+      text-align: center; font-size: 2.2rem; margin-bottom: 40px; 
+      color: var(--col-text); letter-spacing: 0.1em; 
     }
 
-    /* --- 教材切り替えタブ --- */
-    .material-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 40px;
-      flex-wrap: wrap;
+    /* タブエリア */
+    .material-tabs { 
+      display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; 
+    }
+    .tab-btn { 
+      padding: 12px 24px; font-weight: 700; font-size: 1.1rem; 
+      color: var(--col-text-sub); background: #fff; border: 2px solid #e2e8f0; 
+      border-radius: 50px; cursor: pointer; transition: all 0.2s; min-width: 140px; 
+    }
+    .tab-btn:hover { 
+      border-color: var(--col-primary-light); background: #f8fafc; 
+    }
+    .tab-btn.active { 
+      background: var(--col-primary); color: #fff; 
+      border-color: var(--col-primary); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); 
     }
 
-    .tab-btn {
-      padding: 12px 24px;
-      font-family: var(--font-base);
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--col-text-sub);
-      background: #fff;
-      border: 2px solid #e2e8f0;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.2s;
-      min-width: 140px;
+    /* コンテンツエリア */
+    .group-section { margin-bottom: 60px; }
+    .group-title {
+      font-size: 1.5rem; font-weight: bold; color: #475569;
+      margin-bottom: 20px; padding-left: 15px; border-left: 6px solid #cbd5e1;
     }
 
-    .tab-btn:hover {
-      border-color: var(--col-primary-light);
-      background: #f8fafc;
+    .subject-grid { 
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
+      gap: 30px; animation: fadeIn 0.4s ease; 
+    }
+    .subject-card { 
+      background: #fff; border-radius: 24px; padding: 30px; 
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); border: 1px solid #f1f5f9;
+    }
+    .subject-name { 
+      font-size: 1.4rem; font-weight: 700; color: var(--col-primary); 
+      margin: 0 0 20px 0; padding-bottom: 10px; border-bottom: 2px solid #f1f5f9; 
     }
 
-    .tab-btn.active {
-      background: var(--col-primary);
-      color: #fff;
-      border-color: var(--col-primary);
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    }
-
-    /* --- 科目・分野リスト --- */
-    .subject-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-      gap: 30px;
-      animation: fadeIn 0.4s ease;
-    }
-
-    .subject-card {
-      background: #fff;
-      border-radius: var(--card-radius);
-      padding: 30px;
-      box-shadow: var(--card-shadow);
-    }
-
-    .subject-name {
-      font-size: 1.4rem;
-      font-weight: 700;
-      color: var(--col-primary);
-      margin-top: 0;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f1f5f9;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .field-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    
+    .field-list { list-style: none; padding: 0; margin: 0; }
     .field-item { margin-bottom: 25px; }
-    
-    .field-name {
-      font-weight: 700;
-      color: var(--col-text);
-      margin-bottom: 10px;
-      display: block;
-      font-size: 1.1rem;
-      border-left: 4px solid var(--col-accent);
-      padding-left: 10px;
+    .field-name { 
+      font-weight: 700; color: var(--col-text); margin-bottom: 10px; 
+      display: block; font-size: 1.1rem; border-left: 4px solid #f43f5e; padding-left: 10px; 
     }
 
-    .prob-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(100%, 1fr)); /* 1列 */
-      gap: 8px;
+    .prob-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+    .prob-link { 
+      display: flex; justify-content: space-between; align-items: center; 
+      padding: 12px 16px; background: #f8fafc; border-radius: 12px; 
+      color: var(--col-text); font-weight: 500; text-decoration: none; transition: all 0.2s; 
+    }
+    .prob-link:hover { 
+      background: #fff; color: var(--col-primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
     }
 
-    .prob-link {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 16px;
-      background: #f8fafc;
-      border-radius: 12px;
-      color: var(--col-text);
-      font-weight: 500;
-      text-decoration: none;
-      transition: all 0.2s;
-      border: 1px solid transparent;
-    }
-    .prob-link:hover {
-      background: #fff;
-      border-color: var(--col-primary);
-      color: var(--col-primary);
-      transform: translateX(5px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-    }
-    .prob-link::after { content: "→"; opacity: 0.5; }
+    /* エラー/空メッセージ */
+    .empty-msg { text-align: center; color: #94a3b8; padding: 20px; background: #f8fafc; border-radius: 12px; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes fadeIn { 
+      from { opacity: 0; transform: translateY(10px); } 
+      to { opacity: 1; transform: translateY(0); } 
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Physics Lab.</h1>
-
-    <div class="material-tabs" id="tab-container">
-      </div>
-
+    <div class="material-tabs" id="tab-container"></div>
     <div id="content-area"></div>
   </div>
 
   <script src="js/data.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    // タブ構成の定義 (ここで表示グループを制御します)
+    const TAB_CONFIG = [
+      { label: "教科書",     ids: ["textbook"] },
+      { label: "リードα",   ids: ["lead_alpha"] },
+      { label: "リードLight", ids: ["lead_light"] },
+      { label: "入試問題",   ids: ["exam_common", "exam_national", "exam_private"] }
+    ];
+
+    document.addEventListener('DOMContentLoaded', async () => {
       const tabContainer = document.getElementById('tab-container');
       const contentArea = document.getElementById('content-area');
       
-      let problemData = [];
-      let currentMaterialIndex = 0;
-
-      // 0. JSONデータの取得
-      fetch('problems.json')
-        .then(res => {
-          if (!res.ok) throw new Error('Network response was not ok');
-          return res.json();
-        })
-        .then(data => {
-          problemData = data;
-          initTabs();
-          // 初回描画
-          if(problemData.length > 0) {
-            renderContent(problemData[0]);
+      let manifest = [];
+      
+      // 1. マニフェスト取得
+      try {
+        const res = await fetch('data/manifest.json');
+        if (!res.ok) throw new Error('Manifest not found');
+        manifest = await res.json();
+      } catch (e) {
+        // フォールバック: 旧 problems.json
+        try {
+          const res = await fetch('problems.json');
+          if(res.ok) {
+            const legacy = await res.json();
+            manifest = legacy.map(m => ({ 
+              id: "legacy", name: m.materialName, path: 'problems.json', _legacyData: m 
+            }));
+            // レガシーの場合はConfigを無視してそのまま表示
+            TAB_CONFIG.length = 0;
+            manifest.forEach((m, i) => TAB_CONFIG.push({ label: m.name, ids: ["legacy"], _legacyIndex: i }));
           }
-        })
-        .catch(error => {
-          console.error('Error loading problems:', error);
-          contentArea.innerHTML = '<p style="text-align:center; color:red;">データの読み込みに失敗しました。</p>';
-        });
-
-      // 1. タブ生成
-      function initTabs() {
-        problemData.forEach((mat, index) => {
-          const btn = document.createElement('button');
-          btn.className = `tab-btn ${index === 0 ? 'active' : ''}`;
-          btn.textContent = mat.materialName;
-          btn.onclick = () => switchMaterial(index);
-          tabContainer.appendChild(btn);
-        });
+        } catch(e2) {
+          contentArea.innerHTML = '<p class="empty-msg">データが見つかりません。管理画面でデータを保存してください。</p>';
+          return;
+        }
       }
 
-      // 2. 表示切り替え関数
-      function switchMaterial(index) {
-        currentMaterialIndex = index;
+      // 2. タブ生成
+      TAB_CONFIG.forEach((config, idx) => {
+        const btn = document.createElement('button');
+        btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
+        btn.textContent = config.label;
+        btn.onclick = () => renderTab(idx);
+        tabContainer.appendChild(btn);
+      });
+
+      // 初回ロード
+      renderTab(0);
+
+      async function renderTab(tabIndex) {
+        // タブのアクティブ切り替え
+        Array.from(tabContainer.children).forEach((b, i) => {
+          b.classList.toggle('active', i === tabIndex);
+        });
         
-        // タブのアクティブ化
-        const tabs = document.querySelectorAll('.tab-btn');
-        tabs.forEach((t, i) => {
-          if(i === index) t.classList.add('active');
-          else t.classList.remove('active');
-        });
+        contentArea.innerHTML = '<p style="text-align:center;color:#666;">読み込み中...</p>';
 
-        // コンテンツ再描画
-        renderContent(problemData[index]);
-      }
+        const config = TAB_CONFIG[tabIndex];
+        const htmlParts = [];
 
-      // 3. コンテンツ描画関数
-      function renderContent(material) {
-        let html = `<div class="subject-grid">`;
+        // Configに含まれるIDに対応するマニフェストを探してデータをロード
+        // (入試問題の場合は3つのJSONをロードして結合表示)
+        for (const targetId of config.ids) {
+          const item = manifest.find(m => m.id === targetId);
+          if (!item && targetId !== "legacy") continue;
 
-        material.subjects.forEach(subject => {
-          html += `
-            <div class="subject-card">
-              <h3 class="subject-name">
-                <span>${subject.subjectName}</span>
-              </h3>
-              <ul class="field-list">
-          `;
-
-          let hasProblem = false;
-          subject.fields.forEach(field => {
-            if(field.problems.length > 0) {
-              hasProblem = true;
-              html += `<li class="field-item">
-                <span class="field-name">${field.fieldName}</span>
-                <div class="prob-grid">`;
-              
-              field.problems.forEach(p => {
-                html += `
-                  <a href="viewer.html?id=${p.id}" class="prob-link">
-                    <span>${p.title}</span>
-                  </a>
-                `;
-              });
-              html += `</div></li>`;
-            }
-          });
-
-          if(!hasProblem) {
-            html += `<li style="color:var(--col-text-sub); font-size:0.9rem;">(問題準備中)</li>`;
+          // データロード
+          let data = null;
+          if (config._legacyIndex !== undefined) {
+             data = manifest[config._legacyIndex]._legacyData; // Legacy handling
+          } else if (item) {
+             try {
+               const res = await fetch(item.path);
+               if (res.status === 404) {
+                 // 404エラーの場合は「準備中」扱いにしてスキップ (エラーで止めない)
+                 console.warn(`File not found: ${item.path}`);
+                 htmlParts.push(renderSection(item.name, null, true));
+                 continue; 
+               }
+               if (!res.ok) throw new Error("Load failed");
+               data = await res.json();
+             } catch(e) {
+               console.error(e);
+               htmlParts.push(renderSection(item.name, null, true));
+               continue;
+             }
           }
 
-          html += `</ul></div>`;
-        });
+          if (data) {
+             htmlParts.push(renderSection(item ? item.name : config.label, data, false, item ? item.path : 'problems.json'));
+          }
+        }
 
-        html += `</div>`;
-        contentArea.innerHTML = html;
+        contentArea.innerHTML = htmlParts.join('') || '<p class="empty-msg">表示するデータがありません。</p>';
+      }
+
+      function renderSection(title, data, isEmpty, jsonPath) {
+        if (isEmpty) {
+          return `
+            <div class="group-section">
+              <h2 class="group-title">${title}</h2>
+              <p class="empty-msg">データ準備中 (ファイルが未作成です)</p>
+            </div>`;
+        }
+
+        let html = `<div class="group-section">`;
+        // タブ名とセクション名が重複する場合はタイトルを省略しても良いが、
+        // 「入試問題」の中に「共通テスト」などの見出しが欲しいので表示する
+        html += `<h2 class="group-title">${title}</h2>`;
+        html += `<div class="subject-grid">`;
+
+        if (!data.subjects || data.subjects.length === 0) {
+           html += `<div class="subject-card"><p>問題が登録されていません</p></div>`;
+        } else {
+          data.subjects.forEach(sub => {
+            html += `<div class="subject-card">
+              <h3 class="subject-name">${sub.subjectName}</h3>
+              <ul class="field-list">`;
+            
+            sub.fields.forEach(fld => {
+              if(fld.problems.length > 0) {
+                html += `<li class="field-item">
+                  <span class="field-name">${fld.fieldName}</span>
+                  <div class="prob-grid">`;
+                fld.problems.forEach(p => {
+                  const srcParam = jsonPath === 'problems.json' ? '' : `&src=${encodeURIComponent(jsonPath)}`;
+                  html += `<a href="viewer.html?id=${p.id}${srcParam}" class="prob-link">
+                    <span>${p.title}</span>
+                    <span style="font-size:0.9em;color:#cbd5e1;">→</span>
+                  </a>`;
+                });
+                html += `</div></li>`;
+              }
+            });
+            html += `</ul></div>`;
+          });
+        }
+        html += `</div></div>`;
+        return html;
       }
     });
   </script>

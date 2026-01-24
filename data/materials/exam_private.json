@@ -1,0 +1,43 @@
+{
+  "materialName": "私立入試",
+  "subjects": [
+    {
+      "subjectName": "早稲田大学(理工)",
+      "folderName": "waseda_sci",
+      "fields": [
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            {
+              "id": "waseda_2024_1",
+              "title": "第1問 力学",
+              "desc": "小球の衝突",
+              "explanationPath": "data/explanations/exam_private/waseda_sci/2024/waseda_2024_1.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "慶應義塾大学(理工)",
+      "folderName": "keio_sci",
+      "fields": [
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            {
+              "id": "keio_2024_1",
+              "title": "第1問 電磁気",
+              "desc": "ホール効果",
+              "explanationPath": "data/explanations/exam_private/keio_sci/2024/keio_2024_1.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

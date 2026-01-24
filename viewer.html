@@ -1,55 +1,128 @@
-<!DOCTYPE html>
-<html lang="ja">
+/* js/viewer.js */
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>問題解説ビューアー</title>
+// ポインター
+let pointerInstance = null;
 
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/viewer.css">
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const probId = params.get('id');
+  const srcPath = params.get('src'); // 分割JSONのパスを受け取る
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script type="text/javascript" charset="UTF-8"
-    src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+  // データロード
+  // srcパラメータがなければ旧来の problems.json をフォールバックとして使用
+  const fetchTarget = srcPath ? srcPath : 'problems.json';
 
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
+  fetch(fetchTarget)
+    .then(res => {
+      if (!res.ok) throw new Error("JSON load failed");
+      return res.json();
+    })
+    .then(data => {
+      // Split JSONの場合は data が直接 Material Object ( {subjects: ...} )
+      // problems.json (Legacy) の場合は Array ( [{subjects:...}, ...] )
+      let problemsList = [];
+      
+      if (Array.isArray(data)) {
+        // Legacy: 全配列から探す
+        problemsList = data;
+      } else {
+        // Split: 1つのMaterialオブジェクトなので、配列に入れて検索ロジックを共通化
+        problemsList = [data];
+      }
+      
+      loadProblem(probId, problemsList);
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('text-target').innerHTML = "<p>問題データの読み込みに失敗しました。</p>";
+    });
 
-<body>
+  // (ポインターUIのセットアップ - 変更なし)
+  const btnPointer = document.getElementById('btn-toggle-pointer');
+  if(document.getElementById('pointer-canvas') && typeof LaserPointer !== 'undefined'){
+    pointerInstance = new LaserPointer('pointer-canvas');
+    window.addEventListener('scroll', () => pointerInstance.clear(), { passive: true });
+    const expl = document.querySelector('.explanation-area');
+    if(expl) expl.addEventListener('scroll', () => pointerInstance.clear(), { passive: true });
+  }
+  if(btnPointer) {
+    btnPointer.addEventListener('click', () => {
+      const isActive = document.body.classList.toggle('pointer-active');
+      btnPointer.classList.toggle('active', isActive);
+      btnPointer.innerHTML = isActive ? '🖊️ ポインターON' : '👆 操作モード';
+      if(pointerInstance) pointerInstance.clear();
+    });
+  }
+});
 
-  <div class="viewer-container">
+function loadProblem(id, dataset) {
+  // 前のシミュレーション削除
+  if (window.p5Instances) {
+    window.p5Instances.forEach(p => p.remove());
+    window.p5Instances = [];
+  }
 
-    <header class="prob-header-top">
-      <div class="header-left">
-        <a href="index.html" class="btn-back-circle" title="一覧へ戻る">❮</a>
-        <h1 id="prob-title-header">Loading...</h1>
-      </div>
-      <div class="header-right">
-        <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
-      </div>
-    </header>
+  let target = null;
+  // 探索
+  for (const mat of dataset) {
+    for (const sub of mat.subjects) {
+      for (const fld of sub.fields) {
+        const found = fld.problems.find(p => p.id === id);
+        if (found) { target = found; break; }
+      }
+      if (target) break;
+    }
+    if (target) break;
+  }
 
-    <div class="viewer-split-content">
-      <div id="sim-target" class="simulation-area"></div>
+  if (target) {
+    document.title = target.title;
+    const titleEl = document.getElementById('prob-title-header');
+    if(titleEl) titleEl.textContent = target.title;
 
-      <div id="text-target" class="explanation-area"></div>
-    </div>
+    if (target.layout === 'article') {
+      document.body.classList.add('layout-article');
+    } else {
+      document.body.classList.remove('layout-article');
+    }
 
-  </div>
+    const textTarget = document.getElementById('text-target');
+    if (textTarget) {
+      if (target.explanationPath) {
+        fetch(target.explanationPath)
+          .then(res => {
+            if(!res.ok) throw new Error("Explanation file not found");
+            return res.text();
+          })
+          .then(html => {
+            textTarget.innerHTML = html;
+            if(window.MathJax) MathJax.typesetPromise([textTarget]);
+            executeInlineScripts(textTarget);
+            if(window.updateObserver) setTimeout(window.updateObserver, 100);
+          })
+          .catch(err => {
+            console.warn(err);
+            textTarget.innerHTML = "<p>解説ファイルの読み込みに失敗しました。</p>";
+          });
+      } else {
+        textTarget.innerHTML = "<p>解説が登録されていません。</p>";
+      }
+    }
+    // JS Path Logic (Legacy)
+    if (target.jsPath) {
+       // 必要に応じて旧JSロジック
+    }
+  } else {
+    document.getElementById('text-target').innerHTML = `<p>問題ID "${id}" が見つかりません。</p>`;
+  }
+}
 
-  <canvas id="pointer-canvas"></canvas>
-
-  <script src="js/data.js"></script>
-  <script src="js/sim-utils.js"></script>
-  <script src="js/pointer.js"></script>
-  <script src="js/viewer.js"></script>
-</body>
-
-</html>
+function executeInlineScripts(element) {
+  const scripts = element.querySelectorAll('script');
+  scripts.forEach(oldScript => {
+    const newScript = document.createElement('script');
+    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+    newScript.textContent = oldScript.textContent;
+    oldScript.parentNode.replaceChild(newScript, oldScript);
+  });
+}

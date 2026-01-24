@@ -1,0 +1,38 @@
+[
+  {
+    "id": "textbook",
+    "name": "教科書",
+    "path": "data/materials/textbook.json",
+    "type": "standard"
+  },
+  {
+    "id": "lead_alpha",
+    "name": "リードα",
+    "path": "data/materials/lead_alpha.json",
+    "type": "standard"
+  },
+  {
+    "id": "lead_light",
+    "name": "リードLight",
+    "path": "data/materials/lead_light.json",
+    "type": "standard"
+  },
+  {
+    "id": "exam_common",
+    "name": "共通テスト",
+    "path": "data/materials/exam_common.json",
+    "type": "exam_year"
+  },
+  {
+    "id": "exam_national",
+    "name": "国公立入試",
+    "path": "data/materials/exam_national.json",
+    "type": "exam_univ"
+  },
+  {
+    "id": "exam_private",
+    "name": "私立入試",
+    "path": "data/materials/exam_private.json",
+    "type": "exam_univ"
+  }
+]

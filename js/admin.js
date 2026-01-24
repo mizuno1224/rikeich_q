@@ -1,37 +1,46 @@
 /* js/admin.js */
 
-let currentData = [];
+// Global State
+let manifestData = [];      
+let currentMaterialData = null; 
+let currentMaterialPath = null;
+let currentMaterialType = 'standard'; // 'standard' | 'exam_year' | 'exam_univ'
+
+let isLegacyMode = false;
 let rootDirHandle = null;
-let jsonFileHandle = null;
 let explanationsDirHandle = null;
 let jsProblemsDirHandle = null;
 
 let activeMaterialIndex = 0;
 let openPaths = new Set();
-let currentJsHandle = null;
 let currentProblem = null;
-let currentProblemContext = null;
+let currentVisualEditor = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   // UI Elements
   const btnOpen = document.getElementById('btn-open');
   const btnSave = document.getElementById('btn-save');
   const btnImportAI = document.getElementById('btn-import-ai');
+  const btnAddSubject = document.getElementById('btn-add-subject'); // 科目/大学/年度 追加ボタン
   
   const mainUi = document.getElementById('main-ui');
   const initialMsg = document.getElementById('initial-msg');
   const tabsArea = document.getElementById('material-tabs');
   const treeRoot = document.getElementById('tree-root');
-  const editorPanel = document.getElementById('editor-content');
-  const emptyState = document.querySelector('.empty-state');
   
-  // Code Modal
-  const modal = document.getElementById('code-modal');
+  const editorMainWrapper = document.getElementById('editor-main-wrapper');
+  const tabEdit = document.getElementById('tab-edit');
+  const tabPreview = document.getElementById('tab-preview');
+  const viewEditor = document.getElementById('view-editor');
+  const viewPreview = document.getElementById('view-preview');
+  const previewContainer = document.getElementById('preview-container');
+
+  // Modals
+  const codeModal = document.getElementById('code-modal');
   const btnCloseModal = document.getElementById('btn-close-modal');
   const btnSaveCode = document.getElementById('btn-save-code');
   const codeEditor = document.getElementById('code-editor');
 
-  // Import Modal Elements
   const importModal = document.getElementById('import-modal');
   const btnCloseImport = document.getElementById('btn-close-import');
   const btnExecImport = document.getElementById('btn-exec-import');
@@ -40,29 +49,63 @@ document.addEventListener('DOMContentLoaded', () => {
   const impJs = document.getElementById('imp-js');
   const impJson = document.getElementById('imp-json');
 
-  // --- 1. フォルダを開く ---
+  // --- 1. プロジェクトを開く ---
   btnOpen.addEventListener('click', async () => {
     try {
       rootDirHandle = await window.showDirectoryPicker();
       
-      try {
-        jsonFileHandle = await rootDirHandle.getFileHandle('problems.json');
-        const file = await jsonFileHandle.getFile();
-        currentData = JSON.parse(await file.text());
-      } catch (e) {
-        alert('problems.json が見つかりません。');
-        return;
-      }
-
+      // フォルダハンドル取得チェック
       try {
         const dataDir = await rootDirHandle.getDirectoryHandle('data', { create: true });
         explanationsDirHandle = await dataDir.getDirectoryHandle('explanations', { create: true });
-        
-        const jsDir = await rootDirHandle.getDirectoryHandle('js', { create: true });
-        jsProblemsDirHandle = await jsDir.getDirectoryHandle('problems', { create: true });
+        // jsフォルダは任意（旧互換）
+        try {
+          const jsDir = await rootDirHandle.getDirectoryHandle('js');
+          jsProblemsDirHandle = await jsDir.getDirectoryHandle('problems');
+        } catch(e) {}
       } catch (e) {
-        showToast("フォルダ構成エラー: " + e, true);
+        showToast("フォルダ構成エラー: data/explanations が必要です", true);
         return;
+      }
+
+      // マニフェスト読み込み
+      try {
+        const dataDir = await rootDirHandle.getDirectoryHandle('data');
+        const manifestHandle = await dataDir.getFileHandle('manifest.json');
+        const file = await manifestHandle.getFile();
+        manifestData = JSON.parse(await file.text());
+        isLegacyMode = false;
+        showToast("manifest.json を読み込みました");
+      } catch (e) {
+        // マニフェストがない場合、旧 problems.json を探す（移行モード）
+        try {
+          const legacyHandle = await rootDirHandle.getFileHandle('problems.json');
+          const file = await legacyHandle.getFile();
+          const legacyData = JSON.parse(await file.text());
+          
+          isLegacyMode = true;
+          // 旧データをメモリ上で新形式にマップ
+          manifestData = legacyData.map(mat => {
+            // 簡易的なタイプ判定
+            let type = 'standard';
+            if(mat.materialName.includes('共通')) type = 'exam_year';
+            else if(mat.materialName.includes('入試') || mat.materialName.includes('大学')) type = 'exam_univ';
+
+            return {
+              id: mat.materialFolder || `mat_${Date.now()}_${Math.random().toString(36).substr(2,5)}`,
+              name: mat.materialName,
+              path: `data/materials/${mat.materialFolder || 'common'}.json`,
+              type: type,
+              _tempData: mat
+            };
+          });
+          
+          alert("旧形式(problems.json)を検出しました。\n「全体保存」を押すと、推奨構成（data/manifest.json + 教材別ファイル）へ変換保存されます。");
+        } catch (err2) {
+           if(confirm("データファイルが見つかりません。新規プロジェクトとして初期化しますか？")) {
+             manifestData = []; isLegacyMode = false;
+           } else { return; }
+        }
       }
 
       initialMsg.style.display = 'none';
@@ -70,165 +113,100 @@ document.addEventListener('DOMContentLoaded', () => {
       btnSave.disabled = false;
       btnImportAI.style.display = 'inline-block';
       btnOpen.textContent = "✅ " + rootDirHandle.name;
-      
-      activeMaterialIndex = 0;
-      renderApp();
+
+      if (manifestData.length > 0) {
+        await loadMaterial(0);
+      } else {
+        renderTabs();
+        treeRoot.innerHTML = '<div style="padding:20px; color:#666;">教材がありません。data/manifest.jsonを作成してください。</div>';
+      }
+
     } catch (err) { console.error(err); }
   });
 
-  // --- 全体保存 ---
+  // --- 教材データのロード ---
+  async function loadMaterial(index) {
+    activeMaterialIndex = index;
+    const item = manifestData[index];
+    currentMaterialPath = item.path;
+    currentMaterialType = item.type || 'standard';
+
+    // UI調整: 追加ボタンのラベル変更
+    if(currentMaterialType === 'exam_year') btnAddSubject.textContent = '＋年度を追加';
+    else if(currentMaterialType === 'exam_univ') btnAddSubject.textContent = '＋大学を追加';
+    else btnAddSubject.textContent = '＋科目を追加';
+
+    if (item._tempData) {
+      currentMaterialData = item._tempData;
+    } else {
+      try {
+        // path: "data/materials/textbook.json" -> 分割してロード
+        const parts = item.path.split('/');
+        let dir = rootDirHandle;
+        for(let i=0; i<parts.length-1; i++) {
+           dir = await dir.getDirectoryHandle(parts[i]);
+        }
+        const fh = await dir.getFileHandle(parts[parts.length-1]);
+        const file = await fh.getFile();
+        currentMaterialData = JSON.parse(await file.text());
+      } catch (e) {
+        console.error(e);
+        showToast(`教材読込失敗: ${item.name}`, true);
+        currentMaterialData = { materialName: item.name, subjects: [] };
+      }
+    }
+    renderApp();
+  }
+
+  // --- 保存処理 (各教材1ファイル) ---
   btnSave.addEventListener('click', async () => {
-    if (!jsonFileHandle) return;
+    if (!rootDirHandle) return;
     saveOpenStates();
+
     try {
-      const writable = await jsonFileHandle.createWritable();
-      await writable.write(JSON.stringify(currentData, null, 2));
-      await writable.close();
-      showToast('全体構成(JSON)を保存しました！');
+      const dataDir = await rootDirHandle.getDirectoryHandle('data', { create: true });
+      
+      // 1. マニフェスト保存
+      const cleanManifest = manifestData.map(m => ({
+        id: m.id, name: m.name, path: m.path, type: m.type
+      }));
+      const manifestHandle = await dataDir.getFileHandle('manifest.json', { create: true });
+      const mw = await manifestHandle.createWritable();
+      await mw.write(JSON.stringify(cleanManifest, null, 2));
+      await mw.close();
+
+      // 2. 教材ファイル保存
+      const matDir = await dataDir.getDirectoryHandle('materials', { create: true });
+
+      if (isLegacyMode) {
+        // 移行モード: 全データを個別ファイルに書き出し
+        for (let i = 0; i < manifestData.length; i++) {
+           const m = manifestData[i];
+           const data = m._tempData || currentMaterialData; 
+           const filename = m.path.split('/').pop();
+           const fh = await matDir.getFileHandle(filename, { create: true });
+           const w = await fh.createWritable();
+           await w.write(JSON.stringify(data, null, 2));
+           await w.close();
+           delete m._tempData;
+        }
+        isLegacyMode = false;
+        showToast("データ移行完了: manifest + 分割JSON形式で保存しました");
+      } else {
+        // 通常モード: 現在の教材のみ保存（効率化）
+        if (currentMaterialData && currentMaterialPath) {
+          const filename = currentMaterialPath.split('/').pop();
+          const fh = await matDir.getFileHandle(filename, { create: true });
+          const w = await fh.createWritable();
+          await w.write(JSON.stringify(currentMaterialData, null, 2));
+          await w.close();
+          showToast(`「${currentMaterialData.materialName}」を保存しました`);
+        }
+      }
     } catch (e) { showToast('保存失敗: ' + e, true); }
   });
 
-  // --- AI取込モーダル表示 ---
-  btnImportAI.addEventListener('click', () => {
-    // 入力欄クリア
-    impHtml.value = '';
-    impJs.value = '';
-    impJson.value = '';
-    
-    // 教材プルダウン更新
-    impSelect.innerHTML = '';
-    currentData.forEach((mat, idx) => {
-      const opt = document.createElement('option');
-      opt.value = idx;
-      opt.textContent = mat.materialName;
-      if (idx === activeMaterialIndex) opt.selected = true;
-      impSelect.appendChild(opt);
-    });
-
-    importModal.style.display = 'flex';
-  });
-  btnCloseImport.onclick = () => importModal.style.display = 'none';
-
-  // --- AI取込実行 ---
-  btnExecImport.addEventListener('click', async () => {
-    const targetMatIdx = parseInt(impSelect.value);
-    const htmlContent = impHtml.value.trim();
-    const jsContent = impJs.value.trim();
-    const jsonStr = impJson.value.trim();
-
-    if (isNaN(targetMatIdx) || !jsonStr) {
-      alert("必須項目（教材選択、JSON）が不足しています。");
-      return;
-    }
-
-    try {
-      // JSONパース
-      let meta;
-      try { meta = JSON.parse(jsonStr); } catch(e) { throw new Error("JSONの形式が不正です"); }
-
-      // 必須チェック修正: jsPath は任意とする
-      if (!meta.id || !meta.explanationPath) {
-        throw new Error("JSONに必要なキー(id, explanationPath)がありません");
-      }
-
-      // パス解析
-      // jsPathが無い場合は explanationPath から科目・分野ディレクトリを推定する
-      // explanationPath: data/explanations/科目/分野/ID.html
-      // pathParts: [data, explanations, 科目, 分野, ID.html]
-      // インデックス: 2=科目, 3=分野
-      let subjectDir, fieldDir, fileNameHTML, fileNameJS;
-
-      const explParts = meta.explanationPath.split('/');
-      if (explParts.length < 5) throw new Error("explanationPathの形式が不正です(data/explanations/科目/分野/ファイル.html である必要があります)");
-      
-      subjectDir = explParts[2];
-      fieldDir = explParts[3];
-      fileNameHTML = explParts[4];
-
-      // JSがある場合のみ解析
-      if (meta.jsPath) {
-        const jsParts = meta.jsPath.split('/');
-        if (jsParts.length >= 5) {
-            fileNameJS = jsParts[4];
-        }
-      }
-
-      // ファイル保存
-      // 1. HTML
-      if (htmlContent) {
-        let dir = explanationsDirHandle;
-        dir = await dir.getDirectoryHandle(subjectDir, { create: true });
-        dir = await dir.getDirectoryHandle(fieldDir, { create: true });
-        const file = await dir.getFileHandle(fileNameHTML, { create: true });
-        const writable = await file.createWritable();
-        await writable.write(htmlContent);
-        await writable.close();
-      }
-
-      // 2. JS (中身があり、パスも指定されている場合のみ)
-      if (jsContent && fileNameJS) {
-        let dir = jsProblemsDirHandle;
-        dir = await dir.getDirectoryHandle(subjectDir, { create: true });
-        dir = await dir.getDirectoryHandle(fieldDir, { create: true });
-        const file = await dir.getFileHandle(fileNameJS, { create: true });
-        const writable = await file.createWritable();
-        await writable.write(jsContent);
-        await writable.close();
-      }
-
-      // 3. データ登録
-      const materialObj = currentData[targetMatIdx];
-      
-      // 科目検索or作成
-      let subjectObj = materialObj.subjects.find(s => s.folderName === subjectDir);
-      if (!subjectObj) {
-        subjectObj = { subjectName: subjectDir, folderName: subjectDir, fields: [] };
-        materialObj.subjects.push(subjectObj);
-      }
-
-      // 分野検索or作成
-      let fieldObj = subjectObj.fields.find(f => f.folderId === fieldDir);
-      if (!fieldObj) {
-        fieldObj = { fieldName: fieldDir, folderId: fieldDir, problems: [] };
-        subjectObj.fields.push(fieldObj);
-      }
-
-      // 重複チェック
-      const existingIdx = fieldObj.problems.findIndex(p => p.id === meta.id);
-      
-      // jsPathは無ければ登録しない (undefined)
-      const newProb = {
-        id: meta.id,
-        title: meta.title || "無題",
-        desc: meta.desc || "",
-        explanationPath: meta.explanationPath,
-        layout: meta.layout // 記事型レイアウト設定を保持
-      };
-      if (meta.jsPath) newProb.jsPath = meta.jsPath;
-
-      if (existingIdx >= 0) {
-        // 既存のプロパティを維持しつつ更新
-        fieldObj.problems[existingIdx] = { ...fieldObj.problems[existingIdx], ...newProb };
-      } else {
-        fieldObj.problems.push(newProb);
-      }
-
-      // 完了処理
-      importModal.style.display = 'none';
-      showToast(`${materialObj.materialName} に追加しました！`);
-      btnSave.disabled = false; // 全体保存ボタン有効化
-      
-      // タブを切り替えて表示
-      activeMaterialIndex = targetMatIdx;
-      renderApp();
-
-    } catch (e) {
-      alert("取り込みエラー:\n" + e.message);
-    }
-  });
-
-
-  // --- 描画関数群 ---
+  // --- UI Render ---
   function renderApp() {
     renderTabs();
     renderTree();
@@ -236,269 +214,306 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderTabs() {
     tabsArea.innerHTML = '';
-    currentData.forEach((mat, idx) => {
+    manifestData.forEach((mat, idx) => {
       const btn = document.createElement('button');
       btn.className = `tab-btn ${idx === activeMaterialIndex ? 'active' : ''}`;
-      btn.textContent = mat.materialName;
-      btn.onclick = () => { saveOpenStates(); activeMaterialIndex = idx; renderApp(); };
+      btn.textContent = mat.name;
+      btn.onclick = () => { saveOpenStates(); loadMaterial(idx); };
       tabsArea.appendChild(btn);
     });
   }
 
   function renderTree() {
     treeRoot.innerHTML = '';
-    const mat = currentData[activeMaterialIndex];
-    if(!mat) return;
+    if (!currentMaterialData) return;
 
-    mat.subjects.forEach((sub, sIdx) => {
+    // タイプに応じたラベル定義
+    let labelSubj = "科目"; // Subject階層
+    let labelField = "分野"; // Field階層
+    
+    if (currentMaterialType === 'exam_year') {
+      labelSubj = "年度"; labelField = "試験区分";
+    } else if (currentMaterialType === 'exam_univ') {
+      labelSubj = "大学"; labelField = "年度";
+    }
+
+    // Subjects Loop
+    currentMaterialData.subjects.forEach((sub, sIdx) => {
       const subPath = `s-${sIdx}`;
-      const subDetails = createDetails('科目', sub.subjectName, subPath, sIdx, mat.subjects);
+      const subDetails = createTreeItem(labelSubj, sub.subjectName, subPath);
+      
+      // Actions
+      addActions(subDetails.querySelector('summary'), 
+        () => { // Rename
+           const n = prompt(`${labelSubj}名を変更:`, sub.subjectName);
+           if(n) { sub.subjectName = n; renderTree(); }
+        },
+        () => { // Delete
+           if(confirm("削除しますか？")) { currentMaterialData.subjects.splice(sIdx, 1); renderTree(); }
+        },
+        () => { // Add Child (Field)
+           const ex = currentMaterialType==='standard' ? '01_mechanics' : (currentMaterialType==='exam_univ'?'2025':'main');
+           const f = prompt(`新しい${labelField}のフォルダIDを入力:\n(例: ${ex})`);
+           if(f) {
+             // 表示名もとりあえずIDと同じにする
+             sub.fields.push({ fieldName: f, folderId: f, problems: [] });
+             // フォルダ実体作成
+             createFolder(sub.folderName, f);
+             renderTree();
+             setTimeout(() => { subDetails.open = true; }, 50);
+           }
+        }
+      );
+
       const subContent = document.createElement('div');
       subContent.className = 'tree-content';
 
+      // Fields Loop
       sub.fields.forEach((fld, fIdx) => {
-        const fldPath = `s-${sIdx}-f-${fIdx}`;
-        const fldDetails = createDetails('分野', fld.fieldName, fldPath, fIdx, sub.fields);
+        const fldDetails = createTreeItem(labelField, fld.fieldName, `${subPath}-f-${fIdx}`);
+        
+        addActions(fldDetails.querySelector('summary'),
+          () => { const n = prompt(`${labelField}名を変更:`, fld.fieldName); if(n) { fld.fieldName=n; renderTree(); } },
+          () => { if(confirm("削除しますか？")) { sub.fields.splice(fIdx, 1); renderTree(); } },
+          null 
+        );
+
         const fldContent = document.createElement('div');
         fldContent.className = 'tree-content';
 
-        fld.problems.forEach((prob, pIdx) => {
+        fld.problems.forEach((prob) => {
           const pDiv = document.createElement('div');
           pDiv.className = `prob-item ${currentProblem === prob ? 'active' : ''}`;
-          pDiv.innerHTML = `<span>${prob.title || '(無題)'}</span>`;
+          pDiv.innerHTML = `<span>${prob.title || '(無題)'}</span><span style="font-size:0.8em;color:#999;">${prob.id}</span>`;
           pDiv.onclick = () => openEditor(prob, sub.folderName, fld.folderId);
           fldContent.appendChild(pDiv);
         });
+
+        // Add Problem Button
+        const btnAdd = document.createElement('div');
+        btnAdd.className = 'prob-item';
+        btnAdd.style.color = '#10b981';
+        btnAdd.textContent = '＋ 問題追加';
+        btnAdd.onclick = () => createNewProblem(sub, fld);
+        fldContent.appendChild(btnAdd);
+
         fldDetails.appendChild(fldContent);
         subContent.appendChild(fldDetails);
       });
+
       subDetails.appendChild(subContent);
       treeRoot.appendChild(subDetails);
     });
     restoreOpenStates();
   }
+  
+  // --- Folder Creation Helper ---
+  async function createFolder(subFolder, fieldFolder) {
+    if(!explanationsDirHandle) return;
+    try {
+      const matId = manifestData[activeMaterialIndex].id; // id = フォルダ名
+      let d = explanationsDirHandle;
+      d = await d.getDirectoryHandle(matId, {create:true});
+      d = await d.getDirectoryHandle(subFolder, {create:true});
+      await d.getDirectoryHandle(fieldFolder, {create:true});
+    } catch(e) { console.warn("Folder create warn:", e); }
+  }
 
-  // --- エディタ機能 ---
+  // --- Create New Problem Logic ---
+  async function createNewProblem(subject, field) {
+    const id = prompt("問題IDを入力 (例: q1, 001_motion):");
+    if (!id) return;
+    if (field.problems.find(p => p.id === id)) { alert("ID重複"); return; }
+    
+    // パス構築: data/explanations/{material_id}/{subject}/{field}/{id}.html
+    const matId = manifestData[activeMaterialIndex].id;
+    const path = `data/explanations/${matId}/${subject.folderName}/${field.folderId}/${id}.html`;
+    
+    const newProb = {
+      id: id,
+      title: "新規問題",
+      desc: "",
+      explanationPath: path,
+      layout: "article"
+    };
+    field.problems.push(newProb);
+
+    // ファイル作成
+    try {
+      let dir = explanationsDirHandle;
+      dir = await dir.getDirectoryHandle(matId, {create:true});
+      dir = await dir.getDirectoryHandle(subject.folderName, {create:true});
+      dir = await dir.getDirectoryHandle(field.folderId, {create:true});
+      const fh = await dir.getFileHandle(`${id}.html`, {create:true});
+      const w = await fh.createWritable();
+      await w.write(`<h3>${id}</h3><p>ここに解説を記述...</p>`);
+      await w.close();
+    } catch(e) { console.warn("File create warn:", e); }
+
+    renderTree();
+    openEditor(newProb, subject.folderName, field.folderId);
+  }
+
+  // --- Editor & Preview Logic ---
   async function openEditor(problem, subjectDir, fieldDir) {
     currentProblem = problem;
-    currentProblemContext = { subjectDir, fieldDir };
-
-    emptyState.style.display = 'none';
-    editorPanel.style.display = 'block';
+    editorMainWrapper.style.display = 'flex';
+    document.querySelector('.empty-state').style.display = 'none';
     
+    tabEdit.click();
     document.getElementById('editing-title').textContent = problem.title;
-    document.getElementById('editing-id').textContent = `ID: ${problem.id}`;
-    
+    document.getElementById('editing-id').textContent = problem.id;
     const container = document.getElementById('form-container');
     container.innerHTML = '';
 
-    // A. 基本情報
+    // Basic Info
     const basicSec = document.createElement('div');
     basicSec.className = 'form-section';
-    basicSec.innerHTML = `<h3>📝 基本情報</h3>`;
-    basicSec.appendChild(createInput('タイトル', problem.title, v => { problem.title = v; renderApp(); }));
-    basicSec.appendChild(createInput('説明', problem.desc, v => problem.desc = v));
+    basicSec.innerHTML = '<h3>📝 基本情報</h3>';
+    basicSec.appendChild(createInput('タイトル', problem.title, v=>{ problem.title=v; document.getElementById('editing-title').textContent=v; }));
+    basicSec.appendChild(createInput('ID (参照のみ)', problem.id, null, true));
     
-    // レイアウト設定 (記事型かどうか)
-    const layoutDiv = document.createElement('div');
-    layoutDiv.className = 'form-group';
-    layoutDiv.innerHTML = `<label>レイアウト</label>`;
-    const select = document.createElement('select');
-    select.className = 'form-control';
-    select.innerHTML = `
-      <option value="">左右分割 (旧式)</option>
-      <option value="article">記事型 (1カラム)</option>
-    `;
-    select.value = problem.layout || "";
-    select.onchange = (e) => problem.layout = e.target.value;
-    layoutDiv.appendChild(select);
+    // Layout Select
+    const layoutDiv = document.createElement('div'); layoutDiv.className = 'form-group';
+    layoutDiv.innerHTML = '<label>レイアウト</label><select class="form-control"><option value="article">記事型</option></select>';
     basicSec.appendChild(layoutDiv);
-
     container.appendChild(basicSec);
 
-    // B. 解説エディタ
+    // HTML Editor
     const explSec = document.createElement('div');
     explSec.className = 'form-section';
+    explSec.innerHTML = '<div style="display:flex;justify-content:space-between;"><h3>📖 解説HTML</h3><button id="btn-save-expl" class="btn-save" style="padding:4px 10px;font-size:0.9rem;">💾 解説保存</button></div>';
     
-    const headerDiv = document.createElement('div');
-    headerDiv.style.display = 'flex'; headerDiv.style.justifyContent = 'space-between'; headerDiv.style.marginBottom = '10px';
-    headerDiv.innerHTML = `<h3 style="margin:0; border:none;">📖 解説文エディタ</h3>`;
-    
-    const saveExplBtn = document.createElement('button');
-    saveExplBtn.className = 'btn-save';
-    saveExplBtn.style.padding = '5px 15px';
-    saveExplBtn.style.fontSize = '0.9rem';
-    saveExplBtn.innerHTML = '💾 解説を保存';
-    headerDiv.appendChild(saveExplBtn);
-    explSec.appendChild(headerDiv);
-
-    // ファイルロード
-    let initialExpl = "<p>読み込み中...</p>";
-    if (problem.explanationPath && explanationsDirHandle) {
-      try {
-        const relativePath = problem.explanationPath.replace("data/explanations/", "");
-        const pathParts = relativePath.split('/');
-        let targetHandle = explanationsDirHandle;
-        for(let i=0; i<pathParts.length-1; i++) {
-           targetHandle = await targetHandle.getDirectoryHandle(pathParts[i]);
-        }
-        const fileHandle = await targetHandle.getFileHandle(pathParts[pathParts.length-1]);
-        const file = await fileHandle.getFile();
-        initialExpl = await file.text();
-      } catch (e) {
-        initialExpl = `<p>新規作成、または読み込み失敗</p>`;
-      }
-    }
-
-    // ツールバー
-    const toolbar = document.createElement('div');
-    toolbar.className = 'toolbar';
-    const exec = (cmd, val = null) => { document.execCommand(cmd, false, val); editorDiv.focus(); };
-
-    const tools = [
-      { label: '↩', cmd: 'undo' },
-      { label: '↪', cmd: 'redo' },
-      { sep: true },
-      { label: '<b>B</b>', cmd: 'bold' },
-      { label: '<u>U</u>', cmd: 'underline' },
-      { label: '<i>I</i>', cmd: 'italic' },
-      { sep: true },
-      { label: 'H3', cmd: 'formatBlock', val: '<h3>' },
-      { label: 'P', cmd: 'formatBlock', val: '<p>' },
-      { sep: true },
-      { label: 'Point枠', custom: 'insertPointBox' },
-    ];
-
-    tools.forEach(t => {
-      if (t.sep) {
-        const sep = document.createElement('div'); sep.className = 'tb-sep';
-        toolbar.appendChild(sep); return;
-      }
-      const btn = document.createElement('button');
-      btn.className = 'tb-btn';
-      btn.innerHTML = t.label;
-      if (t.custom === 'insertPointBox') {
-        btn.innerHTML = '✨Point';
-        btn.onclick = () => {
-          const html = `<div class="box-alert"><span class="box-alert-label">Point</span><p>ここに着眼点を入力</p></div><p></p>`;
-          document.execCommand('insertHTML', false, html);
-        };
-      } else {
-        btn.onclick = () => exec(t.cmd, t.val);
-      }
-      toolbar.appendChild(btn);
-    });
-
-    const editorWrap = document.createElement('div');
-    editorWrap.className = 'editor-wrapper';
-
     const editorDiv = document.createElement('div');
     editorDiv.className = 'visual-editor';
     editorDiv.contentEditable = true;
-    editorDiv.innerHTML = initialExpl;
-
-    editorWrap.appendChild(toolbar);
-    editorWrap.appendChild(editorDiv);
-    explSec.appendChild(editorWrap);
+    editorDiv.style.border = '1px solid #ccc';
+    editorDiv.style.marginTop = '10px';
+    
+    // Load Content
+    if (problem.explanationPath && rootDirHandle) {
+      try {
+        // "data/explanations/..." -> parts
+        const parts = problem.explanationPath.split('/');
+        let d = rootDirHandle;
+        // pathの先頭から順にディレクトリを辿る
+        for(let i=0; i<parts.length-1; i++) {
+          // dataなどのフォルダ名が変わっている可能性への対処は省略(マニフェスト正前提)
+          d = await d.getDirectoryHandle(parts[i]);
+        }
+        const f = await d.getFileHandle(parts[parts.length-1]);
+        editorDiv.innerHTML = await (await f.getFile()).text();
+      } catch(e) { editorDiv.innerText = "読込エラーまたは新規: " + e.message; }
+    }
+    
+    currentVisualEditor = editorDiv;
+    explSec.appendChild(editorDiv);
     container.appendChild(explSec);
 
-    saveExplBtn.onclick = async () => {
-      const content = editorDiv.innerHTML;
+    // Save HTML
+    explSec.querySelector('#btn-save-expl').onclick = async () => {
       try {
-        const subHandle = await explanationsDirHandle.getDirectoryHandle(currentProblemContext.subjectDir, { create: true });
-        const fieldHandle = await subHandle.getDirectoryHandle(currentProblemContext.fieldDir, { create: true });
-        const fileName = `${problem.id}.html`;
-        
-        const fileHandle = await fieldHandle.getFileHandle(fileName, { create: true });
-        const writable = await fileHandle.createWritable();
-        await writable.write(content);
-        await writable.close();
-        
-        showToast('解説を保存しました！');
-      } catch (e) { showToast("保存エラー: " + e, true); }
+        const parts = problem.explanationPath.split('/');
+        let d = rootDirHandle;
+        for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i], {create:true});
+        const f = await d.getFileHandle(parts[parts.length-1], {create:true});
+        const w = await f.createWritable();
+        await w.write(editorDiv.innerHTML);
+        await w.close();
+        showToast("解説HTMLを保存しました");
+      } catch(e) { alert("保存エラー: " + e); }
     };
-    
-    // C. JSコード編集 (JSパスがある場合のみ表示)
-    if (problem.jsPath) {
-      const simSec = document.createElement('div');
-      simSec.className = 'form-section';
-      simSec.innerHTML = `<h3>⚙️ JSコード（旧式）</h3>`;
-      const btnEditJs = document.createElement('button');
-      btnEditJs.className = 'btn-code-edit';
-      btnEditJs.textContent = 'JSファイルを編集';
-      btnEditJs.onclick = () => window.openJsEditor(problem.jsPath);
-      simSec.appendChild(btnEditJs);
-      container.appendChild(simSec);
-    } else {
-      const simSec = document.createElement('div');
-      simSec.className = 'form-section';
-      simSec.style.opacity = '0.7';
-      simSec.innerHTML = `<h3>⚙️ シミュレーション</h3><p style="font-size:0.9rem; color:#666;">※ 記事型レイアウトのため、JSは解説HTML内に直接記述されています。編集は上の「解説文エディタ」で行ってください。</p>`;
-      container.appendChild(simSec);
-    }
   }
 
-  // --- ヘルパー関数 ---
-  function createInput(label, val, onChange) {
+  // --- Tab Switching ---
+  tabEdit.onclick = () => {
+    tabEdit.classList.add('active'); tabPreview.classList.remove('active');
+    viewEditor.style.display='block'; viewPreview.style.display='none';
+  };
+  tabPreview.onclick = () => {
+    tabEdit.classList.remove('active'); tabPreview.classList.add('active');
+    viewEditor.style.display='none'; viewPreview.style.display='block';
+    if(currentVisualEditor) {
+      previewContainer.innerHTML = currentVisualEditor.innerHTML;
+      if(window.MathJax) MathJax.typesetPromise([previewContainer]);
+      executeInlineScripts(previewContainer);
+    }
+  };
+  
+  function executeInlineScripts(el) {
+    Array.from(el.querySelectorAll('script')).forEach(s => {
+      const ns = document.createElement('script');
+      Array.from(s.attributes).forEach(a => ns.setAttribute(a.name, a.value));
+      ns.textContent = s.textContent;
+      try{ s.parentNode.replaceChild(ns, s); }catch(e){}
+    });
+  }
+
+  // --- Helpers ---
+  function createInput(label, val, onChange, disabled=false) {
     const g = document.createElement('div'); g.className='form-group';
     g.innerHTML = `<label>${label}</label>`;
-    const i = document.createElement('input'); i.className='form-control'; i.value=val||'';
-    i.oninput = (e) => onChange(e.target.value);
+    const i = document.createElement('input'); i.className='form-control'; 
+    i.value=val||''; i.disabled=disabled;
+    if(onChange) i.oninput = (e) => onChange(e.target.value);
     g.appendChild(i);
     return g;
   }
-  
-  function createDetails(label, title, path, index, parentArray) {
-    const det = document.createElement('details');
-    det.dataset.path = path;
+  function createTreeItem(label, text, path) {
+    const det = document.createElement('details'); det.dataset.path = path;
     const sum = document.createElement('summary');
-    sum.textContent = `[${label}] ${title}`;
-    sum.addEventListener('click', () => {
-      setTimeout(() => { if(det.open) openPaths.add(path); else openPaths.delete(path); }, 50);
-    });
+    sum.innerHTML = `<span><span style="font-size:0.8em;color:#888;">[${label}]</span> ${text}</span>`;
     det.appendChild(sum);
     return det;
   }
-  
+  function addActions(summaryEl, onRename, onDelete, onAdd) {
+    const div = document.createElement('div'); div.className = 'tree-actions';
+    if(onRename) div.innerHTML += `<button class="tree-btn">✎</button>`;
+    if(onDelete) div.innerHTML += `<button class="tree-btn del">🗑</button>`;
+    if(onAdd)    div.innerHTML += `<button class="tree-btn add">＋</button>`;
+    
+    const btns = div.querySelectorAll('button');
+    let idx=0;
+    if(onRename) btns[idx++].onclick = (e) => { e.preventDefault(); e.stopPropagation(); onRename(); };
+    if(onDelete) btns[idx++].onclick = (e) => { e.preventDefault(); e.stopPropagation(); onDelete(); };
+    if(onAdd)    btns[idx++].onclick = (e) => { e.preventDefault(); e.stopPropagation(); onAdd(); };
+    summaryEl.appendChild(div);
+  }
   function saveOpenStates() {
-    openPaths.clear();
-    document.querySelectorAll('details[open]').forEach(el => { if (el.dataset.path) openPaths.add(el.dataset.path); });
+    openPaths.clear(); document.querySelectorAll('details[open]').forEach(e => openPaths.add(e.dataset.path));
   }
   function restoreOpenStates() {
-    document.querySelectorAll('details').forEach(el => { if (el.dataset.path && openPaths.has(el.dataset.path)) el.open = true; });
+    document.querySelectorAll('details').forEach(e => { if(openPaths.has(e.dataset.path)) e.open=true; });
   }
-  
-  function showToast(msg, err=false) {
-    const c = document.getElementById('toast-container');
+  function showToast(msg, err) {
     const t = document.createElement('div'); t.className='toast';
-    if(err) t.style.background='#ef4444';
-    t.textContent = msg;
-    c.appendChild(t);
+    t.textContent = msg; if(err) t.style.background='#ef4444';
+    document.getElementById('toast-container').appendChild(t);
     setTimeout(()=>t.remove(), 3000);
   }
 
-  // JSモーダル系
-  window.openJsEditor = async (jsPath) => {
-    if(!rootDirHandle) return;
-    try {
-      const parts = jsPath.split('/'); 
-      let dir = jsProblemsDirHandle;
-      dir = await dir.getDirectoryHandle(parts[2]);
-      dir = await dir.getDirectoryHandle(parts[3]);
-      currentJsHandle = await dir.getFileHandle(parts[4]);
-      
-      const f = await currentJsHandle.getFile();
-      codeEditor.value = await f.text();
-      modal.style.display = 'flex';
-    } catch(e) { alert("JSファイルが開けません: " + e); }
-  };
-  btnCloseModal.onclick = () => modal.style.display='none';
-  btnSaveCode.onclick = async () => {
-    if(!currentJsHandle) return;
-    const w = await currentJsHandle.createWritable();
-    await w.write(codeEditor.value);
-    await w.close();
-    showToast("JS保存完了");
-    modal.style.display='none';
-  };
+  // Header Button (Add Subject/Univ/Year)
+  btnAddSubject.addEventListener('click', () => {
+    let promptMsg = "新しい科目名:";
+    if(currentMaterialType === 'exam_year') promptMsg = "新しい年度 (例: 2025):";
+    if(currentMaterialType === 'exam_univ') promptMsg = "新しい大学ID (例: waseda):";
+    
+    const name = prompt(promptMsg);
+    if(!name) return;
+    
+    // 追加
+    currentMaterialData.subjects.push({
+      subjectName: name, 
+      folderName: name, // フォルダ名も同一にする
+      fields: []
+    });
+    
+    // フォルダ作成
+    const matId = manifestData[activeMaterialIndex].id;
+    if(explanationsDirHandle) {
+      explanationsDirHandle.getDirectoryHandle(matId, {create:true})
+        .then(d => d.getDirectoryHandle(name, {create:true}));
+    }
+    renderTree();
+  });
 });

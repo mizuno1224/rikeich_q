@@ -3,11 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>問題データ管理画面</title>
+  <title>Physics Lab. Manager</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/admin.css">
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
   
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+
   <script>
     window.MathJax = {
       tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
@@ -45,8 +53,7 @@
           <div class="sidebar-header">
             <h3>構成ツリー</h3>
             <div class="sidebar-tools">
-              <button id="btn-expand-all" class="btn-tool">全開</button>
-              <button id="btn-collapse-all" class="btn-tool">全閉</button>
+              <button id="btn-add-subject" class="btn-tool" title="科目を追加">＋科目</button>
             </div>
           </div>
           <div id="tree-root"></div>
@@ -56,13 +63,30 @@
           <div class="empty-state">
             <p>👈 左のツリーから編集したい問題を選択してください</p>
           </div>
-          <div id="editor-content" style="display:none;">
+          
+          <div id="editor-main-wrapper" style="display:none; height:100%; flex-direction:column;">
             <div class="editor-header">
-              <h2 id="editing-title">問題タイトル</h2>
-              <span id="editing-id" class="badge-id">ID: ...</span>
+              <div style="flex:1;">
+                <h2 id="editing-title" style="margin:0;">問題タイトル</h2>
+                <span id="editing-id" class="badge-id">ID: ...</span>
+              </div>
+              
+              <div class="view-switch">
+                <button id="tab-edit" class="view-tab active">📝 編集</button>
+                <button id="tab-preview" class="view-tab">👁️ プレビュー</button>
+              </div>
             </div>
-            <div id="form-container"></div>
+
+            <div id="view-editor" class="view-content active">
+              <div id="form-container"></div>
+            </div>
+
+            <div id="view-preview" class="view-content" style="padding: 20px; background: #fff; overflow-y: auto;">
+              <div id="preview-container" class="viewer-split-content" style="display: block; padding: 0;">
+                </div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -102,7 +126,6 @@
           <select id="import-target-material" style="padding:8px; width:100%; max-width:400px; border-radius:4px; border:1px solid #ccc;">
             <option value="">(プロジェクトを開いてください)</option>
           </select>
-          <p style="font-size:0.85rem; color:#64748b; margin:5px 0 0 0;">※ 選択した教材の中に、JSONの情報に基づいて科目・分野フォルダが自動生成されます。</p>
         </div>
 
         <div class="split-3-columns" style="display:flex; gap:15px; flex:1; min-height: 0;">
@@ -111,7 +134,7 @@
             <textarea id="imp-html" class="textarea-import" placeholder="<h2...>..."></textarea>
           </div>
           <div style="flex:1; display:flex; flex-direction:column;">
-            <label class="label-import">【ブロック2】JSコード</label>
+            <label class="label-import">【ブロック2】JSコード(任意)</label>
             <textarea id="imp-js" class="textarea-import" placeholder="window.setup_..."></textarea>
           </div>
           <div style="flex:1; display:flex; flex-direction:column;">
@@ -129,6 +152,7 @@
 
   <div id="toast-container" class="toast-container"></div>
 
+  <script src="js/sim-utils.js"></script>
   <script src="js/admin.js"></script>
 </body>
 </html>

@@ -1,0 +1,50 @@
+{
+  "materialName": "国公立入試",
+  "subjects": [
+    {
+      "subjectName": "東京大学",
+      "folderName": "tokyo",
+      "fields": [
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            {
+              "id": "tokyo_2024_1",
+              "title": "第1問 力学",
+              "desc": "二体問題と重心運動",
+              "explanationPath": "data/explanations/exam_national/tokyo/2024/tokyo_2024_1.html",
+              "layout": "article"
+            },
+            {
+              "id": "tokyo_2024_2",
+              "title": "第2問 電磁気",
+              "desc": "電磁誘導と回路",
+              "explanationPath": "data/explanations/exam_national/tokyo/2024/tokyo_2024_2.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "名古屋大学",
+      "folderName": "nagoya",
+      "fields": [
+        {
+          "fieldName": "2023年度",
+          "folderId": "2023",
+          "problems": [
+            {
+              "id": "nagoya_2023_3",
+              "title": "第3問 熱力学",
+              "desc": "気体分子運動論",
+              "explanationPath": "data/explanations/exam_national/nagoya/2023/nagoya_2023_3.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

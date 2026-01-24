@@ -1,0 +1,36 @@
+{
+  "materialName": "リードα",
+  "subjects": [
+    {
+      "subjectName": "物理基礎",
+      "folderName": "physics_basic",
+      "fields": [
+        {
+          "fieldName": "基本問題",
+          "folderId": "basic_problems",
+          "problems": [
+            {
+              "id": "alpha_001",
+              "title": "1 速度の合成",
+              "desc": "川を渡る船の速度",
+              "explanationPath": "data/explanations/lead_alpha/physics_basic/basic_problems/alpha_001.html",
+              "layout": "article"
+            },
+            {
+              "id": "alpha_002",
+              "title": "2 相対速度",
+              "desc": "電車すれ違い",
+              "explanationPath": "data/explanations/lead_alpha/physics_basic/basic_problems/alpha_002.html",
+              "layout": "article"
+            }
+          ]
+        },
+        {
+          "fieldName": "応用問題",
+          "folderId": "advanced_problems",
+          "problems": []
+        }
+      ]
+    }
+  ]
+}
