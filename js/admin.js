@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveOpenStates();
 
     try {
-      await saveManifest();
+      // await saveManifest(); // 不要なリロードを防ぐため削除
 
       const dataDir = await rootDirHandle.getDirectoryHandle('data');
       const matDir = await dataDir.getDirectoryHandle('materials', { create: true });
@@ -183,6 +183,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function renderTree() {
+    // 1. 再描画前の状態を保存 (スクロール位置 ＆ 開閉状態)
+    const lastScrollTop = treeRoot.scrollTop;
+    saveOpenStates(); 
+
     treeRoot.innerHTML = '';
     if (!currentMaterialData) return;
 
@@ -218,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (partName !== currentPartName) {
             currentPartName = partName;
             const partDetails = document.createElement('details');
-            partDetails.open = true;
+            partDetails.open = true; // デフォルトは開く
             partDetails.dataset.path = `${subPath}-part-${partName}`;
             partDetails.style.marginBottom = '5px';
             partDetails.style.border = 'none';
@@ -264,6 +268,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fld.problems.forEach((prob, pIdx) => {
           const pDiv = document.createElement('div');
+          // IDとPathの両方で一致判定
           const isActive = (currentProblem && currentProblem.id === prob.id && currentProblem.explanationPath === prob.explanationPath);
           pDiv.className = `prob-item ${isActive ? 'active' : ''}`;
           
@@ -309,7 +314,10 @@ document.addEventListener('DOMContentLoaded', () => {
       subDetails.appendChild(subContent);
       treeRoot.appendChild(subDetails);
     });
+    
+    // 2. 状態の復元 (開閉状態 ＆ スクロール位置)
     restoreOpenStates();
+    treeRoot.scrollTop = lastScrollTop;
   }
 
   // ============================================================
@@ -369,10 +377,9 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // 取り込み実行ロジック (引数でHTMLとJSONを受け取る)
+  // 取り込み実行ロジック
   async function executeSmartImport(htmlRaw, jsonRaw) {
-    // 1. クリーニング処理 (Markdown記法の除去)
-    // ```json ... ``` や ```html ... ``` を削除する
+    // 1. クリーニング処理
     const jsonClean = jsonRaw.replace(/```json/gi, '').replace(/```/g, '').trim();
     const htmlClean = htmlRaw.replace(/```html/gi, '').replace(/```/g, '').trim();
 
@@ -386,21 +393,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. パス解析
     const pathParts = metaData.explanationPath.split('/');
     const expIndex = pathParts.indexOf('explanations');
-    if (expIndex === -1 || pathParts.length < expIndex + 4) {
-      throw new Error("無効なパス形式です。data/explanations/... である必要があります");
+    if (expIndex === -1) {
+      throw new Error("無効なパス形式です。パスに 'data/explanations' が含まれていません。");
     }
     
-    const relevantPath = pathParts.slice(expIndex + 1); 
-    const matId = relevantPath[0];
-    const subFolder = relevantPath[1];
-    const fileName = relevantPath[relevantPath.length - 1];
-    const folderIds = relevantPath.slice(2, relevantPath.length - 1); // 中間のフォルダ群
+    const matId = pathParts[expIndex + 1];
+    if (!matId) throw new Error("パスから教材IDを特定できませんでした。");
+
+    const fileName = pathParts[pathParts.length - 1];
+    const innerSegments = pathParts.slice(expIndex + 2, pathParts.length - 1);
+    
+    if (innerSegments.length === 0) {
+        throw new Error("パスの階層が不足しています。科目フォルダが含まれているか確認してください。");
+    }
+
+    const subFolder = innerSegments[0];
+    const folderIds = innerSegments.slice(1).join('/'); // サブフォルダ以降を結合
     
     // 3. 教材データの特定
     const targetMatIndex = manifestData.findIndex(m => m.id === matId);
     if (targetMatIndex === -1) throw new Error(`教材ID "${matId}" が manifest.json に見つかりません`);
     
-    // ターゲット教材に切り替え
     if (activeMaterialIndex !== targetMatIndex) {
       await loadMaterial(targetMatIndex);
     }
@@ -416,27 +429,31 @@ document.addEventListener('DOMContentLoaded', () => {
       await matDir.getDirectoryHandle(subFolder, {create: true});
     }
 
-    // 分野IDの結合
-    const targetFolderId = folderIds.join('/');
-    let targetField = targetSubject.fields.find(f => f.folderId === targetFolderId);
+    let targetField = targetSubject.fields.find(f => f.folderId === folderIds);
 
-    if (!targetField) {
-      const confirmMsg = `分野ID "${targetFolderId}" が見つかりません。\n新規作成しますか？\n(表示名はIDと同じになります)`;
+    // folderIdsがあるのに見つからない場合は作成
+    if (folderIds && !targetField) {
+      const confirmMsg = `分野ID "${folderIds}" が見つかりません。\n新規作成しますか？\n(表示名はIDと同じになります)`;
       if(!confirm(confirmMsg)) return;
       
       targetField = {
-        fieldName: `新規分野 ${targetFolderId}`,
-        folderId: targetFolderId,
+        fieldName: `新規分野 ${folderIds}`,
+        folderId: folderIds,
         problems: []
       };
       targetSubject.fields.push(targetField);
       
       const matDir = await getMaterialDirHandle();
       const subDir = await matDir.getDirectoryHandle(subFolder, {create:true});
-      await getDeepDirectoryHandle(subDir, targetFolderId, true);
+      await getDeepDirectoryHandle(subDir, folderIds, true);
+    } else if (!folderIds && !targetField) {
+       // folderIdsが空の場合は科目直下だが、通常fieldsは必須。
+       // ここでは簡易的にエラーとせず進めるが、必要に応じて処理追加
     }
 
     // 5. 問題データの追加/更新
+    if (!targetField) throw new Error("分野(Field)を特定・作成できませんでした。");
+
     const existingProbIndex = targetField.problems.findIndex(p => p.id === metaData.id);
     const newProbData = {
       id: metaData.id,
@@ -453,27 +470,28 @@ document.addEventListener('DOMContentLoaded', () => {
       targetField.problems.push(newProbData);
     }
 
-    // 6. HTMLファイルの書き込み
+    // 6. 先にデータを保存 (HTML書き込みでリロードが発生しても登録が消えないようにする)
+    await saveAll();
+
+    // 7. HTMLファイルの書き込み
     if (htmlClean) {
       try {
         const matDir = await getMaterialDirHandle();
         const subDir = await matDir.getDirectoryHandle(subFolder);
-        const fieldDir = await getDeepDirectoryHandle(subDir, targetFolderId, true);
+        const fieldDir = await getDeepDirectoryHandle(subDir, folderIds, true);
         const fileHandle = await fieldDir.getFileHandle(fileName, {create: true});
         const w = await fileHandle.createWritable();
         await w.write(htmlClean);
         await w.close();
       } catch(e) {
         console.warn("HTML書き込みエラー: ", e);
-        alert("HTMLファイルの保存に失敗しましたが、メタデータは更新します。");
+        alert("HTMLファイルの保存に失敗しましたが、メタデータは更新されました。");
       }
     } else {
-      // HTMLが空でもメタデータだけ更新したい場合があるので警告のみ
       console.log("HTML input was empty, skipping file write.");
     }
 
-    // 7. 保存と反映
-    await saveAll(); 
+    // 8. UI更新
     currentProblem = newProbData; 
     renderTree(); 
     openEditor(newProbData);
@@ -606,7 +624,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (oldFolder && oldFolder.length > 0) {
         sub.fields.forEach(f => {
             f.problems.forEach(p => {
-                p.explanationPath = p.explanationPath.replace(`/${oldFolder}/`, `/${newName}/`);
+                // パスセグメントごとの完全一致置換を行う
+                const parts = p.explanationPath.split('/');
+                const newParts = parts.map(part => part === oldFolder ? newName : part);
+                p.explanationPath = newParts.join('/');
             });
         });
     }
@@ -628,31 +649,51 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function handleAddField(sub, label) {
+    // 既存の「編」名を取得して、入力のヒントにする
+    const existingParts = [...new Set(sub.fields
+      .map(f => f.fieldName.split(' / '))
+      .filter(parts => parts.length > 1)
+      .map(parts => parts[0])
+    )];
+    
     let defaultName = `新規${label}`;
+    let hintId = '01';
+
+    // 教科書型かつ既に編がある場合は、最後の編をデフォルトにする
     if(manifestData[activeMaterialIndex].id === 'textbook') {
-      defaultName = "第〇編 編名 / 第〇章 章名";
+      if (existingParts.length > 0) {
+        defaultName = `${existingParts[existingParts.length-1]} / 新規章`;
+        hintId = '01/02'; 
+      } else {
+        defaultName = "第1編 力と運動 / 第1章 剛体";
+        hintId = '01/01';
+      }
+    } else if(currentMaterialType === 'exam_year') {
+      hintId = 'main';
     }
-    const nameInput = prompt(`新しい${label}名:\n※「第1編 / 第1章」のように入力すると階層化されます`, defaultName);
+
+    const nameInput = prompt(`新しい${label}名 (表示名):\n※「第1編 ... / 第1章 ...」のようにスラッシュ区切りで階層化できます`, defaultName);
     if(!nameInput) return;
 
-    let hint = '01';
-    if(manifestData[activeMaterialIndex].id === 'textbook') hint = '01/01'; 
-    else if(currentMaterialType === 'exam_year') hint = 'main';
-    
-    const folderId = prompt(`フォルダID (パス):\n※「01/01」のようにスラッシュで階層化可能`, hint);
+    // フォルダIDの自動提案（ユーザー入力用）
+    const folderId = prompt(`フォルダID (ディレクトリ名):\n※実際のフォルダ名になります。「01/01」のように階層化可能`, hintId);
     if(!folderId) return;
 
     try {
         const matDir = await getMaterialDirHandle();
         let subDir = matDir;
+        // 科目フォルダ確保
         if (sub.folderName && sub.folderName.length > 0) {
             subDir = await matDir.getDirectoryHandle(sub.folderName, {create:true});
         }
-        
+        // 分野フォルダ確保
         if(currentMaterialType !== 'exam_year') {
             await getDeepDirectoryHandle(subDir, folderId, true);
         }
-    } catch(e) { console.warn("FS Create Warn:", e); }
+    } catch(e) { 
+        console.warn("FS Create Warn:", e); 
+        alert("フォルダの作成に失敗した可能性がありますが、登録を続行します。\n" + e);
+    }
 
     const displayName = nameInput;
     sub.fields.push({
