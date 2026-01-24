@@ -407,9 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error("パスの階層が不足しています。科目フォルダが含まれているか確認してください。");
     }
 
-    const subFolder = innerSegments[0];
-    const folderIds = innerSegments.slice(1).join('/'); // サブフォルダ以降を結合
-    
     // 3. 教材データの特定
     const targetMatIndex = manifestData.findIndex(m => m.id === matId);
     if (targetMatIndex === -1) throw new Error(`教材ID "${matId}" が manifest.json に見つかりません`);
@@ -419,14 +416,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. 科目・分野の特定
-    let targetSubject = currentMaterialData.subjects.find(s => s.folderName === subFolder);
-    
+    const firstSegment = innerSegments[0];
+    let targetSubject = currentMaterialData.subjects.find(s => s.folderName === firstSegment);
+    let folderIds = "";
+
+    // 科目フォルダが見つからない場合、"フォルダなし科目(folderName==='')" の可能性をチェック
     if (!targetSubject) {
-      if(!confirm(`科目フォルダ "${subFolder}" が見つかりません。新規作成しますか？`)) return;
-      targetSubject = { subjectName: subFolder, folderName: subFolder, fields: [] };
+        const emptySubject = currentMaterialData.subjects.find(s => s.folderName === "");
+        if (emptySubject) {
+            // 空フォルダ科目が存在する場合、パスの第一要素は「分野ID」とみなす
+            targetSubject = emptySubject;
+            folderIds = innerSegments.join('/'); // 全てを分野パスとする
+        }
+    }
+
+    // それでも見つからない場合は、通常の科目として新規作成フローへ
+    if (!targetSubject) {
+      if(!confirm(`科目フォルダ "${firstSegment}" が見つかりません。新規作成しますか？`)) return;
+      targetSubject = { subjectName: firstSegment, folderName: firstSegment, fields: [] };
       currentMaterialData.subjects.push(targetSubject);
       const matDir = await getMaterialDirHandle();
-      await matDir.getDirectoryHandle(subFolder, {create: true});
+      await matDir.getDirectoryHandle(firstSegment, {create: true});
+      
+      // 新規作成時は標準通り「1つ目が科目、残りが分野」
+      folderIds = innerSegments.slice(1).join('/');
+    } else if (targetSubject.folderName !== "") {
+        // 通常の科目が見つかった場合も「1つ目が科目、残りが分野」
+        folderIds = innerSegments.slice(1).join('/');
     }
 
     let targetField = targetSubject.fields.find(f => f.folderId === folderIds);

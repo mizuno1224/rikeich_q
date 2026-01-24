@@ -1,0 +1,174 @@
+<h2 class="prob-title-sub">39 人工衛星の運動</h2>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p>人工衛星の運動では、<strong>「万有引力 ＝ 向心力」</strong>という運動方程式を立てるのが基本です。</p>
+  <p>また、(2)のように「高さ $R$」と言われた場合、軌道半径は地球の半径 $R$ を足して <strong>$2R$</strong> になる点に注意しましょう。</p>
+</div>
+
+<h3>1. シミュレーション：軌道半径と速さ・周期の関係</h3>
+<p>
+  軌道半径が大きくなると、人工衛星の速さや周期はどう変化するでしょうか？<br>
+  下のスライダーで軌道半径 $r$ を変えて、動きの違いを確認してみましょう。<br>
+  （※シミュレーション上の $r=1.0R$ が(1)、$r=2.0R$ が(2)の状況に対応します）
+</p>
+
+<div id="sim-satellite" class="sim-embed" style="height: 350px;"></div>
+
+<script>
+  (function() {
+    const targetId = 'sim-satellite';
+    const el = document.getElementById(targetId);
+    if (!el) return;
+
+    const sketch = (p) => {
+      // パラメータ
+      let radiusRatio = 1.0; // 地球半径に対する軌道半径の倍率 (1.0 ~ 4.0)
+      let angle = 0;
+      
+      // 定数 (シミュレーション上の係数)
+      const GM = 5000; // 適当な重力定数*質量
+      const EARTH_R = 60; // 画面上の地球の半径(px)
+
+      // UI
+      let sliderR;
+
+      p.setup = () => {
+        const w = el.clientWidth;
+        const h = el.clientHeight;
+        p.createCanvas(w, h).parent(el);
+
+        // コントローラー生成
+        if (window.SimUtils) {
+          const { container } = SimUtils.createControls(el, {
+            onPlay: () => p.loop(),
+            onPause: () => p.noLoop(),
+            onReset: () => { radiusRatio = 1.0; angle = 0; if(sliderR) sliderR.value = 1.0; }
+          });
+          
+          sliderR = SimUtils.addSlider(container, "軌道半径 r", 1.0, 3.0, 1.0, 0.1, (val) => {
+            radiusRatio = val;
+          });
+        }
+      };
+
+      p.draw = () => {
+        p.background(248, 250, 252);
+        p.translate(p.width / 2, p.height / 2);
+
+        // 1. 地球の描画
+        p.noStroke();
+        p.fill(59, 130, 246); // Earth Blue
+        p.circle(0, 0, EARTH_R * 2);
+        p.fill(255);
+        p.textAlign(p.CENTER, p.CENTER);
+        p.text("地球", 0, 0);
+
+        // 2. 軌道の計算
+        // 運動方程式: m * v^2 / r = G * M * m / r^2  => v = sqrt(GM / r)
+        // 角速度 omega = v / r = sqrt(GM / r^3)
+        // 実際の画面上の半径 r_px
+        const r_px = EARTH_R * radiusRatio;
+        
+        // 角速度 (シミュレーション用)
+        const omega = p.sqrt(GM / p.pow(r_px, 3)) * 5; // *5は早送り係数
+
+        // 3. 軌道円の描画
+        p.noFill();
+        p.stroke(200);
+        p.drawingContext.setLineDash([5, 5]);
+        p.circle(0, 0, r_px * 2);
+        p.drawingContext.setLineDash([]);
+
+        // 4. 人工衛星の更新と描画
+        angle += omega;
+        
+        const satX = r_px * p.cos(angle);
+        const satY = r_px * p.sin(angle);
+
+        p.noStroke();
+        p.fill(244, 63, 94); // Accent Red
+        p.circle(satX, satY, 12);
+        
+        // 5. 情報表示 (パラメータ)
+        p.resetMatrix();
+        p.fill(51);
+        p.noStroke();
+        p.textAlign(p.LEFT, p.TOP);
+        p.textSize(14);
+        
+        const v_rel = 1.0 / p.sqrt(radiusRatio); // v ∝ 1/√r
+        const T_rel = p.sqrt(p.pow(radiusRatio, 3)); // T ∝ √r^3
+        
+        p.text(`軌道半径 r = ${radiusRatio.toFixed(1)} R`, 20, 20);
+        p.text(`速さ v ∝ ${v_rel.toFixed(2)} 倍`, 20, 40);
+        p.text(`周期 T ∝ ${T_rel.toFixed(2)} 倍`, 20, 60);
+      };
+
+      p.windowResized = () => {
+        const parent = document.getElementById(targetId);
+        if(parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+      };
+    };
+
+    const myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+</script>
+
+<h3>2. 解法のプロセス</h3>
+
+<h4>(1) 地表すれすれの円軌道 ($r = R$)</h4>
+<p>
+  人工衛星の質量を $m$ とします。この衛星にはたらく力は、地球の中心に向かう<strong>万有引力</strong>のみであり、これが円運動の<strong>向心力</strong>となります。
+</p>
+<p>
+  運動方程式（向心力＝万有引力）を立てます。
+</p>
+<p>
+  $$ m \frac{v^2}{R} = G \frac{Mm}{R^2} $$
+</p>
+<p>
+  これを $v$ について解くと、
+</p>
+<p>
+  $$ v^2 = \frac{GM}{R} \quad \therefore \quad \strong{v = \sqrt{\frac{GM}{R}}} $$
+</p>
+<p>
+  次に、周期 $T$ を求めます。円運動の周期は「円周 $\div$ 速さ」で求められます。
+</p>
+<p>
+  $$ T = \frac{2\pi R}{v} = 2\pi R \cdot \sqrt{\frac{R}{GM}} = \strong{2\pi \sqrt{\frac{R^3}{GM}}} $$
+</p>
+
+<h4>(2) 高さが $R$ の円軌道の場合</h4>
+<p>
+  「地表からの高さが $R$」ということは、地球の中心からの距離（軌道半径）は $r = R + R = \strong{2R}$ となります。
+</p>
+
+<h5>速さの変化</h5>
+<p>
+  (1)の速さの式 $v = \sqrt{\frac{GM}{r}}$ において、$r$ を $R$ から $2R$ に置き換えます。
+</p>
+<p>
+  $$ v' = \sqrt{\frac{GM}{2R}} = \frac{1}{\sqrt{2}} \sqrt{\frac{GM}{R}} = \frac{1}{\sqrt{2}} v $$
+</p>
+<p>
+  よって、速さは (1) の <strong>$\frac{1}{\sqrt{2}}$ 倍</strong> になります。
+</p>
+
+<h5>周期の変化</h5>
+<p>
+  同様に、周期の式 $T = 2\pi \sqrt{\frac{r^3}{GM}}$ において、$r$ を $2R$ に置き換えます。
+</p>
+<p>
+  $$ T' = 2\pi \sqrt{\frac{(2R)^3}{GM}} = 2\pi \sqrt{\frac{8R^3}{GM}} $$
+  $$ \quad = \sqrt{8} \left( 2\pi \sqrt{\frac{R^3}{GM}} \right) = 2\sqrt{2} T $$
+</p>
+<p>
+  よって、周期は (1) の <strong>$2\sqrt{2}$ 倍</strong> になります。
+</p>
+<p>
+  <span style="font-size:0.9em; color:#666;">（参考：ケプラーの第3法則 $T^2 \propto r^3$ を用いても、$r$ が2倍になれば $T$ は $2\sqrt{2}$ 倍になることがすぐに分かります）</span>
+</p>
