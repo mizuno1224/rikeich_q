@@ -24,7 +24,6 @@
 
 3. **解法のポイントまとめ（※必ずページの最後に配置）**
    - この問題から得られる普遍的なポイントを箇条書きで整理。
-   - **重要: `<div class="box-alert">` タグを使用して「Point」として装飾し、必ず解説の最後（`<h3>3. ...</h3>` の直後）に配置してください。冒頭には配置しないでください。**
 
 # 2. 技術スタックと記述ルール
 - **HTML/JS完結**: 外部ファイルは作らず、HTML内の`<script>`タグ（IIFE形式）に全ロジックを記述。
@@ -33,7 +32,10 @@
   - `SimUtils.addSlider(containerId, "ラベル", min, max, initial, step, (val) => { ... })` を使用してインタラクティブ性を確保。
   - ライブラリのCDNは含めず、ロジックのみを記述（親ページでロード済み想定）。
 - **数式**: MathJax（`$...$` または `$$...$$`）を使用。
-- **装飾**: プロジェクト標準クラス（`.box-alert`, `.card`, `.highlight`, `.prob-title-sub`）を適切に使用。
+- **装飾**: 
+  - プロジェクト標準クラス（`.box-alert`, `.card`, `.prob-title-sub`, `.box-note`）を適切に使用。
+  - **ハイライト**: 重要な語句や公式には `<span class="highlight">...</span>` を使用し、黄色マーカーで強調する。
+  - **強調**: 特に強い強調には `<strong>...</strong>` を使用。
 
 # 3. ファイル命名ルール
 保存パス（`explanationPath`）は以下に従ってください：
@@ -44,12 +46,49 @@
 
 # 4. 出力フォーマット
 以下の2ブロックを独立して出力してください。
+**HTMLは以下の構造（sample.html準拠）を厳守してください。class名やDOM構造を勝手に変更しないでください。**
 
 ### 【ブロック1】 解説HTML
 ```html
-<h2 class="prob-title-sub">問題番号：物理的テーマ</h2>
+<h2 class="prob-title-sub">問題番号：物理テーマ</h2>
+
 <div class="card">
-  ...
+  <h3>解法の指針</h3>
+  <p>
+    (ここに解法の全体像や着眼点を記述)
+  </p>
+</div>
+
+<div class="card">
+  <h3>(1) 小問タイトル</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    (解説テキスト。重要語句は <span class="highlight">...</span> で強調)
+  </p>
+
+  <div id="sim-{unique_id}" class="sim-embed" style="height: 300px;"></div>
+  <script>
+    (function(){
+      const el = document.getElementById('sim-{unique_id}');
+      if(!el) return;
+      // ... シミュレーションロジック ...
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    (答えを記述)
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>(ポイントタイトル)</h3>
+  <ul>
+    <li>(ポイント1)</li>
+    <li>(ポイント2)</li>
+  </ul>
 </div>
 ### 【ブロック2】 登録用JSON
 JSON

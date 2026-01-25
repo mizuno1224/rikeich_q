@@ -53,14 +53,27 @@
   color: #000;
 }
 
+/* --- Note Box (Answers & Memo) --- */
+.box-note {
+  margin-top: 20px;
+  padding: 20px;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-left: 5px solid #64748b;
+  border-radius: 8px;
+  color: var(--col-text);
+}
+
 /* --- Educational Elements --- */
 strong { font-size: 1.1em; color: var(--col-primary); }
 
+/* 黄色マーカー風ハイライト */
 .highlight {
-  background: var(--col-highlight);
-  padding: 0 4px;
-  border-radius: 4px;
+  background: linear-gradient(transparent 60%, #ffff66 60%);
+  padding: 0 2px;
+  border-radius: 2px;
   font-weight: bold;
+  color: inherit; /* 文字色は継承 */
 }
 
 /* --- Images & Sub-Simulations (Proposal B) --- */

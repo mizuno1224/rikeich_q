@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>解説テンプレート</title>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+      
+      <h2 class="prob-title-sub">問題番号：物理テーマ</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>
+          ここに問題の全体像、着眼点、物理現象の原理原則を記述します。<br>
+          「なぜその法則を使うのか」を明確にします。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>(1) 小問タイトル</h3>
+        
+        <h4>考え方</h4>
+        <p>
+          図解や立式の根拠を丁寧に記述します。
+          重要な語句や公式は <span class="highlight">黄色ハイライト</span> で強調します。
+          特に重要な概念は <strong>太字</strong> も併用します。
+        </p>
+
+        <div id="sim-sample-01" class="sim-embed" style="height: 300px;"></div>
+        <script>
+          (function(){
+            const el = document.getElementById('sim-sample-01');
+            if(!el) return;
+            // シミュレーションロジック (SimUtils, p5.js, Chart.js 等)
+          })();
+        </script>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $v = 9.8 \text{ m/s}$
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>まとめのタイトル</h3>
+        <ul>
+          <li>ポイント1：物理法則の適用条件を確認する</li>
+          <li>ポイント2：単位の換算に注意する</li>
+        </ul>
+      </div>
+
+      </div>
+  </div>
+</body>
+</html>
