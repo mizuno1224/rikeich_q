@@ -471,47 +471,70 @@ async function executeSmartImport(htmlRaw, jsonRaw) {
   
   const matId = pathParts[expIndex + 1];
   const fileName = pathParts[pathParts.length - 1];
+  
+  // explanations/{matId}/... の後ろの部分を取得
+  // 例: ["03", "01"] または ["physics_basic", "01", "01"]
   const innerSegments = pathParts.slice(expIndex + 2, pathParts.length - 1);
   
   const targetMatIndex = manifestData.findIndex(m => m.id === matId);
   if (targetMatIndex === -1) throw new Error(`教材ID ${matId} が見つかりません`);
   
-  // 必要に応じて教材を切り替え (非同期で完了を待つ)
+  // 必要に応じて教材を切り替え
   if (activeMaterialIndex !== targetMatIndex) await loadMaterial(targetMatIndex);
 
   let firstSegment = innerSegments[0];
   let targetSubject = currentMaterialData.subjects.find(s => s.folderName === firstSegment);
   let folderIds = "";
 
-  if (!targetSubject) {
+  // 1. 最初のセグメントが既存の科目フォルダと一致する場合
+  if (targetSubject) {
+      if (targetSubject.folderName !== "") {
+          folderIds = innerSegments.slice(1).join('/');
+      } else {
+          // folderNameが空の科目にたまたまヒットした場合（通常ここには来ない）
+          folderIds = innerSegments.join('/');
+      }
+  } 
+  // 2. 一致しない場合、まずは「フォルダなし科目(folderName=="")」を探す
+  else {
       const emptySubject = currentMaterialData.subjects.find(s => s.folderName === "");
       if (emptySubject) {
           targetSubject = emptySubject;
+          // 科目フォルダが無いので、innerSegments全体が分野IDになる
           folderIds = innerSegments.join('/'); 
       }
   }
 
+  // 3. それでも見つからない場合のみ、新規科目を作成
   if (!targetSubject) {
-    if(!confirm(`科目フォルダ "${firstSegment}" を新規作成しますか？`)) return;
+    if(!confirm(`科目フォルダ "${firstSegment}" を新規作成しますか？\n(意図しない場合はキャンセルしてJSON設定を確認してください)`)) return;
     targetSubject = { subjectName: firstSegment, folderName: firstSegment, fields: [] };
     currentMaterialData.subjects.push(targetSubject);
     const matDir = await getMaterialDirHandle();
     await matDir.getDirectoryHandle(firstSegment, {create: true});
     folderIds = innerSegments.slice(1).join('/');
-  } else if (targetSubject.folderName !== "") {
-      folderIds = innerSegments.slice(1).join('/');
   }
+
+  // --- 以降、分野(Field)の特定と問題追加 ---
 
   let targetField = targetSubject.fields.find(f => f.folderId === folderIds);
   
   if (folderIds && !targetField) {
+    // フォルダIDはあるが分野が見つからない -> 新規分野作成
     if(!confirm(`分野ID "${folderIds}" を新規作成しますか？`)) return;
     targetField = { fieldName: `新規分野 ${folderIds}`, folderId: folderIds, problems: [] };
     targetSubject.fields.push(targetField);
+    
+    // フォルダ作成
     const matDir = await getMaterialDirHandle();
-    const subDir = await matDir.getDirectoryHandle(targetSubject.folderName, {create:true});
+    let subDir = matDir;
+    if(targetSubject.folderName) {
+        subDir = await matDir.getDirectoryHandle(targetSubject.folderName, {create:true});
+    }
     await getDeepDirectoryHandle(subDir, folderIds, true);
+
   } else if (!folderIds && !targetField) {
+     // フォルダIDも空の場合 (ルート直下)
      targetField = targetSubject.fields.find(f => f.folderId === "");
      if (!targetField) {
          targetField = { fieldName: "標準", folderId: "", problems: [] };
@@ -519,7 +542,7 @@ async function executeSmartImport(htmlRaw, jsonRaw) {
      }
   }
 
-  // 修正: ID比較を文字列型に統一して確実にする
+  // ID比較を文字列型に統一
   const existingProbIndex = targetField.problems.findIndex(p => String(p.id) === String(metaData.id));
   
   const newProbData = {
@@ -538,12 +561,23 @@ async function executeSmartImport(htmlRaw, jsonRaw) {
 
   await saveAll();
 
+  // HTMLファイルの保存
   if (htmlClean) {
     try {
       const matDir = await getMaterialDirHandle();
-      const subDir = await matDir.getDirectoryHandle(targetSubject.folderName);
-      const fieldDir = await getDeepDirectoryHandle(subDir, folderIds, true);
-      const fileHandle = await fieldDir.getFileHandle(fileName, {create: true});
+      let targetDir = matDir;
+      
+      // 科目フォルダがある場合
+      if(targetSubject.folderName) {
+          targetDir = await targetDir.getDirectoryHandle(targetSubject.folderName, {create:true});
+      }
+      
+      // 分野フォルダがある場合
+      if(folderIds) {
+          targetDir = await getDeepDirectoryHandle(targetDir, folderIds, true);
+      }
+
+      const fileHandle = await targetDir.getFileHandle(fileName, {create: true});
       const w = await fileHandle.createWritable();
       await w.write(htmlClean);
       await w.close();
