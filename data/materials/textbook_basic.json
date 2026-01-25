@@ -3,7 +3,7 @@
   "subjects": [
     {
       "subjectName": "物理基礎",
-      "folderName": "physics_basic",
+      "folderName": "",
       "fields": [
         {
           "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
@@ -57,6 +57,24 @@
           "fieldName": "第5編 物理学と社会 / 第1章 エネルギーの利用",
           "folderId": "05/01",
           "problems": []
+        }
+      ]
+    },
+    {
+      "subjectName": "03",
+      "folderName": "03",
+      "fields": [
+        {
+          "fieldName": "新規分野 01",
+          "folderId": "01",
+          "problems": [
+            {
+              "id": "basic_3_1_ex1_wave_graph",
+              "title": "例題1 正弦波の進行と周期",
+              "desc": "波のグラフの読み取りと、波の進行による波形の変化",
+              "explanationPath": "data/explanations/textbook_basic/03/01/basic_3_1_ex1_wave_graph.html"
+            }
+          ]
         }
       ]
     }
