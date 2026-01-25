@@ -451,33 +451,24 @@ function restoreOpenStates() {
 }
 
 function setupTabSwitching() {
-  if (ui.tabEdit && ui.tabPreview) {
-    ui.tabEdit.onclick = () => {
-      ui.tabEdit.classList.add("active");
-      ui.tabPreview.classList.remove("active");
-      ui.viewEditor.classList.add("active");
-      ui.viewPreview.classList.remove("active");
-    };
+  if (!ui.tabEdit || !ui.tabPreview) return;
 
-    ui.tabPreview.onclick = () => {
-      ui.tabEdit.classList.remove("active");
-      ui.tabPreview.classList.add("active");
-      ui.viewEditor.classList.remove("active");
-      ui.viewPreview.classList.add("active");
+  // プレビュー用iframeの参照を保持
+  let previewIframe = null;
 
+  // プレビュー更新関数
+  const updatePreview = () => {
+    if (!previewIframe) {
+      // 初回作成
       ui.previewContainer.innerHTML = "";
-      const iframe = document.createElement("iframe");
-      iframe.style.cssText =
+      previewIframe = document.createElement("iframe");
+      previewIframe.style.cssText =
         "width:100%; height:100%; border:none; background:#fff;";
-      ui.previewContainer.appendChild(iframe);
+      ui.previewContainer.appendChild(previewIframe);
 
-      const editorContent = currentVisualEditor
-        ? currentVisualEditor.value
-        : "";
-
-      const doc = iframe.contentWindow.document;
+      const doc = previewIframe.contentWindow.document;
       doc.open();
-      // プレビュー用HTML生成（簡略化）
+      // ★修正: MathJaxマクロの # を \\# にエスケープ
       doc.write(`
         <!DOCTYPE html>
         <html lang="ja">
@@ -493,16 +484,42 @@ function setupTabSwitching() {
           <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
           <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"><\/script>
           <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"><\/script>
+          <script>
+            window.MathJax = {
+              tex: { 
+                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], 
+                displayMath: [['$$', '$$']],
+                macros: {
+                  // ここが重要: #3b82f6 の # がマクロ引数と誤認されないようエスケープ
+                  strong: ["\\\\textcolor{\\\\#3b82f6}{\\\\boldsymbol{#1}}", 1]
+                }
+              },
+              svg: { fontCache: 'global' },
+              startup: {
+                pageReady: () => {
+                  return MathJax.startup.defaultPageReady().then(() => {
+                    // 初期ロード完了時の処理
+                  });
+                }
+              }
+            };
+          </script>
           <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
-          <style>.prob-header-top { display:none; }</style>
+          <style>
+            .prob-header-top { display:none; }
+            body { padding-top: 20px; }
+            /* 編集可能エリアのフォーカススタイル */
+            #text-target[contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: 4px; }
+            /* 数式のホバー効果 */
+            mjx-container { cursor: pointer; transition: opacity 0.2s; }
+            mjx-container:hover { opacity: 0.7; }
+          </style>
         </head>
         <body>
           <div class="viewer-container">
             <div class="viewer-split-content">
                <div id="sim-target" class="simulation-area"></div>
-               <div id="text-target" class="explanation-area">
-                 ${editorContent}
-               </div>
+               <div id="text-target" class="explanation-area"></div>
             </div>
           </div>
           <script src="js/sim-utils.js"><\/script>
@@ -510,7 +527,140 @@ function setupTabSwitching() {
         </html>
       `);
       doc.close();
+
+      // iframeのロード完了を待ってコンテンツを注入
+      previewIframe.onload = () => injectContent();
+    } else {
+      // 2回目以降は中身だけ更新
+      injectContent();
+    }
+  };
+
+  const injectContent = () => {
+    if (!previewIframe) return;
+    const win = previewIframe.contentWindow;
+    if (!win || !win.document) return;
+
+    const target = win.document.getElementById("text-target");
+    if (!target) return;
+
+    // 現在のエディタの内容を適用
+    const editorContent = currentVisualEditor ? currentVisualEditor.value : "";
+    target.innerHTML = editorContent;
+
+    // --- インタラクティブ編集機能のセットアップ ---
+    target.contentEditable = "true";
+    target.spellcheck = false;
+
+    // 1. MathJaxレンダリング実行
+    if (win.MathJax && win.MathJax.typesetPromise) {
+      win.MathJax.typesetPromise([target])
+        .then(() => {
+          // 数式要素にデータを紐付け＆クリックイベント追加
+          const mathItems = win.MathJax.startup.document.getMathItemsWithin(target);
+          mathItems.forEach((item) => {
+            const node = item.typesetRoot; // <mjx-container>要素
+            if (!node) return;
+            node.contentEditable = "false"; // 数式の中身を直接壊さないように保護
+            node.setAttribute("data-original-tex", item.math);
+            node.setAttribute("data-display", item.display);
+            
+            // 数式クリックで編集プロンプトを表示
+            node.onclick = (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              const newTex = prompt("数式を編集 (LaTeX):", item.math);
+              if (newTex !== null && newTex !== item.math) {
+                // ソースコードを更新して再描画
+                updateMathInSource(item.math, newTex, item.display);
+              }
+            };
+          });
+        })
+        .catch((err) => console.log(err));
+    }
+
+    // 2. テキスト編集の同期 (プレビュー -> ソースコード)
+    target.oninput = () => {
+      // DOMからHTML文字列を再構築（MathJaxの表示用要素を除去してLaTeXに戻す必要があるが、簡易的にinnerHTMLを使用）
+      // 注意: MathJaxがレンダリングされた状態のHTMLをそのまま保存するとソースが汚れるため、
+      // 本格的には数式をLaTeXに戻す処理が必要。ここでは簡易同期。
+      // ※ 数式部分は contentEditable="false" なのでテキスト編集では壊れにくい
+      
+      const clone = target.cloneNode(true);
+      // MathJax要素を元のLaTeXに戻す処理
+      const mathNodes = clone.querySelectorAll("mjx-container");
+      mathNodes.forEach((node) => {
+        const tex = node.getAttribute("data-original-tex");
+        const isDisp = node.getAttribute("data-display") === "true";
+        if (tex) {
+          const delim = isDisp ? "$$" : "$";
+          const textNode = win.document.createTextNode(delim + tex + delim);
+          node.parentNode.replaceChild(textNode, node);
+        }
+      });
+      
+      // エディタに書き戻し
+      if (currentVisualEditor) {
+        currentVisualEditor.value = clone.innerHTML;
+      }
     };
+
+    // 3. スクリプトの再実行処理
+    const scripts = target.querySelectorAll("script");
+    scripts.forEach((oldScript) => {
+      const newScript = win.document.createElement("script");
+      Array.from(oldScript.attributes).forEach((attr) =>
+        newScript.setAttribute(attr.name, attr.value),
+      );
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+  };
+
+  // 数式更新ヘルパー
+  const updateMathInSource = (oldTex, newTex, isDisplay) => {
+    if (!currentVisualEditor) return;
+    const delim = isDisplay ? "$$" : "$";
+    const oldStr = delim + oldTex + delim;
+    const newStr = delim + newTex + delim;
+    
+    // 単純置換（同じ数式が複数あると誤爆する可能性があるが、補助ツールとしては許容）
+    if (currentVisualEditor.value.includes(oldStr)) {
+      currentVisualEditor.value = currentVisualEditor.value.replace(oldStr, newStr);
+      // 反映のために再描画
+      injectContent();
+    } else {
+      alert("ソースコード内で該当する数式箇所を特定できませんでした。\n手動で編集してください。");
+    }
+  };
+
+  ui.tabEdit.onclick = () => {
+    ui.tabEdit.classList.add("active");
+    ui.tabPreview.classList.remove("active");
+    ui.viewEditor.classList.add("active");
+    ui.viewPreview.classList.remove("active");
+    // エディタに戻るときはiframeを破棄しない（状態維持）
+  };
+
+  ui.tabPreview.onclick = () => {
+    ui.tabEdit.classList.remove("active");
+    ui.tabPreview.classList.add("active");
+    ui.viewEditor.classList.remove("active");
+    ui.viewPreview.classList.add("active");
+    updatePreview();
+  };
+
+  // リアルタイムプレビュー用: エディタの入力イベントを監視
+  if (ui.formContainer) {
+    ui.formContainer.addEventListener('input', (e) => {
+      if (e.target.classList.contains('visual-editor')) {
+        // プレビューが表示中ならリアルタイム更新
+        if (ui.viewPreview.classList.contains('active')) {
+          injectContent();
+        }
+      }
+    });
   }
 }
 
