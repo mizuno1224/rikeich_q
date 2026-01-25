@@ -3,7 +3,7 @@
   "subjects": [
     {
       "subjectName": "物理",
-      "folderName": "main",
+      "folderName": "textbook_physics",
       "fields": [
         {
           "fieldName": "第1編 力と運動 / 第1章 剛体にはたらく力",

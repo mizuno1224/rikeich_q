@@ -97,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
       previewContainer.appendChild(iframe);
 
       const editorContent = currentVisualEditor ? currentVisualEditor.value : '';
-      const layoutClass = (currentProblem.layout === 'article') ? 'layout-article' : '';
       
       const doc = iframe.contentWindow.document;
       doc.open();
@@ -119,9 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
           <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"><\/script>
           <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"><\/script>
           <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
-          <style>body { height: 100vh; overflow: hidden; } .prob-header-top { display:none; }</style>
+          <style>.prob-header-top { display:none; }</style>
         </head>
-        <body class="${layoutClass}">
+        <body>
           <div class="viewer-container">
             <div class="viewer-split-content">
                <div id="sim-target" class="simulation-area"></div>
@@ -1033,7 +1032,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 各入力フィールド
     row1.appendChild(createInput('ID', problem.id, val => { problem.id = val; document.getElementById('editing-id').textContent = val; updateJson(); }));
-    row1.appendChild(createInput('レイアウト (article/slide)', problem.layout, val => { problem.layout = val; updateJson(); }));
 
     const titleGroup = createInput('タイトル', problem.title, val => { 
         problem.title = val; 

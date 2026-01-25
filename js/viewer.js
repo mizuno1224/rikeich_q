@@ -52,9 +52,6 @@ function loadExplanationByPath(path) {
   const textTarget = document.getElementById('text-target');
   if (!textTarget) return;
 
-  // デフォルトで記事型レイアウトを適用
-  document.body.classList.add('layout-article');
-
   // 仮のタイトルを表示（ファイル名）
   const fileName = path.split('/').pop();
   updateTitle(fileName);
@@ -131,13 +128,6 @@ function applyProblemData(target) {
   if (!textTarget) return;
 
   updateTitle(target.title);
-
-  // レイアウト切り替え
-  if (target.layout === 'article') {
-    document.body.classList.add('layout-article');
-  } else {
-    document.body.classList.remove('layout-article');
-  }
 
   // 解説ファイルのロード
   if (target.explanationPath) {

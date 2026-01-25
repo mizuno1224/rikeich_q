@@ -1,19 +1,14 @@
 /* css/viewer.css */
 
-/* 全体レイアウト */
+/* 全体レイアウト (記事形式をデフォルト化) */
 body {
-  height: 100vh;
+  height: auto;
+  min-height: 100vh;
   margin: 0;
-  overflow: hidden; /* デフォルトは左右分割用（PC） */
+  overflow-y: auto; /* 常に縦スクロール */
   background: var(--col-bg);
   display: flex;
   flex-direction: column;
-}
-
-/* 記事型レイアウト（全体スクロール）の場合 */
-body.layout-article {
-  overflow-y: auto; /* 縦スクロール有効 */
-  height: auto;
 }
 
 /* ポインターモード時のカーソル変更 */
@@ -21,7 +16,6 @@ body.pointer-active {
   cursor: crosshair;
 }
 body.pointer-active .explanation-area,
-body.pointer-active .simulation-area,
 body.pointer-active .sim-embed {
   user-select: none;
 }
@@ -44,9 +38,7 @@ body.pointer-active .sim-embed {
   background: #fff;
   border-bottom: 1px solid #cbd5e1;
   z-index: var(--z-header, 100);
-}
-/* 記事モード時はヘッダーを追従させる */
-body.layout-article .prob-header-top {
+  /* ヘッダーを常に追従 */
   position: sticky;
   top: 0;
 }
@@ -84,41 +76,21 @@ body.layout-article .prob-header-top {
 }
 
 
-/* --- 2. メインエリア (デフォルト: 左右分割) --- */
+/* --- 2. メインエリア --- */
 .viewer-split-content {
   flex: 1;
-  display: flex;
-  overflow: hidden;
-  padding: 20px;
-  gap: 20px;
-  position: relative;
-}
-
-/* 記事型レイアウトの場合のオーバーライド */
-body.layout-article .viewer-split-content {
-  display: block;
+  display: block; /* Flex廃止 -> ブロック表示 */
   padding: 0;
   overflow: visible;
-}
-
-/* 左: シミュレーション (デフォルト) */
-.simulation-area {
-  flex: 2;
-  background: #fff;
-  border-radius: 20px;
   position: relative;
-  overflow: hidden;
-  display: flex; align-items: center; justify-content: center;
-  border: 2px solid #fff;
-  box-shadow: inset 0 0 20px rgba(0,0,0,0.03);
 }
 
-/* 記事型レイアウトでは左側の固定エリアは隠す (解説内の埋め込みを使うため) */
-body.layout-article .simulation-area {
+/* 左: シミュレーションエリア (スライド用なので非表示) */
+.simulation-area {
   display: none;
 }
 
-/* シミュレーション操作パネル */
+/* シミュレーション操作パネル (埋め込み用のみ残す) */
 .sim-controls-panel {
   position: absolute; bottom: 20px; left: 50%;
   transform: translateX(-50%);
@@ -130,43 +102,23 @@ body.layout-article .simulation-area {
   z-index: var(--z-sim-controls, 200);
   transition: opacity 0.3s;
 }
-.simulation-area:not(:hover) .sim-controls-panel,
 .sim-embed:not(:hover) .sim-controls-panel { 
   opacity: 0.5; 
 }
 .sim-slider-wrap { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: bold; }
 
 
-/* 右: 解説エリア (デフォルト) */
+/* 右: 解説エリア (これをメインにする) */
 .explanation-area {
-  flex: 3;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-  position: relative;
-  overflow-y: auto;
-  scroll-behavior: smooth;
-  padding: 40px;
-  scroll-snap-type: y proximity;
-}
-
-.explanation-area > div, 
-.explanation-area > .prob-step, 
-.explanation-area > .card {
-  scroll-snap-align: start;
-  scroll-margin-top: 20px;
-}
-
-/* 記事型レイアウトの場合の解説エリア */
-body.layout-article .explanation-area {
   width: 100%;
   max-width: 900px; /* 読みやすい幅に制限 */
   margin: 0 auto;
+  background: #fff;
   border-radius: 0;
   box-shadow: none;
   overflow: visible;
   padding: 40px 20px 100px 20px; /* 下に余白 */
-  scroll-snap-type: none; /* 全体スクロールなのでスナップ解除 */
+  scroll-snap-type: none;
 }
 
 /* --- 埋め込みシミュレーション (Inline Simulation) --- */
@@ -198,26 +150,14 @@ mjx-container { font-size: 1.15em !important; }
 
 /* --- レスポンシブ対応 (スマホ・タブレット) --- */
 @media (max-width: 768px) {
-  body { overflow: auto; height: auto; background: #fff; }
-  .viewer-container { height: auto; min-height: 100vh; }
-  .prob-header-top { position: sticky; top: 0; width: 100%; }
+  body { background: #fff; }
+  .viewer-container { min-height: 100vh; }
+  .prob-header-top { width: 100%; }
 
-  /* デフォルト(左右分割)モードのレスポンシブ */
-  .viewer-split-content {
-    flex-direction: column; height: auto; overflow: visible; padding: 10px; gap: 15px;
-  }
-  .simulation-area {
-    flex: none; width: 100%; height: 50vh; min-height: 300px;
-    position: sticky; top: 70px; z-index: 50; border: 1px solid #e2e8f0;
-  }
   .explanation-area {
-    flex: none; width: 100%; height: auto;
-    overflow-y: visible; padding: 20px 15px; box-shadow: none;
+    padding: 20px 15px;
+    width: 100%;
   }
-  
-  /* 記事型モードの調整 */
-  body.layout-article .simulation-area { display: none; }
-  body.layout-article .explanation-area { padding: 10px; }
   
   :root { --card-width: 100%; }
 }
