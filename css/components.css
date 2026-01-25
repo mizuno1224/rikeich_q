@@ -91,7 +91,8 @@ strong { font-size: 1.1em; color: var(--col-primary); }
 .sub-sim-area {
   width: 100%;
   min-height: 250px;
-  max-height: 40vh; /* グラフも高さを制限 */
+  /* max-height: 40vh;  <- 削除: 内容が見切れる原因となるため */
+  height: auto;
   margin: 20px 0;
   border-radius: 12px;
   overflow: hidden;

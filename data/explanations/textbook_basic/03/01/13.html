@@ -87,15 +87,21 @@
           薄いグレーの線は「少し未来の波」を表しており、これを見ると点が次にどちらへ動くかがわかります。
         </p>
         
-        <div id="sim-wave-graph" class="sim-embed" style="height: 650px; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px;"></div>
+        <div id="sim-wave-graph" class="sim-embed" style="height: auto; min-height: 700px; padding: 20px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;"></div>
 
         <script>
         (function(){
             const container = document.getElementById('sim-wave-graph');
             const canvas = document.createElement('canvas');
-            // 初期設定 (リサイズ時に再設定)
+            
+            // Canvasサイズの設定
+            const canvasHeight = 600; 
             canvas.width = container.clientWidth;
-            canvas.height = 650; 
+            canvas.height = canvasHeight;
+            // Canvasのスタイル調整（縮小を防ぐ）
+            canvas.style.flex = "0 0 auto"; 
+            canvas.style.maxWidth = "100%";
+            
             container.appendChild(canvas);
             const ctx = canvas.getContext('2d');
 
@@ -105,23 +111,23 @@
             const T = 2.0;
             let time = 0;
 
-            // レイアウト定数 (マージンを広めに確保)
-            const margin = { top: 60, right: 30, bottom: 60, left: 70 };
+            // レイアウト定数
+            const margin = { top: 40, right: 30, bottom: 40, left: 70 };
             
             // 描画ループ
             function draw() {
-                // コンテナ幅に追従
+                // コンテナ幅に追従（リサイズ時）
                 if (canvas.width !== container.clientWidth) {
                     canvas.width = container.clientWidth;
                 }
                 const w = canvas.width;
                 const h = canvas.height;
                 
-                // 上下グラフの高さ配分 (間にギャップを入れる)
+                // 上下グラフの高さ配分
                 const availableH = h - margin.top - margin.bottom;
-                const h1 = availableH * 0.42; // 上段
-                const h2 = availableH * 0.42; // 下段
-                const gap = availableH * 0.16; // 隙間
+                const h1 = availableH * 0.45; // 上段
+                const h2 = availableH * 0.45; // 下段
+                const gap = availableH * 0.10; // 隙間
                 
                 const originY_yx = margin.top + h1 / 2;
                 const originY_yt = margin.top + h1 + gap + h2 / 2;
@@ -233,22 +239,22 @@
                 // X軸
                 ctx.moveTo(ox, oy); ctx.lineTo(ox + w, oy);
                 // Y軸 (上下に少し余裕を持たせる)
-                ctx.moveTo(ox, oy - 100); ctx.lineTo(ox, oy + 100);
+                ctx.moveTo(ox, oy - 90); ctx.lineTo(ox, oy + 90);
                 ctx.stroke();
 
                 // ラベル
                 ctx.fillStyle = '#475569';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText(labelX, ox + w, oy + 20); // X軸ラベル位置調整
+                ctx.fillText(labelX, ox + w, oy + 20); 
                 ctx.textAlign = 'center';
-                ctx.fillText(labelY, ox - 30, oy - 90); // Y軸ラベル位置調整
+                ctx.fillText(labelY, ox - 30, oy - 80); 
                 
                 // タイトル
                 ctx.font = 'bold 15px sans-serif';
                 ctx.fillStyle = '#0f172a';
                 ctx.textAlign = 'left';
-                ctx.fillText(title, ox, oy - 120);
+                ctx.fillText(title, ox, oy - 110);
             }
 
             function drawPoint(ctx, x, y, color) {
@@ -261,7 +267,7 @@
                 ctx.stroke();
             }
 
-            // スライダー
+            // スライダー生成
             if (typeof SimUtils !== 'undefined') {
                 SimUtils.addSlider(container, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
                     time = val;
@@ -279,11 +285,11 @@
                     draw();
                 };
                 container.appendChild(slider);
-                draw();
             }
             
+            // スライダーを含むコンテナ内の要素が重ならないように、最後に描画更新
+            requestAnimationFrame(draw);
             window.addEventListener('resize', draw);
-            setTimeout(draw, 100);
         })();
         </script>
 
