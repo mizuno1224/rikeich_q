@@ -1,5 +1,3 @@
-/* js/admin.js */
-
 // --- Global State ---
 let manifestData = [];      
 let currentMaterialData = null; 
@@ -191,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if(currentMaterialType === 'exam_year') btnAddSubject.textContent = '＋年度を追加';
     else if(currentMaterialType === 'exam_univ') btnAddSubject.textContent = '＋大学を追加';
-    else btnAddSubject.textContent = '＋科目を追加';
+    else btnAddSubject.textContent = '＋分野を追加'; // 科目ではなく分野(章)を追加するボタンに変更
 
     try {
       const parts = item.path.split('/');
@@ -292,18 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (currentMaterialType === 'exam_univ') { labelSubj = "大学"; labelField = "年度"; }
 
     currentMaterialData.subjects.forEach((sub, sIdx) => {
-      const subPath = `s-${sIdx}`;
-      const subDetails = createTreeItem(labelSubj, sub.subjectName, subPath);
+      // フォルダ名や科目名をIDとして使用し、並び替え時にツリーが閉じないようにする
+      const stableSubId = sub.folderName || sub.subjectName || sIdx;
+      const subPath = `s-${stableSubId}`;
       
-      addActions(subDetails.querySelector('summary'), 
-        () => handleRenameSubject(sub, labelSubj),
-        () => handleDeleteSubject(sub, sIdx),
-        () => handleAddField(sub, labelField)
-      );
-
-      const subContent = document.createElement('div');
-      subContent.className = 'tree-content';
-
+      // 科目（Subject）のDetailsは作成せず、直接ツリーのルートに追加する（フラット化）
+      // グループ化（Part）の状態管理は科目ごとにリセット
       let currentPartName = null;
       let currentPartContainer = null;
 
@@ -313,14 +305,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const partName = isGrouped ? nameParts[0] : null;
         const chapName = isGrouped ? nameParts[1] : fld.fieldName;
 
-        let targetContainer = subContent;
+        // グループ化要素またはルート（科目Detailsなし）に追加
+        let targetContainer = treeRoot;
 
         if (isGrouped) {
           if (partName !== currentPartName) {
             currentPartName = partName;
             const partDetails = document.createElement('details');
-            partDetails.open = true; // デフォルトは開く
-            partDetails.dataset.path = `${subPath}-part-${partName}`;
+            partDetails.open = true;
+            partDetails.dataset.path = `${subPath}-part-${partName}`; // パスに科目IDを含めて一意性を保つ
             partDetails.style.marginBottom = '5px';
             partDetails.style.border = 'none';
             
@@ -335,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             partInner.style.paddingLeft = '10px';
             partDetails.appendChild(partInner);
             
-            subContent.appendChild(partDetails);
+            treeRoot.appendChild(partDetails);
             currentPartContainer = partInner;
           }
           targetContainer = currentPartContainer;
@@ -344,7 +337,9 @@ document.addEventListener('DOMContentLoaded', () => {
           currentPartContainer = null;
         }
 
-        const fldPath = `${subPath}-f-${fIdx}`;
+        // 分野IDをキーにして閉じるのを防止
+        const stableFldId = fld.folderId || fld.fieldName || fIdx;
+        const fldPath = `${subPath}-f-${stableFldId}`;
         const fldDetails = createTreeItem(labelField, chapName, fldPath);
         
         addActions(fldDetails.querySelector('summary'),
@@ -365,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         fld.problems.forEach((prob, pIdx) => {
           const pDiv = document.createElement('div');
-          // IDとPathの両方で一致判定
           const isActive = (currentProblem && currentProblem.id === prob.id && currentProblem.explanationPath === prob.explanationPath);
           pDiv.className = `prob-item ${isActive ? 'active' : ''}`;
           
@@ -377,12 +371,11 @@ document.addEventListener('DOMContentLoaded', () => {
               dragSrcField = fld;
               pDiv.classList.add('dragging');
               e.dataTransfer.effectAllowed = 'move';
-              e.dataTransfer.setData('text/plain', pIdx); // インデックスを保持
+              e.dataTransfer.setData('text/plain', pIdx);
           });
           
           pDiv.addEventListener('dragover', e => {
              e.preventDefault();
-             // 同じフィールド内での並び替え時はガイドを表示
              if (dragSrcField === fld) {
                pDiv.style.borderTop = '2px solid #3b82f6';
              }
@@ -397,24 +390,21 @@ document.addEventListener('DOMContentLoaded', () => {
              e.stopPropagation();
              pDiv.style.borderTop = 'transparent';
 
-             // ケース1: 同じフィールド内での並び替え
              if (dragSrcField === fld && dragSrcProb) {
                 const oldIdx = fld.problems.indexOf(dragSrcProb);
                 const newIdx = pIdx; 
                 if (oldIdx !== -1 && oldIdx !== newIdx) {
-                  fld.problems.splice(oldIdx, 1);       // 削除
-                  fld.problems.splice(newIdx, 0, dragSrcProb); // 挿入
+                  fld.problems.splice(oldIdx, 1);
+                  fld.problems.splice(newIdx, 0, dragSrcProb);
                   renderTree();
                   saveAll();
                 }
                 return;
              }
              
-             // ケース2: 別のフィールドからの移動 (完了処理)
              pDiv.classList.remove('dragging');
              document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
              
-             // handleDropProblemへ委譲 (ただしバブリングを止めたのでここで呼ぶ)
              if (dragSrcField !== fld) {
                 handleDropProblem(e, sub, fld);
              }
@@ -450,9 +440,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fldDetails.appendChild(fldContent);
         targetContainer.appendChild(fldDetails);
       });
-
-      subDetails.appendChild(subContent);
-      treeRoot.appendChild(subDetails);
     });
     
     // 2. 状態の復元 (開閉状態 ＆ スクロール位置)
@@ -1190,6 +1177,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   btnAddSubject.addEventListener('click', () => {
+      // 科目分類が非表示になったため、標準タイプでは「分野(章)を追加」として動作させる
+      if (currentMaterialType === 'standard' || currentMaterialType === 'lead_alpha' || currentMaterialType === 'lead_light' || currentMaterialType === 'textbook') {
+          // 科目が一つもない場合はデフォルト科目を作成してそこに追加
+          if (currentMaterialData.subjects.length === 0) {
+              currentMaterialData.subjects.push({ subjectName: 'main', folderName: '', fields: [] });
+          }
+          // 最初の科目に分野を追加
+          handleAddField(currentMaterialData.subjects[0], '分野');
+          return;
+      }
+
       let promptMsg = "新しい科目名:";
       if(currentMaterialType === 'exam_year') promptMsg = "新しい年度 (例: 2025):";
       else if(currentMaterialType === 'exam_univ') promptMsg = "新しい大学ID (例: waseda):";

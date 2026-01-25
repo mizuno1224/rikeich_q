@@ -10,17 +10,17 @@
           "folderId": "2024",
           "problems": [
             {
-              "id": "2024_zenki_q1",
-              "title": "第1問 力学",
-              "desc": "二体問題と重心運動",
-              "explanationPath": "data/explanations/exam_national/tokyo/2024/2024_zenki_q1.html",
-              "layout": "article"
-            },
-            {
               "id": "2024_zenki_q2",
               "title": "第2問 電磁気",
               "desc": "電磁誘導と回路",
               "explanationPath": "data/explanations/exam_national/tokyo/2024/2024_zenki_q2.html",
+              "layout": "article"
+            },
+            {
+              "id": "2024_zenki_q1",
+              "title": "第1問 力学",
+              "desc": "二体問題と重心運動",
+              "explanationPath": "data/explanations/exam_national/tokyo/2024/2024_zenki_q1.html",
               "layout": "article"
             }
           ]
