@@ -3,12 +3,15 @@
 // --- 1. MathJax Config ---
 window.MathJax = {
   tex: {
-    inlineMath: [["$", "$"], ["\\(", "\\)"]],
+    inlineMath: [
+      ["$", "$"],
+      ["\\(", "\\)"],
+    ],
     displayMath: [["$$", "$$"]],
     macros: {
       // hexコードの # はエスケープ(\#)しないと引数として誤認されます
-      strong: ['\\textcolor{\\#3b82f6}{\\boldsymbol{#1}}', 1]
-    }
+      strong: ["\\textcolor{\\#3b82f6}{\\boldsymbol{#1}}", 1],
+    },
   },
   svg: { fontCache: "global" },
 };
