@@ -47,6 +47,12 @@
               "title": "類題1 正弦波の進行",
               "desc": "負の向きに進む波の作図と周期の計算",
               "explanationPath": "data/explanations/textbook_basic/03/01/12.html"
+            },
+            {
+              "id": "textbook_basic_03_01_13",
+              "title": "例題2：波のグラフの読み取り",
+              "desc": "y-x図から波長・振幅を読み取り、計算で周期を求め、y-t図を描く等価変換の問題。",
+              "explanationPath": "data/explanations/textbook_basic/03/01/13.html"
             }
           ]
         },

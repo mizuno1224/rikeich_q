@@ -1,0 +1,233 @@
+<h2 class="prob-title-sub">例題2：波のグラフ（$y-x$図と$y-t$図）</h2>
+
+<div class="card">
+    <h3>解法の指針</h3>
+    <p>
+        波のグラフには、以下の2種類があり、これらを正しく区別して使いこなすことが重要です。
+    </p>
+    <ul>
+        <li><strong>$y-x$ 図（波形グラフ）：</strong> ある時刻 $t$ における波の写真を撮ったもの。横軸は位置 $x$。ここから<strong>波長 $\lambda$</strong> が読み取れます。</li>
+        <li><strong>$y-t$ 図（振動グラフ）：</strong> ある位置 $x$ における媒質の動きを記録したもの。横軸は時間 $t$。ここから<strong>周期 $T$</strong> が読み取れます。</li>
+    </ul>
+    <p>
+        この問題では、与えられた $y-x$ 図（写真）から波の情報を読み取り、特定の点での $y-t$ 図（ムービーの記録）を作成します。
+    </p>
+</div>
+
+<div class="card">
+    <h3>(1) 波の要素（振幅・波長・周期・振動数）</h3>
+    
+    <h4>1. グラフからの読み取り</h4>
+    <p>
+        問題の $y-x$ 図を見てみましょう。
+    </p>
+    <ul>
+        <li><strong>振幅 $A$</strong>：山の高さ（または谷の深さ）を読み取ります。<br>
+        グラフより、最大変位は $y = 2.0$ m なので、<br>
+        $$A = 2.0 \text{ m}$$</li>
+        
+        <li><strong>波長 $\lambda$</strong>：山から山、または谷から谷までの距離（波1つ分の長さ）を読み取ります。<br>
+        グラフより、波1つ分の長さは $4.0$ m なので、<br>
+        $$\lambda = 4.0 \text{ m}$$</li>
+    </ul>
+
+    <h4>2. 計算による導出</h4>
+    <p>
+        波の速さが $v = 2.0 \text{ m/s}$ と与えられています。波の基本公式 $v = \frac{\lambda}{T}$（または $v = f\lambda$）を用いて、周期 $T$ と振動数 $f$ を求めます。
+    </p>
+    <p>
+        <strong>周期 $T$ の計算：</strong><br>
+        $$T = \frac{\lambda}{v} = \frac{4.0 \text{ m}}{2.0 \text{ m/s}} = 2.0 \text{ s}$$
+    </p>
+    <p>
+        <strong>振動数 $f$ の計算：</strong><br>
+        $$f = \frac{1}{T} = \frac{1}{2.0 \text{ s}} = 0.50 \text{ Hz}$$
+    </p>
+
+    <div class="box-note">
+        <strong>答え：</strong><br>
+        振幅 $2.0 \text{ m}$, 波長 $4.0 \text{ m}$, 周期 $2.0 \text{ s}$, 振動数 $0.50 \text{ Hz}$
+    </div>
+</div>
+
+<div class="card">
+    <h3>(2) $x=0$ における $y-t$ 図の描画</h3>
+
+    <h4>考え方：波を少し進めてみる</h4>
+    <p>
+        $y-x$ 図は「$t=0$ の瞬間の写真」です。ここから $t>0$ の未来の動きを知るには、<strong>「波を進行方向に少しずらして描く」</strong>のが鉄則です。
+    </p>
+    <ol>
+        <li>現在の波形（$t=0$）を実線で描く。</li>
+        <li>少し時間が経った後の波形（点線）を、進行方向（右）に少しずらして描く。</li>
+        <li>注目している点（$x=0$）の媒質が、実線から点線に向かって<strong>上に行くか下に行くか</strong>を確認する。</li>
+    </ol>
+    <p>
+        この問題の場合、波を右にずらすと、$x=0$ の原点の山は<strong>下向き</strong>に動くことがわかります。つまり、$t=0$ の直後は $y < 0$ となります。
+    </p>
+
+    <h4>シミュレーションで確認</h4>
+    <p>
+        以下のシミュレーターで「時間」スライダーを動かし、波の進行と $x=0$（赤点）の動きの関係を確認してみましょう。
+    </p>
+    
+    <div id="sim-wave-graph" class="sim-embed" style="height: 400px; background: #f9f9f9; border-radius: 8px; position: relative;"></div>
+
+    <script>
+    (function(){
+        const container = document.getElementById('sim-wave-graph');
+        const canvas = document.createElement('canvas');
+        canvas.width = container.clientWidth;
+        canvas.height = 320;
+        container.appendChild(canvas);
+        const ctx = canvas.getContext('2d');
+
+        // 波のパラメータ
+        const A = 1.5; // 振幅(表示用スケール)
+        const lambda = 4.0;
+        const T = 2.0;
+        const v = lambda / T;
+        let time = 0;
+
+        // 座標変換
+        const margin = 40;
+        const w = canvas.width - margin * 2;
+        const h = canvas.height / 2 - margin;
+        
+        function toScreenX_yx(x) { return margin + (x / 8.0) * w; } // 0-8mを表示
+        function toScreenY_yx(y) { return margin + h/2 - (y / 3.0) * (h/2); }
+        
+        function toScreenX_yt(t) { return margin + (t / 4.0) * w; } // 0-4sを表示
+        function toScreenY_yt(y) { return (canvas.height/2 + margin) + h/2 - (y / 3.0) * (h/2); }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // --- 上段: y-x図 ---
+            ctx.save();
+            // 軸
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(margin, margin + h/2); ctx.lineTo(margin + w, margin + h/2); // x軸
+            ctx.moveTo(margin, margin); ctx.lineTo(margin, margin + h); // y軸
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.fillText("y [m]", margin - 30, margin);
+            ctx.fillText("x [m]", margin + w, margin + h/2 + 15);
+            ctx.fillText("y-x図 (波形)", margin + w/2 - 30, margin - 10);
+
+            // 波形
+            ctx.beginPath();
+            ctx.strokeStyle = '#007bff';
+            ctx.lineWidth = 2;
+            for(let x = 0; x <= 8.0; x += 0.05) {
+                // 原点(x=0)でy=0から始まり、下に行く正弦波とする（例題の想定）
+                // y = A * sin(2pi(t/T - x/lambda)) * -1 (if it goes down first)
+                // 一般的な正弦波 y = A sin(2pi(t/T - x/lambda)) だとx=0で上に行く。
+                // 多くの問題では原点スタートで山が来るか谷が来るか。
+                // ここでは「x=0で下に行く」想定で描画: y = -A sin(2pi(x/lambda - t/T))
+                let y = -A * Math.sin(2 * Math.PI * (x / lambda - time / T));
+                let sx = toScreenX_yx(x);
+                let sy = toScreenY_yx(y);
+                if(x===0) ctx.moveTo(sx, sy);
+                else ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
+
+            // x=0の点（注目点）
+            let y_at_0 = -A * Math.sin(2 * Math.PI * (0 / lambda - time / T));
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.arc(toScreenX_yx(0), toScreenY_yx(y_at_0), 5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.fillText("x=0の媒質", toScreenX_yx(0) + 10, toScreenY_yx(y_at_0));
+            ctx.restore();
+
+            // --- 下段: y-t図 ---
+            ctx.save();
+            // 軸
+            let originY_yt = canvas.height/2 + margin;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(margin, originY_yt + h/2); ctx.lineTo(margin + w, originY_yt + h/2); // t軸
+            ctx.moveTo(margin, originY_yt); ctx.lineTo(margin, originY_yt + h); // y軸
+            ctx.stroke();
+            ctx.fillStyle = '#333';
+            ctx.fillText("y [m]", margin - 30, originY_yt);
+            ctx.fillText("t [s]", margin + w, originY_yt + h/2 + 15);
+            ctx.fillText("y-t図 (x=0の振動)", margin + w/2 - 40, originY_yt - 10);
+
+            // 履歴の描画 (t=0 から 現在のtimeまで)
+            ctx.beginPath();
+            ctx.strokeStyle = '#dc3545';
+            ctx.lineWidth = 2;
+            let plotted = false;
+            for(let t = 0; t <= 4.0; t += 0.05) {
+                if(t > time) break; // 現在時刻まで描画
+                let y = -A * Math.sin(2 * Math.PI * (0 / lambda - t / T));
+                let sx = toScreenX_yt(t);
+                let sy = toScreenY_yt(y);
+                if(!plotted) { ctx.moveTo(sx, sy); plotted = true; }
+                else ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
+
+            // 現在点のマーカー
+            let y_now = -A * Math.sin(2 * Math.PI * (0 / lambda - time / T));
+            ctx.fillStyle = '#dc3545';
+            ctx.beginPath();
+            ctx.arc(toScreenX_yt(time), toScreenY_yt(y_now), 5, 0, Math.PI*2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        // スライダー追加 (SimUtilsがない場合のフォールバックを含める)
+        if (typeof SimUtils !== 'undefined') {
+            SimUtils.addSlider(container.id, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
+                time = val;
+                draw();
+            });
+        } else {
+            // 簡易スライダー
+            const slider = document.createElement('input');
+            slider.type = 'range';
+            slider.min = 0; slider.max = 4.0; slider.step = 0.05; slider.value = 0;
+            slider.style.width = '80%';
+            slider.style.display = 'block';
+            slider.style.margin = '10px auto';
+            slider.oninput = (e) => {
+                time = parseFloat(e.target.value);
+                draw();
+            };
+            container.appendChild(slider);
+            draw();
+        }
+    })();
+    </script>
+
+    <h4>グラフを描く手順</h4>
+    <ol>
+        <li><strong>スタート位置を確認</strong>：$t=0$ で $y=0$ です。</li>
+        <li><strong>初期動作を確認</strong>：先ほどの考察（波を少し右にずらす）により、次は<strong>下（負の方向）</strong>に動きます。</li>
+        <li><strong>周期を確認</strong>：(1)で求めた通り、周期は $T=2.0$ s です。したがって、$t=2.0$ s で再び元の状態に戻ります。</li>
+    </ol>
+    <p>
+        これらを組み合わせると、<strong>原点から始まり、まず下に下がり、2.0秒で1回振動する正弦波（サインカーブ）</strong>を描けば正解です。
+    </p>
+
+    <div class="box-note">
+        <strong>答え：</strong><br>
+        原点から負の向きにスタートし、周期 $2.0 \text{ s}$、振幅 $2.0 \text{ m}$ の正弦波（サインカーブ）を描く。
+    </div>
+</div>
+
+<div class="box-alert">
+    <h3><i class="fas fa-check-circle"></i> Point：2つのグラフの変換</h3>
+    <ul>
+        <li><strong>$y-x$ 図（写真）</strong>：波長 $\lambda$ がわかる。「波を少し進めて」次の瞬間の変位を予測する。</li>
+        <li><strong>$y-t$ 図（ムービー）</strong>：周期 $T$ がわかる。$t=0$ の変位は $y-x$ 図の注目点の座標と同じ。</li>
+        <li>この2つのグラフは形は似ていますが、<strong>横軸の意味が全く異なる</strong>ので注意しましょう。</li>
+    </ul>
+</div>
