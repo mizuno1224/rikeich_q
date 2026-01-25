@@ -13,7 +13,7 @@
               "id": "001_p12_ex1",
               "title": "総合演習：物理シミュレーション",
               "desc": "Matter.js, JSXGraph, Chart.js, p5.js, Three.js を使用したサンプル",
-              "explanationPath": "data/explanations/textbook/physics_basic/01/01/001_p12_ex1.html",
+              "explanationPath": "data/explanations/textbook_basic/01/01/001_p12_ex1.html",
               "layout": "article"
             }
           ]

@@ -10,6 +10,13 @@
           "folderId": "01",
           "problems": [
             {
+              "id": "あ",
+              "title": "新規問題",
+              "desc": "",
+              "explanationPath": "data/explanations/lead_alpha/01/あ.html",
+              "layout": "article"
+            },
+            {
               "id": "alpha_001",
               "title": "1 速度の合成",
               "explanationPath": "data/explanations/lead_alpha/01/alpha_001.html",

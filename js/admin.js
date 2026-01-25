@@ -56,7 +56,23 @@ document.addEventListener('DOMContentLoaded', () => {
   btnSmartImport.style.backgroundColor = '#8b5cf6'; // 紫色
   btnSmartImport.onclick = openSmartImportModal;
 
+  // 3. フォルダ展開/縮小ボタン (科目以外のDetailsを一括操作)
+  const btnCollapse = document.createElement('button');
+  btnCollapse.className = 'btn-tool';
+  btnCollapse.textContent = '📂 展開/縮小';
+  btnCollapse.title = '分野フォルダのみを閉じます（科目は開いたまま）';
+  btnCollapse.onclick = () => {
+    const allDetails = document.querySelectorAll('#tree-root details');
+    allDetails.forEach(det => {
+      // 親がtree-root(＝科目)以外のdetails(＝分野)の開閉をトグル
+      if (det.parentElement.id !== 'tree-root') {
+        det.open = !det.open;
+      }
+    });
+  };
+
   if(sidebarTools) {
+      sidebarTools.insertBefore(btnCollapse, sidebarTools.firstChild);
       sidebarTools.appendChild(btnSyncFolders);
       sidebarTools.appendChild(btnSmartImport);
   }
@@ -76,30 +92,51 @@ document.addEventListener('DOMContentLoaded', () => {
       viewEditor.classList.remove('active');
       viewPreview.classList.add('active');
 
-      // 1. エディタの内容をプレビューに反映 (textareaから取得)
-      const content = currentVisualEditor ? currentVisualEditor.value : '';
-      previewContainer.innerHTML = content;
+      // Iframeを使ってViewer環境を完全再現
+      previewContainer.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.style.cssText = 'width:100%; height:100%; border:none; background:#fff;';
+      previewContainer.appendChild(iframe);
 
-      // 2. スクリプトの実行 (innerHTMLに入れただけでは動かないため再構築)
-      const scripts = previewContainer.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
-        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-        newScript.textContent = oldScript.textContent;
-        oldScript.parentNode.replaceChild(newScript, oldScript);
-      });
-
-      // 3. MathJax (数式) の適用
-      if (window.MathJax) {
-         if (MathJax.typesetPromise) {
-            MathJax.typesetPromise([previewContainer]).catch(e => console.log(e));
-         } else if (MathJax.Hub) {
-            MathJax.Hub.Queue(["Typeset", MathJax.Hub, previewContainer]);
-         }
-      }
+      const editorContent = currentVisualEditor ? currentVisualEditor.value : '';
+      const layoutClass = (currentProblem.layout === 'article') ? 'layout-article' : '';
       
-      // 4. キャンバスのリサイズ対応 (p5.jsなどが崩れないように)
-      setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+      const doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <!DOCTYPE html>
+        <html lang="ja">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <link rel="stylesheet" href="css/base.css">
+          <link rel="stylesheet" href="css/components.css">
+          <link rel="stylesheet" href="css/viewer.css">
+          <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
+          
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"><\/script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>
+          <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"><\/script>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>
+          <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"><\/script>
+          <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"><\/script>
+          <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>
+          <style>body { height: 100vh; overflow: hidden; } .prob-header-top { display:none; }</style>
+        </head>
+        <body class="${layoutClass}">
+          <div class="viewer-container">
+            <div class="viewer-split-content">
+               <div id="sim-target" class="simulation-area"></div>
+               <div id="text-target" class="explanation-area">
+                 ${editorContent}
+               </div>
+            </div>
+          </div>
+          <script src="js/sim-utils.js"><\/script>
+        </body>
+        </html>
+      `);
+      doc.close();
     };
   }
 
@@ -340,9 +377,52 @@ document.addEventListener('DOMContentLoaded', () => {
               dragSrcField = fld;
               pDiv.classList.add('dragging');
               e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', pIdx); // インデックスを保持
           });
+          
+          pDiv.addEventListener('dragover', e => {
+             e.preventDefault();
+             // 同じフィールド内での並び替え時はガイドを表示
+             if (dragSrcField === fld) {
+               pDiv.style.borderTop = '2px solid #3b82f6';
+             }
+          });
+          
+          pDiv.addEventListener('dragleave', () => {
+             pDiv.style.borderTop = 'transparent';
+          });
+
+          pDiv.addEventListener('drop', e => {
+             e.preventDefault();
+             e.stopPropagation();
+             pDiv.style.borderTop = 'transparent';
+
+             // ケース1: 同じフィールド内での並び替え
+             if (dragSrcField === fld && dragSrcProb) {
+                const oldIdx = fld.problems.indexOf(dragSrcProb);
+                const newIdx = pIdx; 
+                if (oldIdx !== -1 && oldIdx !== newIdx) {
+                  fld.problems.splice(oldIdx, 1);       // 削除
+                  fld.problems.splice(newIdx, 0, dragSrcProb); // 挿入
+                  renderTree();
+                  saveAll();
+                }
+                return;
+             }
+             
+             // ケース2: 別のフィールドからの移動 (完了処理)
+             pDiv.classList.remove('dragging');
+             document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+             
+             // handleDropProblemへ委譲 (ただしバブリングを止めたのでここで呼ぶ)
+             if (dragSrcField !== fld) {
+                handleDropProblem(e, sub, fld);
+             }
+          });
+
           pDiv.addEventListener('dragend', () => {
              pDiv.classList.remove('dragging');
+             pDiv.style.borderTop = 'transparent';
              document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
           });
           
@@ -944,80 +1024,115 @@ document.addEventListener('DOMContentLoaded', () => {
     currentProblem = problem;
     editorMainWrapper.style.display = 'flex';
     document.querySelector('.empty-state').style.display = 'none';
-    
-    // デフォルトは編集タブを開く
     if (tabEdit) tabEdit.click();
 
+    // ヘッダー更新
     document.getElementById('editing-title').textContent = problem.title;
     document.getElementById('editing-id').textContent = problem.id;
     container.innerHTML = '';
 
-    const basicSec = document.createElement('div');
-    basicSec.className = 'form-section';
-    basicSec.innerHTML = '<h3>📝 基本情報</h3>';
-    
-    basicSec.appendChild(createInput('タイトル', problem.title, v=>{ 
-        problem.title=v; 
-        document.getElementById('editing-title').textContent=v; 
-        const activeItem = treeRoot.querySelector('.prob-item.active span:first-child');
-        if(activeItem) activeItem.textContent = v;
-    }));
-    
-    // ★変更: 全て記事型で統一するため、レイアウト選択UIを削除し値を固定
-    problem.layout = 'article'; 
-    container.appendChild(basicSec);
+    // === 1. 詳細編集エリア (ID, Title, Desc, Path, Layout) ===
+    const infoSec = document.createElement('div');
+    infoSec.className = 'form-section';
+    infoSec.innerHTML = '<h3>📝 基本情報編集</h3>';
 
-    // --- 解説エディタセクション ---
+    // 2カラムレイアウト
+    const gridStyle = 'display:grid; grid-template-columns: 1fr 1fr; gap:15px;';
+    const row1 = document.createElement('div'); row1.style.cssText = gridStyle;
+    const row2 = document.createElement('div'); row2.style.cssText = gridStyle;
+
+    // ヘルパー: JSONビューを更新
+    const updateJson = () => { if(document.getElementById('json-editor-area')) document.getElementById('json-editor-area').value = JSON.stringify(problem, null, 2); };
+
+    // 各入力フィールド
+    row1.appendChild(createInput('ID', problem.id, val => { problem.id = val; document.getElementById('editing-id').textContent = val; updateJson(); }));
+    row1.appendChild(createInput('レイアウト (article/slide)', problem.layout, val => { problem.layout = val; updateJson(); }));
+
+    const titleGroup = createInput('タイトル', problem.title, val => { 
+        problem.title = val; 
+        document.getElementById('editing-title').textContent = val;
+        // ツリー上の表示も更新
+        const activeItem = treeRoot.querySelector('.prob-item.active span:first-child');
+        if(activeItem) activeItem.textContent = val;
+        updateJson();
+    });
+    titleGroup.style.width = '100%';
+
+    const descGroup = createInput('説明文', problem.desc || '', val => { problem.desc = val; updateJson(); });
+    descGroup.style.width = '100%';
+
+    const pathGroup = createInput('解説パス (explanationPath)', problem.explanationPath, val => { problem.explanationPath = val; updateJson(); });
+    pathGroup.style.width = '100%';
+
+    infoSec.appendChild(row1);
+    infoSec.appendChild(titleGroup);
+    infoSec.appendChild(descGroup);
+    infoSec.appendChild(row2);
+    infoSec.appendChild(pathGroup);
+
+    // === 2. JSONソース直接編集エリア ===
+    const jsonSec = document.createElement('div');
+    jsonSec.style.marginTop = '15px';
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = '🔧 ソースコード(JSON)を直接編集';
+    summary.style.fontSize = '0.9rem';
+    summary.style.color = '#64748b';
+    details.appendChild(summary);
+
+    const jsonEditor = document.createElement('textarea');
+    jsonEditor.id = 'json-editor-area';
+    jsonEditor.style.cssText = 'width:100%; height:150px; font-family:monospace; font-size:12px; background:#1e1e1e; color:#d4d4d4; padding:10px; border-radius:4px; margin-top:5px;';
+    jsonEditor.spellcheck = false;
+    jsonEditor.value = JSON.stringify(problem, null, 2);
+    
+    // JSON手動変更時の反映
+    jsonEditor.addEventListener('change', () => {
+        try {
+            const newObj = JSON.parse(jsonEditor.value);
+            Object.keys(currentProblem).forEach(k => delete currentProblem[k]);
+            Object.assign(currentProblem, newObj);
+            openEditor(currentProblem); // フォームを再描画
+            showToast('JSONを適用しました');
+        } catch(e) { alert('JSON形式エラー: ' + e); }
+    });
+
+    details.appendChild(jsonEditor);
+    jsonSec.appendChild(details);
+    infoSec.appendChild(jsonSec);
+    container.appendChild(infoSec);
+
+    // === 3. 解説HTMLエディタ ===
     const explSec = document.createElement('div');
     explSec.className = 'form-section';
     explSec.style.display = 'flex';
     explSec.style.flexDirection = 'column';
     explSec.style.flex = '1'; 
-    
     explSec.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <h3 style="margin:0;">📖 解説HTML編集 <span style="font-size:0.8em;color:#999;">(ソースコード)</span></h3>
+        <h3 style="margin:0;">📖 解説HTML編集</h3>
         <button id="btn-save-expl" class="btn-save">💾 解説を保存</button>
       </div>
-      <p style="font-size:0.85rem; color:#666; margin-top:-5px; margin-bottom:10px;">
-         ※ AIが生成したHTMLコードをここに貼り付けてください。
-      </p>
     `;
     
-    // ★変更: div(contentEditable) ではなく textarea を使用
     const editorArea = document.createElement('textarea');
     editorArea.className = 'visual-editor'; 
+    editorArea.style.cssText = 'flex:1; width:100%; min-height:400px; font-family:monospace; font-size:14px; background:#1e1e1e; color:#d4d4d4; padding:15px; border-radius:6px; resize:none;';
     editorArea.spellcheck = false;
-    // スタイル調整（コードが見やすいように）
-    editorArea.style.width = '100%';
-    editorArea.style.minHeight = '400px';
-    editorArea.style.flex = '1';
-    editorArea.style.fontFamily = 'monospace';
-    editorArea.style.fontSize = '14px';
-    editorArea.style.lineHeight = '1.5';
-    editorArea.style.padding = '15px';
-    editorArea.style.backgroundColor = '#1e1e1e';
-    editorArea.style.color = '#d4d4d4';
-    editorArea.style.border = '1px solid #334155';
-    editorArea.style.borderRadius = '6px';
-    editorArea.style.resize = 'vertical';
-    
+
     if (problem.explanationPath && rootDirHandle) {
       try {
         const parts = problem.explanationPath.split('/');
         let d = rootDirHandle;
         for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i]);
         const f = await d.getFileHandle(parts[parts.length-1]);
-        // テキストエリアに値をセット
         editorArea.value = await (await f.getFile()).text();
-      } catch(e) { editorArea.value = "\n" + e.message; }
+      } catch(e) { editorArea.value = "\n"; }
     }
-    
     currentVisualEditor = editorArea;
     explSec.appendChild(editorArea);
     container.appendChild(explSec);
-
-    // 解説保存ボタンの処理
+    
     explSec.querySelector('#btn-save-expl').onclick = async () => {
       try {
         const parts = problem.explanationPath.split('/');
@@ -1025,7 +1140,6 @@ document.addEventListener('DOMContentLoaded', () => {
         for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i], {create:true});
         const f = await d.getFileHandle(parts[parts.length-1], {create:true});
         const w = await f.createWritable();
-        // ★変更: textarea なので .value を保存
         await w.write(editorArea.value);
         await w.close();
         showToast("解説HTMLを保存しました");

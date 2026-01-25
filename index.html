@@ -92,127 +92,147 @@
   <div class="container">
     <h1>Physics Lab.</h1>
     <div class="material-tabs" id="tab-container"></div>
+    <div class="material-tabs" id="sub-tab-container" style="display:none; margin-top:-20px; margin-bottom:30px; transform: scale(0.95);"></div>
     <div id="content-area"></div>
   </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const tabContainer = document.getElementById('tab-container');
+  // サブタブ用のコンテナを追加
+  let subTabContainer = document.getElementById('sub-tab-container');
+  if (!subTabContainer) {
+    subTabContainer = document.createElement('div');
+    subTabContainer.id = 'sub-tab-container';
+    subTabContainer.className = 'material-tabs';
+    subTabContainer.style.cssText = 'display:none; margin-top:-20px; margin-bottom:30px; transform: scale(0.95);';
+    tabContainer.after(subTabContainer);
+  }
   const contentArea = document.getElementById('content-area');
   
   let manifest = [];
+  // 入試カテゴリの定義
+  const EXAM_TYPES = ['exam_year', 'exam_univ']; 
 
-  // 1. マニフェスト(教材一覧)の取得
-  // 管理画面と同様に data/manifest.json を読み込みます
   fetch('data/manifest.json')
-    .then(res => {
-      if (!res.ok) throw new Error('manifest.json not found');
-      return res.json();
-    })
+    .then(res => res.json())
     .then(data => {
       manifest = data;
       initTabs();
-      // 初回は先頭の教材を読み込んで表示
-      if(manifest.length > 0) {
-        loadMaterial(0);
-      } else {
-        contentArea.innerHTML = '<p style="text-align:center; margin-top:50px;">教材が見つかりません。</p>';
-      }
+      if(manifest.length > 0) loadMaterial(0);
     })
-    .catch(error => {
-      console.error('Error loading manifest:', error);
-      contentArea.innerHTML = '<p style="text-align:center; color:red; margin-top:50px;">データの読み込みに失敗しました(manifest.json)。</p>';
-    });
+    .catch(err => console.error(err));
 
-  // 2. タブ生成
   function initTabs() {
     tabContainer.innerHTML = '';
+    subTabContainer.innerHTML = '';
+
+    // 1. 通常教材のタブ生成
     manifest.forEach((mat, index) => {
-      const btn = document.createElement('button');
-      btn.className = 'tab-btn'; 
-      btn.textContent = mat.name; // "物理基礎", "物理" などが表示されます
-      btn.onclick = () => loadMaterial(index);
-      tabContainer.appendChild(btn);
+      if (EXAM_TYPES.includes(mat.type)) return; // 入試系はスキップ
+      createMainTab(mat.name, index);
     });
+
+    // 2. 入試過去問タブの生成（入試系がある場合のみ）
+    const hasExam = manifest.some(m => EXAM_TYPES.includes(m.type));
+    if (hasExam) {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn';
+      btn.textContent = '入試過去問';
+      btn.dataset.isExam = 'true';
+      btn.onclick = () => showExamTabs(btn);
+      tabContainer.appendChild(btn);
+    }
   }
 
-  // 3. 教材データのロードと表示
-  function loadMaterial(index) {
-    // タブの見た目更新
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach((t, i) => {
-      if(i === index) t.classList.add('active');
-      else t.classList.remove('active');
+  function createMainTab(name, index) {
+    const btn = document.createElement('button');
+    btn.className = 'tab-btn';
+    btn.textContent = name;
+    btn.onclick = () => {
+      resetTabs();
+      btn.classList.add('active');
+      subTabContainer.style.display = 'none'; // サブタブ隠す
+      loadMaterial(index);
+    };
+    tabContainer.appendChild(btn);
+  }
+
+  function showExamTabs(parentBtn) {
+    resetTabs();
+    parentBtn.classList.add('active');
+    
+    // サブタブの生成
+    subTabContainer.innerHTML = '';
+    subTabContainer.style.display = 'flex';
+    
+    let firstExamIndex = -1;
+
+    manifest.forEach((mat, index) => {
+      if (!EXAM_TYPES.includes(mat.type)) return;
+      if (firstExamIndex === -1) firstExamIndex = index;
+
+      const subBtn = document.createElement('button');
+      subBtn.className = 'tab-btn';
+      subBtn.style.fontSize = '0.95rem'; // 少し小さく
+      subBtn.textContent = mat.name;
+      subBtn.onclick = () => {
+        // サブタブのアクティブ切り替え
+        Array.from(subTabContainer.children).forEach(b => b.classList.remove('active'));
+        subBtn.classList.add('active');
+        loadMaterial(index);
+      };
+      subTabContainer.appendChild(subBtn);
     });
 
-    const item = manifest[index];
-    const jsonPath = item.path; // 例: "data/materials/textbook_basic.json"
+    // 最初の入試教材を自動ロード
+    if (firstExamIndex !== -1 && subTabContainer.firstChild) {
+      subTabContainer.firstChild.click();
+    }
+  }
 
-    // ローディング表示
+  function resetTabs() {
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(t => t.classList.remove('active'));
+  }
+
+  // loadMaterial, renderContent は既存のまま
+  function loadMaterial(index) {
+    // (既存のコードと同じ)
+    const item = manifest[index];
+    const jsonPath = item.path;
     contentArea.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">読み込み中...</div>';
 
     fetch(jsonPath)
-      .then(res => {
-         if(!res.ok) throw new Error('Material data not found');
-         return res.json();
-      })
-      .then(materialData => {
-         renderContent(materialData);
-      })
+      .then(res => res.json())
+      .then(materialData => renderContent(materialData))
       .catch(err => {
          console.error(err);
-         contentArea.innerHTML = `<p style="text-align:center; color:red; margin-top:30px;">「${item.name}」のデータが見つかりませんでした。<br><span style="font-size:0.8em">(${jsonPath})</span></p>`;
+         contentArea.innerHTML = `<p style="text-align:center; color:red;">読み込み失敗</p>`;
       });
   }
 
-  // 4. コンテンツ描画
   function renderContent(material) {
+    // (既存のrenderContentコードをそのまま使用)
     let html = `<div class="subject-grid">`;
-    
     if (material.subjects) {
       material.subjects.forEach(subject => {
-        html += `
-          <div class="subject-card">
-            <h3 class="subject-name">
-              <span>${subject.subjectName}</span>
-            </h3>
-            <ul class="field-list">
-        `;
-        
-        let hasProblem = false;
-        
+        html += `<div class="subject-card"><h3 class="subject-name"><span>${subject.subjectName}</span></h3><ul class="field-list">`;
         if (subject.fields) {
           subject.fields.forEach(field => {
             if (field.problems && field.problems.length > 0) {
-              hasProblem = true;
-              html += `<li class="field-item">
-                <span class="field-name">${field.fieldName}</span>
-                <div class="prob-grid">`;
-              
+              html += `<li class="field-item"><span class="field-name">${field.fieldName}</span><div class="prob-grid">`;
               field.problems.forEach(p => {
-                // リンク先の設定: IDではなくファイルのパスを渡す形式に変更
-                // (admin.js で保存された explanationPath を使用)
                 const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}`;
-                
-                html += `
-                  <a href="${targetUrl}" class="prob-link" target="_blank">
-                    <span>${p.title}</span>
-                  </a>
-                `;
+                html += `<a href="${targetUrl}" class="prob-link" target="_blank"><span>${p.title}</span></a>`;
               });
               html += `</div></li>`;
             }
           });
         }
-        
-        if (!hasProblem) {
-          html += `<li style="color:var(--col-text-sub); font-size:0.9rem; padding-left:10px;">(問題準備中)</li>`;
-        }
-        
         html += `</ul></div>`;
       });
     }
-    
     html += `</div>`;
     contentArea.innerHTML = html;
   }
