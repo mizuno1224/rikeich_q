@@ -13,15 +13,13 @@
               "id": "q1",
               "title": "第1問 ドップラー効果",
               "desc": "",
-              "explanationPath": "data/explanations/exam_common/2025/q1.html",
-              "layout": "article"
+              "explanationPath": "data/explanations/exam_common/2025/q1.html"
             },
             {
               "id": "q2",
               "title": "第2問 電磁気",
               "desc": "コンデンサーの極板間引力",
-              "explanationPath": "data/explanations/exam_common/2025/q2.html",
-              "layout": "article"
+              "explanationPath": "data/explanations/exam_common/2025/q2.html"
             }
           ]
         },
@@ -44,8 +42,7 @@
               "id": "2024_main_q1",
               "title": "第1問 小問集合",
               "desc": "",
-              "explanationPath": "data/explanations/exam_common/2024/2024_main_q1.html",
-              "layout": "article"
+              "explanationPath": "data/explanations/exam_common/2024/2024_main_q1.html"
             }
           ]
         }

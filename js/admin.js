@@ -1,3 +1,5 @@
+// js/admin.js
+
 // --- Global State ---
 let manifestData = [];      
 let currentMaterialData = null; 
@@ -141,8 +143,57 @@ document.addEventListener('DOMContentLoaded', () => {
   // AI新規追加ボタン (ヘッダー) の有効化
   if (btnImportAi) {
     btnImportAi.style.display = 'inline-block'; // 表示
-    btnImportAi.onclick = openSmartImportModal;
+    
+    // 修正: HTML定義済みの3カラムモーダルを使用する
+    btnImportAi.onclick = () => {
+      const modal = document.getElementById('import-modal');
+      const sel = document.getElementById('import-target-material');
+      
+      // マテリアル選択肢の更新
+      sel.innerHTML = '<option value="">(自動判定/選択不要)</option>';
+      manifestData.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = m.name;
+        sel.appendChild(opt);
+      });
+
+      modal.style.display = 'flex';
+    };
   }
+
+  // 静的モーダル(AI新規追加)のイベント設定
+  const btnCloseImport = document.getElementById('btn-close-import');
+  const btnExecImport = document.getElementById('btn-exec-import');
+  if(btnCloseImport) btnCloseImport.onclick = () => document.getElementById('import-modal').style.display = 'none';
+  
+  if(btnExecImport) {
+    btnExecImport.onclick = async () => {
+      const htmlVal = document.getElementById('imp-html').value;
+      const jsVal = document.getElementById('imp-js').value;
+      const jsonVal = document.getElementById('imp-json').value;
+
+      if(!jsonVal.trim()) { alert("JSONは必須です"); return; }
+
+      // JSがある場合はHTMLに統合する
+      let finalHtml = htmlVal;
+      if(jsVal && jsVal.trim()) {
+        finalHtml += `\n<script>\n${jsVal}\n<\/script>`;
+      }
+
+      try {
+        await executeSmartImport(finalHtml, jsonVal);
+        document.getElementById('import-modal').style.display = 'none';
+        // 入力欄クリア
+        document.getElementById('imp-html').value = '';
+        document.getElementById('imp-js').value = '';
+        document.getElementById('imp-json').value = '';
+      } catch(e) {
+        alert("登録エラー: " + e.message);
+      }
+    };
+  }
+
 // --- 1. Initialize & Open Project --- 
 btnOpen.addEventListener('click', async () => {
     try {
@@ -482,7 +533,7 @@ btnOpen.addEventListener('click', async () => {
       
       <div style="text-align:right; margin-top:10px;">
         <button id="btn-cancel-import" style="padding:10px 20px;margin-right:10px;border:1px solid #cbd5e1;border-radius:4px;background:white;cursor:pointer;">キャンセル</button>
-        <button id="btn-exec-import" style="padding:10px 20px;background:#8b5cf6;color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;">取り込み実行</button>
+        <button id="btn-exec-smart-import" style="padding:10px 20px;background:#8b5cf6;color:white;border:none;border-radius:4px;font-weight:bold;cursor:pointer;">取り込み実行</button>
       </div>
     `;
     
@@ -491,7 +542,8 @@ btnOpen.addEventListener('click', async () => {
 
     modalContent.querySelector('#btn-cancel-import').onclick = () => document.body.removeChild(modalOverlay);
     
-    modalContent.querySelector('#btn-exec-import').onclick = async () => {
+    // IDを変更して静的モーダルとの競合を回避
+    modalContent.querySelector('#btn-exec-smart-import').onclick = async () => {
       const htmlText = modalContent.querySelector('#ai-import-html').value;
       const jsonText = modalContent.querySelector('#ai-import-json').value;
       

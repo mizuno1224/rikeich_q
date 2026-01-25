@@ -6,7 +6,8 @@ window.MathJax = {
     inlineMath: [["$", "$"], ["\\(", "\\)"]],
     displayMath: [["$$", "$$"]],
     macros: {
-      strong: ['\\textcolor{#3b82f6}{\\boldsymbol{#1}}', 1]
+      // hexコードの # はエスケープ(\#)しないと引数として誤認されます
+      strong: ['\\textcolor{\\#3b82f6}{\\boldsymbol{#1}}', 1]
     }
   },
   svg: { fontCache: "global" },

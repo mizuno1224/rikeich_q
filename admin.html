@@ -22,7 +22,8 @@
         inlineMath: [['$', '$'], ['\\(', '\\)']],
         macros: {
           // 引数1つを受け取る設定 [, 1] を忘れないこと
-          strong: ['\\textcolor{#3b82f6}{\\boldsymbol{#1}}', 1]
+          // hexコードの # はエスケープ(\#)が必要
+          strong: ['\\textcolor{\\#3b82f6}{\\boldsymbol{#1}}', 1]
         }
       },
       svg: { fontCache: 'global' }
