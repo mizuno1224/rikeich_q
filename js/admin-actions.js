@@ -4,7 +4,11 @@
 
 async function loadMaterial(index) {
   if(index < 0 || index >= manifestData.length) return;
+  
+  // ★修正: 開いたタブのインデックスを保存
   activeMaterialIndex = index;
+  localStorage.setItem('admin_last_material_index', index);
+
   const item = manifestData[index];
   currentMaterialPath = item.path;
   currentMaterialType = item.type || 'standard';
@@ -43,7 +47,9 @@ async function saveAll() {
       const w = await fh.createWritable();
       await w.write(JSON.stringify(currentMaterialData, null, 2));
       await w.close();
-      showToast(`「${currentMaterialData.materialName}」を保存しました`);
+      
+      const time = new Date().toLocaleTimeString();
+      showToast(`保存完了 (${time})`);
     }
   } catch (e) { showToast('保存失敗: ' + e, true); }
   

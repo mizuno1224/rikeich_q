@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnCloseImport: document.getElementById('btn-close-import'),
     btnExecImport: document.getElementById('btn-exec-import'),
     impHtml: document.getElementById('imp-html'),
-    // impJs 削除
+    impJs: document.getElementById('imp-js'), // 念のため残存対応
     impJson: document.getElementById('imp-json'),
     importTargetMaterial: document.getElementById('import-target-material'),
 
@@ -98,8 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
       ui.btnOpen.textContent = "📂 " + rootDirHandle.name;
 
       renderTabs();
+
+      // ★修正: 前回開いていたタブ番号を復元
+      const lastIdx = localStorage.getItem('admin_last_material_index');
+      const targetIdx = (lastIdx && manifestData[lastIdx]) ? parseInt(lastIdx) : 0;
+
       if (manifestData.length > 0) {
-        await loadMaterial(0);
+        await loadMaterial(targetIdx);
       } else {
         ui.treeRoot.innerHTML = '<div style="padding:20px; color:#666;">教材がありません。「＋」ボタンで追加してください。</div>';
       }
