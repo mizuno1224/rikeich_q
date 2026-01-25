@@ -3,17 +3,17 @@
   "subjects": [
     {
       "subjectName": "物理基礎",
-      "folderName": "main",
+      "folderName": "physics_basic",
       "fields": [
         {
           "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
           "folderId": "01/01",
           "problems": [
             {
-              "id": "ai_sample_001",
-              "title": "【AI生成】等加速度運動のテスト",
-              "desc": "AIインポート機能の動作確認用サンプルデータです。",
-              "explanationPath": "data/explanations/textbook_basic/main/01/01/ai_sample_001.html",
+              "id": "001_p12_ex1",
+              "title": "総合演習：物理シミュレーション",
+              "desc": "Matter.js, JSXGraph, Chart.js, p5.js, Three.js を使用したサンプル",
+              "explanationPath": "data/explanations/textbook/physics_basic/01/01/001_p12_ex1.html",
               "layout": "article"
             }
           ]

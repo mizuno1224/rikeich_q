@@ -69,3 +69,13 @@
 * `window.scrollTo`（画面全体）ではなく、特定のコンテナ要素（`.viewer-split-content`）をスクロールさせる処理に変更する。
 * タッチデバイス用のスワイプ検知を追加する。
 
+
+完全同期セット（最強版）
+# 1. GitHubの最新情報を取得
+git fetch origin main
+
+# 2. Git管理下のファイルをGitHubと強制一致（変更・削除・追加を反映）
+git reset --hard origin/main
+
+# 3. Git管理外の余計なファイル・フォルダもすべて削除（※要注意）
+git clean -fd

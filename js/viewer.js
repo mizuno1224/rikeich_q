@@ -5,40 +5,15 @@ let pointerInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
+  
+  // ★追加: index.html から渡されるパスパラメータを取得
+  const directPath = params.get('path');
+  
+  // 従来のパラメータ
   const probId = params.get('id');
-  const srcPath = params.get('src'); // 分割JSONのパスを受け取る
+  const srcPath = params.get('src');
 
-  // データロード
-  // srcパラメータがなければ旧来の problems.json をフォールバックとして使用
-  const fetchTarget = srcPath ? srcPath : 'problems.json';
-
-  fetch(fetchTarget)
-    .then(res => {
-      if (!res.ok) throw new Error("JSON load failed");
-      return res.json();
-    })
-    .then(data => {
-      // Split JSONの場合は data が直接 Material Object ( {subjects: ...} )
-      // problems.json (Legacy) の場合は Array ( [{subjects:...}, ...] )
-      let problemsList = [];
-      
-      if (Array.isArray(data)) {
-        // Legacy: 全配列から探す
-        problemsList = data;
-      } else {
-        // Split: 1つのMaterialオブジェクトなので、配列に入れて検索ロジックを共通化
-        problemsList = [data];
-      }
-      
-      loadProblem(probId, problemsList);
-    })
-    .catch(err => {
-      console.error(err);
-      const target = document.getElementById('text-target');
-      if(target) target.innerHTML = "<p>問題データの読み込みに失敗しました。</p>";
-    });
-
-  // ポインター制御の初期化
+  // --- ポインター制御の初期化 (共通) ---
   const btnPointer = document.getElementById('btn-toggle-pointer');
   if(document.getElementById('pointer-canvas') && typeof LaserPointer !== 'undefined'){
     pointerInstance = new LaserPointer('pointer-canvas');
@@ -57,75 +32,163 @@ document.addEventListener('DOMContentLoaded', () => {
       if(pointerInstance) pointerInstance.clear();
     });
   }
+
+  // --- メイン読み込み処理 ---
+  if (directPath) {
+    // パターンA: パス直接指定 (index.htmlからの遷移など)
+    loadExplanationByPath(directPath);
+  } else if (probId) {
+    // パターンB: ID指定 (従来のJSON検索)
+    loadProblemById(probId, srcPath);
+  } else {
+    showError("問題が指定されていません。");
+  }
 });
 
-function loadProblem(id, dataset) {
-  // --- クリーンアップ処理 ---
-  if (window.p5Instances) {
-    window.p5Instances.forEach(p => p.remove());
-    window.p5Instances = [];
-  }
-  
-  let target = null;
-  
-  // 階層検索
-  for (const mat of dataset) {
-    for (const sub of mat.subjects) {
-      for (const fld of sub.fields) {
-        const found = fld.problems.find(p => p.id === id);
-        if (found) { target = found; break; }
-      }
-      if (target) break;
-    }
-    if (target) break;
-  }
-
+/**
+ * パスから直接HTMLを読み込む (New)
+ */
+function loadExplanationByPath(path) {
   const textTarget = document.getElementById('text-target');
   if (!textTarget) return;
 
-  if (target) {
-    document.title = target.title;
-    const titleEl = document.getElementById('prob-title-header');
-    if(titleEl) titleEl.textContent = target.title;
+  // デフォルトで記事型レイアウトを適用
+  document.body.classList.add('layout-article');
 
-    // --- レイアウト切り替え処理 ---
-    if (target.layout === 'article') {
-      document.body.classList.add('layout-article');
-    } else {
-      document.body.classList.remove('layout-article');
-    }
+  // 仮のタイトルを表示（ファイル名）
+  const fileName = path.split('/').pop();
+  updateTitle(fileName);
 
-    // 解説ファイルのロード
-    if (target.explanationPath) {
-      fetch(target.explanationPath)
-        .then(res => {
-          if(!res.ok) throw new Error("Explanation file not found");
-          return res.text();
-        })
-        .then(html => {
-          // HTMLを挿入
-          textTarget.innerHTML = html;
-          
-          // 1. MathJaxのレンダリング
-          if(window.MathJax) MathJax.typesetPromise([textTarget]);
-          
-          // 2. 埋め込みスクリプトの実行
-          executeInlineScripts(textTarget);
+  fetch(path)
+    .then(res => {
+      if(!res.ok) throw new Error("Explanation file not found: " + path);
+      return res.text();
+    })
+    .then(html => {
+      renderExplanation(textTarget, html);
+      
+      // HTML内の見出しタグからタイトルを抽出してヘッダーに反映
+      const heading = textTarget.querySelector('h2, h3');
+      if(heading) {
+        // "第1問：..." のような部分のみ抽出するか、テキスト全体を使う
+        updateTitle(heading.textContent);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showError(`解説ファイルの読み込みに失敗しました。<br><span style="font-size:0.8em">${path}</span>`);
+    });
+}
 
-          // 3. Observer更新 (目次等の追従用)
-          if(window.updateObserver) setTimeout(window.updateObserver, 100);
-        })
-        .catch(err => {
-          console.warn(err);
-          textTarget.innerHTML = "<p>解説ファイルの読み込みに失敗しました。</p>";
-        });
+/**
+ * IDからJSONを検索して読み込む (Legacy)
+ */
+function loadProblemById(id, srcPath) {
+  // srcパラメータがなければ旧来の problems.json をフォールバックとして使用
+  const fetchTarget = srcPath ? srcPath : 'problems.json';
 
-    } else {
-      textTarget.innerHTML = "<p>解説が登録されていません。</p>";
-    }
+  fetch(fetchTarget)
+    .then(res => {
+      if (!res.ok) throw new Error("JSON load failed");
+      return res.json();
+    })
+    .then(data => {
+      let problemsList = Array.isArray(data) ? data : [data];
+      
+      // 階層検索
+      let target = null;
+      for (const mat of problemsList) {
+        if (!mat.subjects) continue;
+        for (const sub of mat.subjects) {
+          if (!sub.fields) continue;
+          for (const fld of sub.fields) {
+            if (!fld.problems) continue;
+            const found = fld.problems.find(p => p.id === id);
+            if (found) { target = found; break; }
+          }
+          if (target) break;
+        }
+        if (target) break;
+      }
+
+      if (target) {
+        applyProblemData(target);
+      } else {
+        showError(`問題ID "${id}" が見つかりません。`);
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showError("問題データの検索に失敗しました。");
+    });
+}
+
+/**
+ * JSONデータが見つかった場合の適用処理
+ */
+function applyProblemData(target) {
+  const textTarget = document.getElementById('text-target');
+  if (!textTarget) return;
+
+  updateTitle(target.title);
+
+  // レイアウト切り替え
+  if (target.layout === 'article') {
+    document.body.classList.add('layout-article');
   } else {
-    if(id) textTarget.innerHTML = `<p>問題ID "${id}" が見つかりません。</p>`;
+    document.body.classList.remove('layout-article');
   }
+
+  // 解説ファイルのロード
+  if (target.explanationPath) {
+    fetch(target.explanationPath)
+      .then(res => {
+        if(!res.ok) throw new Error("Explanation file not found");
+        return res.text();
+      })
+      .then(html => {
+        renderExplanation(textTarget, html);
+      })
+      .catch(err => {
+        console.warn(err);
+        showError("解説ファイルの読み込みに失敗しました。");
+      });
+  } else {
+    showError("解説が登録されていません。");
+  }
+}
+
+// --- 共通ヘルパー関数 ---
+
+function updateTitle(title) {
+  document.title = title;
+  const titleEl = document.getElementById('prob-title-header');
+  if(titleEl) titleEl.textContent = title;
+}
+
+function renderExplanation(container, html) {
+  // 1. HTML挿入
+  container.innerHTML = html;
+  
+  // 2. MathJaxのレンダリング
+  if(window.MathJax) {
+    if (MathJax.typesetPromise) {
+      MathJax.typesetPromise([container]).catch(e => console.log(e));
+    } else if (MathJax.Hub) {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+    }
+  }
+  
+  // 3. 埋め込みスクリプトの実行
+  executeInlineScripts(container);
+
+  // 4. Observer更新 (目次等の追従用)
+  if(window.updateObserver) setTimeout(window.updateObserver, 100);
+}
+
+function showError(msg) {
+  const target = document.getElementById('text-target');
+  if(target) target.innerHTML = `<p style="padding:20px; color:#ef4444;">${msg}</p>`;
 }
 
 // HTML文字列として挿入された script タグを実行可能にするヘルパー
