@@ -1,68 +1,9 @@
 {
-  "materialName": "教科書",
+  "materialName": "物理",
   "subjects": [
     {
-      "subjectName": "物理基礎",
-      "folderName": "physics_basic",
-      "fields": [
-        {
-          "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
-          "folderId": "01/01",
-          "problems": [
-            {
-              "id": "ai_sample_001",
-              "title": "【AI生成】等加速度運動のテスト",
-              "desc": "AIインポート機能の動作確認用サンプルデータです。",
-              "explanationPath": "data/explanations/textbook/physics_basic/01/01/ai_sample_001.html",
-              "layout": "article"
-            }
-          ]
-        },
-        {
-          "fieldName": "第1編 運動とエネルギー / 第2章 運動の法則",
-          "folderId": "01/02",
-          "problems": []
-        },
-        {
-          "fieldName": "第1編 運動とエネルギー / 第3章 仕事と力学的エネルギー",
-          "folderId": "01/03",
-          "problems": []
-        },
-        {
-          "fieldName": "第2編 熱 / 第1章 熱とエネルギー",
-          "folderId": "02/01",
-          "problems": []
-        },
-        {
-          "fieldName": "第3編 波 / 第1章 波の性質",
-          "folderId": "03/01",
-          "problems": []
-        },
-        {
-          "fieldName": "第3編 波 / 第2章 音",
-          "folderId": "03/02",
-          "problems": []
-        },
-        {
-          "fieldName": "第4編 電気 / 第1章 物質と電気",
-          "folderId": "04/01",
-          "problems": []
-        },
-        {
-          "fieldName": "第4編 電気 / 第2章 磁場と交流",
-          "folderId": "04/02",
-          "problems": []
-        },
-        {
-          "fieldName": "第5編 物理学と社会 / 第1章 エネルギーの利用",
-          "folderId": "05/01",
-          "problems": []
-        }
-      ]
-    },
-    {
       "subjectName": "物理",
-      "folderName": "physics",
+      "folderName": "main",
       "fields": [
         {
           "fieldName": "第1編 力と運動 / 第1章 剛体にはたらく力",

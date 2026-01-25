@@ -150,8 +150,8 @@ body {
 
 /* Sidebar (Tree) */
 .sidebar-area {
-  width: 320px;
-  min-width: 250px;
+  width: 450px; /* ★変更: 320px -> 450px に拡張 */
+  min-width: 300px;
   background: #fff;
   border-right: 1px solid #e2e8f0;
   display: flex;
@@ -206,7 +206,8 @@ summary {
   font-size: 0.95rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 10px;
   user-select: none;
 }
 summary:hover {
@@ -253,7 +254,8 @@ summary:hover .tree-actions {
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
+  gap: 10px;
   border: 1px solid transparent;
   transition: all 0.1s;
 }
@@ -546,9 +548,6 @@ summary:hover .tree-actions {
   resize: none;
   background: #f8fafc;
 }
-/* css/admin.css */
-
-/* 既存のスタイルはそのまま維持し、以下を末尾に追加 */
 
 /* --- Drag & Drop Visuals --- */
 .prob-item[draggable="true"] {

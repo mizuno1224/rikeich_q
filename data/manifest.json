@@ -1,8 +1,14 @@
 [
   {
-    "id": "textbook",
-    "name": "教科書",
-    "path": "data/materials/textbook.json",
+    "id": "textbook_basic",
+    "name": "物理基礎",
+    "path": "data/materials/textbook_basic.json",
+    "type": "standard"
+  },
+  {
+    "id": "textbook_physics",
+    "name": "物理",
+    "path": "data/materials/textbook_physics.json",
     "type": "standard"
   },
   {

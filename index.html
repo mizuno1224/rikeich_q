@@ -95,182 +95,128 @@
     <div id="content-area"></div>
   </div>
 
-  <script src="js/data.js"></script>
-  <script>
-    const TAB_CONFIG = [
-      { label: "教科書",     ids: ["textbook"] },
-      { label: "リードα",   ids: ["lead_alpha"] },
-      { label: "リードLight", ids: ["lead_light"] },
-      { label: "入試問題",   ids: ["exam_common", "exam_national", "exam_private"] }
-    ];
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const tabContainer = document.getElementById('tab-container');
+  const contentArea = document.getElementById('content-area');
+  
+  let manifest = [];
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      const tabContainer = document.getElementById('tab-container');
-      const contentArea = document.getElementById('content-area');
-      
-      let manifest = [];
-      
-      try {
-        const res = await fetch('data/manifest.json');
-        if (!res.ok) throw new Error('Manifest not found');
-        manifest = await res.json();
-      } catch (e) {
-        try {
-          const res = await fetch('problems.json');
-          if(res.ok) {
-            const legacy = await res.json();
-            manifest = legacy.map(m => ({ 
-              id: "legacy", name: m.materialName, path: 'problems.json', _legacyData: m 
-            }));
-            TAB_CONFIG.length = 0;
-            manifest.forEach((m, i) => TAB_CONFIG.push({ label: m.name, ids: ["legacy"], _legacyIndex: i }));
-          }
-        } catch(e2) {
-          contentArea.innerHTML = '<p class="empty-msg">データが見つかりません。</p>';
-          return;
-        }
+  // 1. マニフェスト(教材一覧)の取得
+  // 管理画面と同様に data/manifest.json を読み込みます
+  fetch('data/manifest.json')
+    .then(res => {
+      if (!res.ok) throw new Error('manifest.json not found');
+      return res.json();
+    })
+    .then(data => {
+      manifest = data;
+      initTabs();
+      // 初回は先頭の教材を読み込んで表示
+      if(manifest.length > 0) {
+        loadMaterial(0);
+      } else {
+        contentArea.innerHTML = '<p style="text-align:center; margin-top:50px;">教材が見つかりません。</p>';
       }
+    })
+    .catch(error => {
+      console.error('Error loading manifest:', error);
+      contentArea.innerHTML = '<p style="text-align:center; color:red; margin-top:50px;">データの読み込みに失敗しました(manifest.json)。</p>';
+    });
 
-      TAB_CONFIG.forEach((config, idx) => {
-        const btn = document.createElement('button');
-        btn.className = `tab-btn ${idx === 0 ? 'active' : ''}`;
-        btn.textContent = config.label;
-        btn.onclick = () => renderTab(idx);
-        tabContainer.appendChild(btn);
+  // 2. タブ生成
+  function initTabs() {
+    tabContainer.innerHTML = '';
+    manifest.forEach((mat, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'tab-btn'; 
+      btn.textContent = mat.name; // "物理基礎", "物理" などが表示されます
+      btn.onclick = () => loadMaterial(index);
+      tabContainer.appendChild(btn);
+    });
+  }
+
+  // 3. 教材データのロードと表示
+  function loadMaterial(index) {
+    // タブの見た目更新
+    const tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach((t, i) => {
+      if(i === index) t.classList.add('active');
+      else t.classList.remove('active');
+    });
+
+    const item = manifest[index];
+    const jsonPath = item.path; // 例: "data/materials/textbook_basic.json"
+
+    // ローディング表示
+    contentArea.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">読み込み中...</div>';
+
+    fetch(jsonPath)
+      .then(res => {
+         if(!res.ok) throw new Error('Material data not found');
+         return res.json();
+      })
+      .then(materialData => {
+         renderContent(materialData);
+      })
+      .catch(err => {
+         console.error(err);
+         contentArea.innerHTML = `<p style="text-align:center; color:red; margin-top:30px;">「${item.name}」のデータが見つかりませんでした。<br><span style="font-size:0.8em">(${jsonPath})</span></p>`;
       });
+  }
 
-      renderTab(0);
-
-      async function renderTab(tabIndex) {
-        Array.from(tabContainer.children).forEach((b, i) => {
-          b.classList.toggle('active', i === tabIndex);
-        });
+  // 4. コンテンツ描画
+  function renderContent(material) {
+    let html = `<div class="subject-grid">`;
+    
+    if (material.subjects) {
+      material.subjects.forEach(subject => {
+        html += `
+          <div class="subject-card">
+            <h3 class="subject-name">
+              <span>${subject.subjectName}</span>
+            </h3>
+            <ul class="field-list">
+        `;
         
-        contentArea.innerHTML = '<p style="text-align:center;color:#666;">読み込み中...</p>';
-
-        const config = TAB_CONFIG[tabIndex];
-        const htmlParts = [];
-
-        for (const targetId of config.ids) {
-          const item = manifest.find(m => m.id === targetId);
-          if (!item && targetId !== "legacy") continue;
-
-          let data = null;
-          if (config._legacyIndex !== undefined) {
-             data = manifest[config._legacyIndex]._legacyData; 
-          } else if (item) {
-             try {
-               const res = await fetch(item.path);
-               if (res.status === 404) {
-                 htmlParts.push(renderSection(item.name, null, true));
-                 continue; 
-               }
-               if (!res.ok) throw new Error("Load failed");
-               data = await res.json();
-             } catch(e) {
-               htmlParts.push(renderSection(item.name, null, true));
-               continue;
-             }
-          }
-
-          if (data) {
-             htmlParts.push(renderSection(item ? item.name : config.label, data, false, item ? item.path : 'problems.json'));
-          }
-        }
-
-        contentArea.innerHTML = htmlParts.join('') || '<p class="empty-msg">表示するデータがありません。</p>';
-      }
-
-      function renderSection(title, data, isEmpty, jsonPath) {
-        if (isEmpty) {
-          return `<div class="group-section"><h2 class="group-title">${title}</h2><p class="empty-msg">データ準備中</p></div>`;
-        }
-
-        let html = `<div class="group-section">`;
-        html += `<h2 class="group-title">${title}</h2>`;
-        html += `<div class="subject-grid">`;
-
-        if (!data.subjects || data.subjects.length === 0) {
-           html += `<div class="subject-card"><p>問題が登録されていません</p></div>`;
-        } else {
-          data.subjects.forEach(sub => {
-            html += `<div class="subject-card">`;
-            html += `<h3 class="subject-name">${sub.subjectName}</h3>`;
-            
-            // ★変更: 編(Part)ごとにグループ化するロジック
-            // fieldNameが "第1編 ... / 第1章 ..." の形式なら分割する
-            let currentPart = null;
-            let partFields = [];
-
-            // 1. まずデータを構造化
-            const structure = [];
-            sub.fields.forEach(fld => {
-              const parts = fld.fieldName.split(' / ');
-              if (parts.length > 1) {
-                // "編 / 章" の形式
-                const partName = parts[0];
-                const chapName = parts[1];
+        let hasProblem = false;
+        
+        if (subject.fields) {
+          subject.fields.forEach(field => {
+            if (field.problems && field.problems.length > 0) {
+              hasProblem = true;
+              html += `<li class="field-item">
+                <span class="field-name">${field.fieldName}</span>
+                <div class="prob-grid">`;
+              
+              field.problems.forEach(p => {
+                // リンク先の設定: IDではなくファイルのパスを渡す形式に変更
+                // (admin.js で保存された explanationPath を使用)
+                const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}`;
                 
-                // 新しい編が始まったら
-                if (partName !== currentPart) {
-                  currentPart = partName;
-                  structure.push({ type: 'part', title: partName, chapters: [] });
-                }
-                // 現在の編に章を追加
-                structure[structure.length - 1].chapters.push({ ...fld, displayName: chapName });
-              } else {
-                // "章" のみ（編がない、またはその他）
-                if (currentPart !== null) {
-                   currentPart = null; // 編ブロック終了
-                }
-                structure.push({ type: 'single', ...fld, displayName: fld.fieldName });
-              }
-            });
-
-            // 2. HTML生成
-            structure.forEach(group => {
-              if (group.type === 'part') {
-                html += `<div class="part-group">`;
-                html += `<div class="part-title">${group.title}</div>`;
-                html += `<ul class="field-list">`;
-                group.chapters.forEach(chap => {
-                  html += renderFieldItem(chap, chap.displayName, jsonPath);
-                });
-                html += `</ul></div>`;
-              } else {
-                html += `<ul class="field-list">`;
-                html += renderFieldItem(group, group.displayName, jsonPath);
-                html += `</ul>`;
-              }
-            });
-
-            html += `</div>`;
+                html += `
+                  <a href="${targetUrl}" class="prob-link" target="_blank">
+                    <span>${p.title}</span>
+                  </a>
+                `;
+              });
+              html += `</div></li>`;
+            }
           });
         }
-        html += `</div></div>`;
-        return html;
-      }
-
-      function renderFieldItem(fld, name, jsonPath) {
-        let h = `<li class="field-item">`;
-        h += `<span class="field-name">${name}</span>`;
-        h += `<div class="prob-grid">`;
         
-        if (fld.problems.length === 0) {
-            h += `<div class="prob-empty">(準備中)</div>`;
-        } else {
-            fld.problems.forEach(p => {
-              const srcParam = jsonPath === 'problems.json' ? '' : `&src=${encodeURIComponent(jsonPath)}`;
-              h += `<a href="viewer.html?id=${p.id}${srcParam}" class="prob-link">`;
-              h += `<span>${p.title}</span>`;
-              h += `<span style="font-size:0.9em;color:#cbd5e1;">→</span>`;
-              h += `</a>`;
-            });
+        if (!hasProblem) {
+          html += `<li style="color:var(--col-text-sub); font-size:0.9rem; padding-left:10px;">(問題準備中)</li>`;
         }
-        h += `</div></li>`;
-        return h;
-      }
-    });
-  </script>
+        
+        html += `</ul></div>`;
+      });
+    }
+    
+    html += `</div>`;
+    contentArea.innerHTML = html;
+  }
+});
+</script>
 </body>
 </html>

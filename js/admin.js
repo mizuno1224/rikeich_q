@@ -32,7 +32,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const editorMainWrapper = document.getElementById('editor-main-wrapper');
   const tabEdit = document.getElementById('tab-edit');
+  const tabPreview = document.getElementById('tab-preview');
   const container = document.getElementById('form-container');
+  
+  const viewEditor = document.getElementById('view-editor');
+  const viewPreview = document.getElementById('view-preview');
+  const previewContainer = document.getElementById('preview-container');
 
   // --- ツールバーボタン生成 ---
   
@@ -54,6 +59,48 @@ document.addEventListener('DOMContentLoaded', () => {
   if(sidebarTools) {
       sidebarTools.appendChild(btnSyncFolders);
       sidebarTools.appendChild(btnSmartImport);
+  }
+
+  // --- タブ切り替えロジック (プレビュー機能) ---
+  if (tabEdit && tabPreview) {
+    tabEdit.onclick = () => {
+      tabEdit.classList.add('active');
+      tabPreview.classList.remove('active');
+      viewEditor.classList.add('active');
+      viewPreview.classList.remove('active');
+    };
+
+    tabPreview.onclick = () => {
+      tabEdit.classList.remove('active');
+      tabPreview.classList.add('active');
+      viewEditor.classList.remove('active');
+      viewPreview.classList.add('active');
+
+      // 1. エディタの内容をプレビューに反映 (textareaから取得)
+      const content = currentVisualEditor ? currentVisualEditor.value : '';
+      previewContainer.innerHTML = content;
+
+      // 2. スクリプトの実行 (innerHTMLに入れただけでは動かないため再構築)
+      const scripts = previewContainer.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
+
+      // 3. MathJax (数式) の適用
+      if (window.MathJax) {
+         if (MathJax.typesetPromise) {
+            MathJax.typesetPromise([previewContainer]).catch(e => console.log(e));
+         } else if (MathJax.Hub) {
+            MathJax.Hub.Queue(["Typeset", MathJax.Hub, previewContainer]);
+         }
+      }
+      
+      // 4. キャンバスのリサイズ対応 (p5.jsなどが崩れないように)
+      setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+    };
   }
 
   // --- 1. Initialize & Open Project ---
@@ -145,7 +192,20 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast(`「${currentMaterialData.materialName}」を保存しました`);
       }
     } catch (e) { showToast('保存失敗: ' + e, true); }
+    
     renderTree(); 
+
+    // ★修正: 編集中の問題があれば、ツリー上で再度アクティブ(青色)にする
+    if (currentProblem) {
+       const items = treeRoot.querySelectorAll('.prob-item');
+       items.forEach(el => {
+           // IDが表示されているspanを探して照合
+           const idSpan = el.querySelector('span:last-child');
+           if (idSpan && idSpan.textContent === currentProblem.id) {
+               el.classList.add('active');
+           }
+       });
+    }
   }
   
   async function saveManifest() {
@@ -885,7 +945,9 @@ document.addEventListener('DOMContentLoaded', () => {
     editorMainWrapper.style.display = 'flex';
     document.querySelector('.empty-state').style.display = 'none';
     
-    tabEdit.click();
+    // デフォルトは編集タブを開く
+    if (tabEdit) tabEdit.click();
+
     document.getElementById('editing-title').textContent = problem.title;
     document.getElementById('editing-id').textContent = problem.id;
     container.innerHTML = '';
@@ -901,21 +963,44 @@ document.addEventListener('DOMContentLoaded', () => {
         if(activeItem) activeItem.textContent = v;
     }));
     
-    const layoutDiv = document.createElement('div'); layoutDiv.className = 'form-group';
-    layoutDiv.innerHTML = '<label>レイアウト</label><select class="form-control"><option value="article">記事型</option></select>';
-    basicSec.appendChild(layoutDiv);
+    // ★変更: 全て記事型で統一するため、レイアウト選択UIを削除し値を固定
+    problem.layout = 'article'; 
     container.appendChild(basicSec);
 
+    // --- 解説エディタセクション ---
     const explSec = document.createElement('div');
     explSec.className = 'form-section';
-    explSec.innerHTML = `<div style="display:flex;justify-content:space-between;"><h3>📖 解説HTML <span style="font-size:0.8em;color:#999;">(${problem.explanationPath})</span></h3><button id="btn-save-expl" class="btn-save">💾 解説保存</button></div>`;
+    explSec.style.display = 'flex';
+    explSec.style.flexDirection = 'column';
+    explSec.style.flex = '1'; 
     
-    const editorDiv = document.createElement('div');
-    editorDiv.className = 'visual-editor';
-    editorDiv.contentEditable = true;
-    editorDiv.style.minHeight = '300px';
-    editorDiv.style.border = '1px solid #ccc';
-    editorDiv.style.padding = '10px';
+    explSec.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h3 style="margin:0;">📖 解説HTML編集 <span style="font-size:0.8em;color:#999;">(ソースコード)</span></h3>
+        <button id="btn-save-expl" class="btn-save">💾 解説を保存</button>
+      </div>
+      <p style="font-size:0.85rem; color:#666; margin-top:-5px; margin-bottom:10px;">
+         ※ AIが生成したHTMLコードをここに貼り付けてください。
+      </p>
+    `;
+    
+    // ★変更: div(contentEditable) ではなく textarea を使用
+    const editorArea = document.createElement('textarea');
+    editorArea.className = 'visual-editor'; 
+    editorArea.spellcheck = false;
+    // スタイル調整（コードが見やすいように）
+    editorArea.style.width = '100%';
+    editorArea.style.minHeight = '400px';
+    editorArea.style.flex = '1';
+    editorArea.style.fontFamily = 'monospace';
+    editorArea.style.fontSize = '14px';
+    editorArea.style.lineHeight = '1.5';
+    editorArea.style.padding = '15px';
+    editorArea.style.backgroundColor = '#1e1e1e';
+    editorArea.style.color = '#d4d4d4';
+    editorArea.style.border = '1px solid #334155';
+    editorArea.style.borderRadius = '6px';
+    editorArea.style.resize = 'vertical';
     
     if (problem.explanationPath && rootDirHandle) {
       try {
@@ -923,13 +1008,16 @@ document.addEventListener('DOMContentLoaded', () => {
         let d = rootDirHandle;
         for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i]);
         const f = await d.getFileHandle(parts[parts.length-1]);
-        editorDiv.innerHTML = await (await f.getFile()).text();
-      } catch(e) { editorDiv.innerText = "読込エラーまたは新規: " + e.message; }
+        // テキストエリアに値をセット
+        editorArea.value = await (await f.getFile()).text();
+      } catch(e) { editorArea.value = "\n" + e.message; }
     }
-    currentVisualEditor = editorDiv;
-    explSec.appendChild(editorDiv);
+    
+    currentVisualEditor = editorArea;
+    explSec.appendChild(editorArea);
     container.appendChild(explSec);
 
+    // 解説保存ボタンの処理
     explSec.querySelector('#btn-save-expl').onclick = async () => {
       try {
         const parts = problem.explanationPath.split('/');
@@ -937,7 +1025,8 @@ document.addEventListener('DOMContentLoaded', () => {
         for(let i=0; i<parts.length-1; i++) d = await d.getDirectoryHandle(parts[i], {create:true});
         const f = await d.getFileHandle(parts[parts.length-1], {create:true});
         const w = await f.createWritable();
-        await w.write(editorDiv.innerHTML);
+        // ★変更: textarea なので .value を保存
+        await w.write(editorArea.value);
         await w.close();
         showToast("解説HTMLを保存しました");
       } catch(e) { alert("保存エラー: " + e); }
