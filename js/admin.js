@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabEdit = document.getElementById('tab-edit');
   const tabPreview = document.getElementById('tab-preview');
   const container = document.getElementById('form-container');
+  const btnImportAi = document.getElementById('btn-import-ai'); // 追加
   
   const viewEditor = document.getElementById('view-editor');
   const viewPreview = document.getElementById('view-preview');
@@ -137,8 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // --- 1. Initialize & Open Project ---
-  btnOpen.addEventListener('click', async () => {
+  // AI新規追加ボタン (ヘッダー) の有効化
+  if (btnImportAi) {
+    btnImportAi.style.display = 'inline-block'; // 表示
+    btnImportAi.onclick = openSmartImportModal;
+  }
+// --- 1. Initialize & Open Project --- 
+btnOpen.addEventListener('click', async () => {
     try {
       rootDirHandle = await window.showDirectoryPicker();
       
@@ -589,8 +595,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const subDir = await matDir.getDirectoryHandle(subFolder, {create:true});
       await getDeepDirectoryHandle(subDir, folderIds, true);
     } else if (!folderIds && !targetField) {
-       // folderIdsが空の場合は科目直下だが、通常fieldsは必須。
-       // ここでは簡易的にエラーとせず進めるが、必要に応じて処理追加
+       // パスが科目直下の場合、folderIdが空のフィールドを探すか新規作成する
+       targetField = targetSubject.fields.find(f => f.folderId === "");
+       if (!targetField) {
+           targetField = {
+               fieldName: "標準", // 自動生成される分野名
+               folderId: "",      // 空文字で直下を示す
+               problems: []
+           };
+           targetSubject.fields.push(targetField);
+       }
     }
 
     // 5. 問題データの追加/更新
@@ -601,8 +615,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id: metaData.id,
       title: metaData.title,
       desc: metaData.desc || "",
-      explanationPath: metaData.explanationPath,
-      layout: metaData.layout || "article"
+      explanationPath: metaData.explanationPath
     };
 
     if (existingProbIndex !== -1) {
@@ -864,7 +877,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const matDir = await getMaterialDirHandle();
             let subDir = matDir;
             if (sub.folderName) subDir = await matDir.getDirectoryHandle(sub.folderName);
-            await fsDelete(subDir, fld.folderId);
+            
+            // folderIdが空の場合はフォルダ削除をスキップ (ファイル実体は残るが、登録のみ解除)
+            if (fld.folderId && fld.folderId.length > 0) {
+                await fsDelete(subDir, fld.folderId);
+            }
         } catch(e) { console.warn(e); }
     }
     
@@ -891,8 +908,7 @@ document.addEventListener('DOMContentLoaded', () => {
       id: id,
       title: "新規問題",
       desc: "",
-      explanationPath: path,
-      layout: "article"
+      explanationPath: path
     };
     field.problems.push(newProb);
 

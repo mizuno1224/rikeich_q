@@ -3,110 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>解説コード 即時テスト環境</title>
+  <title>解説HTML 即時テスト環境</title>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/viewer.css">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+
+  <script>
+    window.MathJax = {
+      tex: { 
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [["$$", "$$"]],
+        macros: {
+          strong: ['\\textcolor{#3b82f6}{\\boldsymbol{#1}}', 1]
+        }
+      },
+      svg: { fontCache: 'global' }
+    };
+  </script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   
   <style>
-    /* テスト環境専用レイアウト */
-    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: #1e1e1e; margin: 0; }
     
     .test-toolbar {
       flex-shrink: 0;
-      background: #1e293b;
+      background: #0f172a;
       padding: 10px 20px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      color: #fff;
-      border-bottom: 1px solid #334155;
-      z-index: 1000;
+      display: flex; gap: 10px; align-items: center;
+      border-bottom: 1px solid #334155; color: #fff;
     }
-    .test-toolbar h1 { margin: 0; font-size: 1rem; margin-right: 20px; color: #94a3b8; }
-    
-    .btn-run { background: #10b981; color: white; border: none; padding: 5px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+    .btn-run { background: #10b981; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
     .btn-run:hover { background: #059669; }
-    .btn-clear { background: #64748b; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; }
     
-    .split-view {
-      flex: 1;
-      display: flex;
-      height: calc(100vh - 50px);
+    .split-view { flex: 1; display: flex; height: calc(100vh - 60px); }
+    .editor-pane { width: 45%; display: flex; flex-direction: column; border-right: 1px solid #334155; }
+    
+    #html-input {
+      flex: 1; width: 100%; font-family: monospace; font-size: 14px;
+      padding: 15px; border: none; resize: none; background: #1e1e1e; color: #e2e8f0; outline: none; box-sizing: border-box;
     }
     
-    /* 左側：コード入力エリア */
-    .editor-pane {
-      width: 40%;
-      display: flex;
-      flex-direction: column;
-      border-right: 1px solid #cbd5e1;
-      background: #f8fafc;
-    }
-    
-    #code-input {
-      flex: 1;
-      width: 100%;
-      font-family: monospace;
-      font-size: 14px;
-      padding: 10px;
-      border: none;
-      resize: none;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      outline: none;
-    }
-    
-    /* 右側：プレビューエリア */
-    .preview-pane {
-      width: 60%;
-      position: relative;
-      background: #fff;
-    }
-    
-    .viewer-container { height: 100%; }
-    .viewer-split-content { height: 100%; padding: 10px; }
-    .simulation-area, .explanation-area { height: 100%; overflow: hidden; }
-    .explanation-area { overflow-y: auto; }
-
-    /* エラー表示 */
-    #error-log {
-      color: #f43f5e;
-      font-size: 0.85rem;
-      margin-left: auto;
-      background: rgba(0,0,0,0.2);
-      padding: 2px 8px;
-      border-radius: 4px;
-      display: none;
-    }
+    .preview-pane { width: 55%; background: #fff; position: relative; display: flex; flex-direction: column;}
+    .viewer-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .explanation-area { flex: 1; padding: 20px; overflow-y: auto; scroll-behavior: smooth; position: relative; }
   </style>
 </head>
 <body>
 
   <div class="test-toolbar">
-    <h1>🛠️ Test Runner</h1>
-    <button class="btn-run" onclick="runTest()">▶ 実行 (Ctrl+Enter)</button>
-    <button class="btn-clear" onclick="clearEditor()">クリア</button>
-    <span id="error-log"></span>
+    <h1 style="margin:0; font-size:1rem; color:#cbd5e1; margin-right:20px;">🧪 HTML Preview Test</h1>
+    <button class="btn-run" onclick="runPreview()">▶ プレビュー実行 (Ctrl+Enter)</button>
+    <button class="btn-run" style="background:#64748b;" onclick="clearAll()">クリア</button>
   </div>
 
   <div class="split-view">
     <div class="editor-pane">
-      <textarea id="code-input" placeholder="// ここにAIが生成したJSコード（window.setup_... または PhysicsLab.problems[...] = ...）を貼り付けてください"></textarea>
+      <textarea id="html-input" placeholder="ここにAIが生成した「解説HTML」を貼り付けてください..."></textarea>
     </div>
     
     <div class="preview-pane">
       <div class="viewer-container">
-        <div class="viewer-split-content">
-          <div id="sim-target" class="simulation-area"></div>
-          <div id="text-target" class="explanation-area">
-            <div class="placeholder-text" style="margin-top: 50px;">
-              ここに解説が表示されます。<br>左にコードを貼って「実行」を押してください。
-            </div>
+        <div id="text-target" class="explanation-area">
+          <div class="placeholder-text" style="text-align:center; margin-top:50px; color:#94a3b8;">
+            ここにプレビューが表示されます
           </div>
         </div>
       </div>
@@ -116,94 +82,53 @@
   <script src="js/sim-utils.js"></script>
 
   <script>
-    const codeInput = document.getElementById('code-input');
-    const simTarget = document.getElementById('sim-target');
+    const htmlInput = document.getElementById('html-input');
     const textTarget = document.getElementById('text-target');
-    const errorLog = document.getElementById('error-log');
 
-    // ショートカットキー
-    codeInput.addEventListener('keydown', (e) => {
+    // ショートカット
+    htmlInput.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'Enter') {
-        runTest();
+          e.preventDefault();
+          runPreview();
       }
     });
 
-    function clearEditor() {
-      if(confirm('エディタをクリアしますか？')) codeInput.value = '';
-    }
-
-    function runTest() {
-      // 1. リセット
-      resetEnvironment();
-
-      // 2. コード取得
-      const rawCode = codeInput.value;
-      if (!rawCode.trim()) return;
-
-      try {
-        // 3. コードの評価
-        const runScript = new Function(rawCode);
-        runScript();
-
-        // 4. 関数実行 (新旧対応)
-        let targetFunc = null;
-        let funcNameStr = "";
-
-        // 新: PhysicsLab.problems に追加された最後のキーを探す
-        // (キー順序は保証されないが、通常追加順)
-        if (window.PhysicsLab && window.PhysicsLab.problems) {
-           const keys = Object.keys(window.PhysicsLab.problems);
-           if(keys.length > 0) {
-             funcNameStr = keys[keys.length - 1];
-             targetFunc = window.PhysicsLab.problems[funcNameStr];
-           }
-        }
-
-        // 旧: setup_... を探す
-        if (!targetFunc) {
-           const keys = Object.keys(window).filter(k => k.startsWith('setup_'));
-           if (keys.length > 0) {
-             funcNameStr = keys[keys.length - 1];
-             targetFunc = window[funcNameStr];
-           }
-        }
-
-        if (!targetFunc) {
-          throw new Error("実行可能な関数が見つかりません (PhysicsLab.problems または window.setup_...)");
-        }
-
-        console.log(`Executing: ${funcNameStr}`);
-        targetFunc('sim-target', 'text-target');
-
-        // MathJax適用
-        if(window.MathJax) {
-          MathJax.typesetPromise ? MathJax.typesetPromise([textTarget]) : MathJax.Hub.Queue(["Typeset", MathJax.Hub, textTarget]);
-        }
-        
-        showError(null); 
-
-      } catch (e) {
-        console.error(e);
-        showError(e.message);
+    function clearAll() {
+      if(confirm('クリアしますか？')) {
+        htmlInput.value = '';
+        resetPreview();
       }
     }
 
-    function resetEnvironment() {
+    function resetPreview() {
+      // p5インスタンス等の破棄
       if (window.p5Instances) {
         window.p5Instances.forEach(p => p.remove());
         window.p5Instances = [];
       }
-      simTarget.innerHTML = '';
       textTarget.innerHTML = '';
     }
 
-    function showError(msg) {
-      if(msg) {
-        errorLog.textContent = "⚠️ " + msg;
-        errorLog.style.display = 'inline-block';
-      } else {
-        errorLog.style.display = 'none';
+    function runPreview() {
+      resetPreview();
+      const htmlContent = htmlInput.value;
+      
+      // 1. HTML挿入
+      textTarget.innerHTML = htmlContent;
+
+      // 2. MathJaxレンダリング
+      if(window.MathJax) {
+        MathJax.typesetPromise ? MathJax.typesetPromise([textTarget]) : MathJax.Hub.Queue(["Typeset", MathJax.Hub, textTarget]);
       }
+
+      // 3. スクリプトの実行（innerHTMLで入れたscriptは自動実行されないため再構築）
+      const scripts = textTarget.querySelectorAll('script');
+      scripts.forEach(oldScript => {
+        const newScript = document.createElement('script');
+        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+        newScript.textContent = oldScript.textContent;
+        oldScript.parentNode.replaceChild(newScript, oldScript);
+      });
     }
   </script>
 </body>

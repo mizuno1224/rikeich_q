@@ -40,5 +40,11 @@
     "name": "私立入試",
     "path": "data/materials/exam_private.json",
     "type": "exam_univ"
+  },
+  {
+    "id": "other",
+    "name": "その他",
+    "path": "data/materials/other.json",
+    "type": "standard"
   }
 ]

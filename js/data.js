@@ -5,6 +5,9 @@ window.MathJax = {
   tex: {
     inlineMath: [["$", "$"], ["\\(", "\\)"]],
     displayMath: [["$$", "$$"]],
+    macros: {
+      strong: ['\\textcolor{#3b82f6}{\\boldsymbol{#1}}', 1]
+    }
   },
   svg: { fontCache: "global" },
 };
