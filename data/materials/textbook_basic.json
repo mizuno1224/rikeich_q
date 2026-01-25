@@ -46,7 +46,13 @@
               "id": "basic_3_1_ex1_wave_graph",
               "title": "例題1 正弦波の進行と周期",
               "desc": "波のグラフの読み取りと、波の進行による波形の変化",
-              "explanationPath": "data/explanations/textbook_basic/03/01/basic_3_1_ex1_wave_graph.html"
+              "explanationPath": "data/explanations/textbook_basic/03/01/11.html"
+            },
+            {
+              "id": "textbook_basic_03_01_ruidai1",
+              "title": "類題1 正弦波の進行",
+              "desc": "負の向きに進む波の作図と周期の計算",
+              "explanationPath": "data/explanations/textbook_basic/03/01/12.html"
             }
           ]
         },

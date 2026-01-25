@@ -1,10 +1,5 @@
 <h2 class="prob-title-sub">例題1：正弦波の進行と周期</h2>
 
-<div class="box-alert">
-  <span class="box-alert-label">Point</span>
-  <p>波のグラフ（$y-x$図）の問題では、<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。<br>また、波の基本公式 $v = \frac{\lambda}{T} = f\lambda$ の関係をグラフから読み取れるようにしましょう。</p>
-</div>
-
 <h3>1. 解法の指針</h3>
 <p>
   この問題は、横軸が位置 $x$ のグラフ（波形グラフ）です。
@@ -56,14 +51,14 @@
         // コントローラー (SimUtils使用)
         if (window.SimUtils) {
           const { container } = SimUtils.createControls(el, {
-            onReset: () => { time = 0; updateSlider(0); }
+            onReset: () => { time = 0; if(window.updateSlider) window.updateSlider(0); }
           });
           // スライダー追加
           const slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 25.0, 0, 0.1, (val) => {
             time = val;
           });
           // 外部からスライダー値を更新する関数を保持
-          window.updateSlider = (val) => { slider.value = val; time = val; };
+          window.updateSlider = (val) => { slider.value = val; slider.dispatchEvent(new Event('input')); time = val; };
         }
       };
 
@@ -191,3 +186,9 @@
 <p>
   よって、求める時刻 $t_0$ は <strong>$20 \, \text{s}$</strong> です。
 </p>
+
+<h3>4. 解法のポイントまとめ</h3>
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p>波のグラフ（$y-x$図）の問題では、<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。<br>また、波の基本公式 $v = \frac{\lambda}{T} = f\lambda$ の関係をグラフから読み取れるようにしましょう。</p>
+</div>

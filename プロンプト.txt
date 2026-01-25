@@ -1,135 +1,57 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>解説HTML 即時テスト環境</title>
-  <link rel="stylesheet" href="css/base.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/viewer.css">
+あなたは高校物理のWeb教材開発のエキスパートです。
+提供する問題について、**「読んで、見て、動かして理解する」最高品質の解説ページ**を作成してください。
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-  <script type="text/javascript" charset="UTF-8" src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+# 1. 解説ページの構成（厳守）
+生成するHTMLは、以下の流れで構成してください。**特に「2」の中身を充実させてください。**
 
-  <script>
-    window.MathJax = {
-      tex: { 
-        inlineMath: [['$', '$'], ['\\(', '\\)']],
-        displayMath: [["$$", "$$"]],
-        macros: {
-          strong: ['\\textcolor{#3b82f6}{\\boldsymbol{#1}}', 1]
-        }
-      },
-      svg: { fontCache: 'global' }
-    };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-  
-  <style>
-    body { height: 100vh; display: flex; flex-direction: column; overflow: hidden; background: #1e1e1e; margin: 0; }
-    
-    .test-toolbar {
-      flex-shrink: 0;
-      background: #0f172a;
-      padding: 10px 20px;
-      display: flex; gap: 10px; align-items: center;
-      border-bottom: 1px solid #334155; color: #fff;
-    }
-    .btn-run { background: #10b981; color: white; border: none; padding: 6px 16px; border-radius: 4px; font-weight: bold; cursor: pointer; }
-    .btn-run:hover { background: #059669; }
-    
-    .split-view { flex: 1; display: flex; height: calc(100vh - 60px); }
-    .editor-pane { width: 45%; display: flex; flex-direction: column; border-right: 1px solid #334155; }
-    
-    #html-input {
-      flex: 1; width: 100%; font-family: monospace; font-size: 14px;
-      padding: 15px; border: none; resize: none; background: #1e1e1e; color: #e2e8f0; outline: none; box-sizing: border-box;
-    }
-    
-    .preview-pane { width: 55%; background: #fff; position: relative; display: flex; flex-direction: column;}
-    .viewer-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .explanation-area { flex: 1; padding: 20px; overflow-y: auto; scroll-behavior: smooth; position: relative; }
-  </style>
-</head>
-<body>
+1. **解法の指針**
+   - 問題を解くための全体像、物理現象の核となる考え方を提示します。
 
-  <div class="test-toolbar">
-    <h1 style="margin:0; font-size:1rem; color:#cbd5e1; margin-right:20px;">🧪 HTML Preview Test</h1>
-    <button class="btn-run" onclick="runPreview()">▶ プレビュー実行 (Ctrl+Enter)</button>
-    <button class="btn-run" style="background:#64748b;" onclick="clearAll()">クリア</button>
+2. **小問ごとの丁寧なステップ解説**
+   各小問（(1), (2)...）ごとに、以下の要素を文脈に合わせて**最適な順序で**組み込んでください：
+   - **導出プロセス**: 図解を交え、立式から計算、答えまでを丁寧に説明。
+   - **概念の補足**: 直感的に分かりにくい部分を、日常例や図解で補足。
+   - **リッチなシミュレーション**: `Matter.js`, `JSXGraph`, `Chart.js`, `p5.js`, `Three.js` を活用した動的コンテンツを埋め込み。
+   - **別解（微積含む）**: 微分積分による鮮やかな導出や、別アプローチがあれば必ず提示。
+   - **コラム：大学物理への橋渡し**: 高校の範囲を超えた背景知識や、現代科学との繋がりを解説。
+
+3. **解法のポイントまとめ（※必ずページの最後に配置）**
+   - この問題から得られる普遍的なポイントを箇条書きで整理。
+   - **重要: `<div class="box-alert">` タグを使用して「Point」として装飾し、必ず解説の最後（`<h3>3. ...</h3>` の直後）に配置してください。冒頭には配置しないでください。**
+
+# 2. 技術スタックと記述ルール
+- **HTML/JS完結**: 外部ファイルは作らず、HTML内の`<script>`タグ（IIFE形式）に全ロジックを記述。
+- **シミュレーション**:
+  - `id="sim-..."` を持つ `class="sim-embed"` の `div` に描画。
+  - `SimUtils.addSlider(containerId, { label: "...", min: 0, max: 10, value: 5, unit: "...", onChange: (val) => { ... } })` を使用してインタラクティブ性を確保。
+  - ライブラリのCDNは含めず、ロジックのみを記述（親ページでロード済み想定）。
+- **数式**: MathJax（`$...$` または `$$...$$`）を使用。
+- **装飾**: プロジェクト標準クラス（`.box-alert`, `.card`, `.highlight`, `.prob-title-sub`）を適切に使用。
+
+# 3. ファイル命名ルール
+保存パス（`explanationPath`）は以下に従ってください：
+- **教科書**: `data/explanations/textbook_{科目ID}/{編ID}/{章ID}/{ID}.html`
+  - 科目ID: `basic` (物理基礎), `physics` (物理)
+- **リード系**: `data/explanations/{lead_alpha|lead_light}/{章ID}/{ID}.html`
+- **入試問題**: `data/explanations/{exam_common|exam_national|exam_private}/{大学IDor年度}/{ID}.html`
+
+# 4. 出力フォーマット
+以下の2ブロックを独立して出力してください。
+
+### 【ブロック1】 解説HTML
+```html
+<h2 class="prob-title-sub">問題タイトル</h2>
+<div class="card">
   </div>
 
-  <div class="split-view">
-    <div class="editor-pane">
-      <textarea id="html-input" placeholder="ここにAIが生成した「解説HTML」を貼り付けてください..."></textarea>
-    </div>
-    
-    <div class="preview-pane">
-      <div class="viewer-container">
-        <div id="text-target" class="explanation-area">
-          <div class="placeholder-text" style="text-align:center; margin-top:50px; color:#94a3b8;">
-            ここにプレビューが表示されます
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+```
 
-  <script src="js/sim-utils.js"></script>
+### 【ブロック2】 登録用JSON
 
-  <script>
-    const htmlInput = document.getElementById('html-input');
-    const textTarget = document.getElementById('text-target');
-
-    // ショートカット
-    htmlInput.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.key === 'Enter') {
-          e.preventDefault();
-          runPreview();
-      }
-    });
-
-    function clearAll() {
-      if(confirm('クリアしますか？')) {
-        htmlInput.value = '';
-        resetPreview();
-      }
-    }
-
-    function resetPreview() {
-      // p5インスタンス等の破棄
-      if (window.p5Instances) {
-        window.p5Instances.forEach(p => p.remove());
-        window.p5Instances = [];
-      }
-      textTarget.innerHTML = '';
-    }
-
-    function runPreview() {
-      resetPreview();
-      const htmlContent = htmlInput.value;
-      
-      // 1. HTML挿入
-      textTarget.innerHTML = htmlContent;
-
-      // 2. MathJaxレンダリング
-      if(window.MathJax) {
-        MathJax.typesetPromise ? MathJax.typesetPromise([textTarget]) : MathJax.Hub.Queue(["Typeset", MathJax.Hub, textTarget]);
-      }
-
-      // 3. スクリプトの実行（innerHTMLで入れたscriptは自動実行されないため再構築）
-      const scripts = textTarget.querySelectorAll('script');
-      scripts.forEach(oldScript => {
-        const newScript = document.createElement('script');
-        Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-        newScript.textContent = oldScript.textContent;
-        oldScript.parentNode.replaceChild(newScript, oldScript);
-      });
-    }
-  </script>
-</body>
-</html>
+```json
+{
+  "id": "一意のID",
+  "title": "表示タイトル",
+  "desc": "短い説明",
+  "explanationPath": "上記ルールに基づいたパス"
+}
