@@ -5,6 +5,24 @@
       "subjectName": "未分類",
       "folderName": "misc",
       "fields": []
+    },
+    {
+      "subjectName": "mechanics",
+      "folderName": "mechanics",
+      "fields": [
+        {
+          "fieldName": "標準",
+          "folderId": "",
+          "problems": [
+            {
+              "id": "mechanics_block_friction_stacked",
+              "title": "2物体の運動方程式（摩擦あり）",
+              "desc": "台の上に物体がある場合の摩擦力と運動方程式",
+              "explanationPath": "data/explanations/other/mechanics/mechanics_block_friction_stacked.html"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
