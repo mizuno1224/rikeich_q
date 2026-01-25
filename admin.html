@@ -40,7 +40,7 @@
       </div>
       <div class="header-actions">
         <button id="btn-open" class="btn-open">📂 プロジェクトを開く</button>
-        <button id="btn-import-ai" class="btn-open" style="border-color:#10b981; color:#065f46; background:#ecfdf5; display:none;">🤖 AI新規追加</button>
+        <button id="btn-import-ai" class="btn-open" style="border-color:#10b981; color:#065f46; background:#ecfdf5; display:none;">🤖 AI取込</button>
         
         <button id="btn-save" class="btn-save" disabled>💾 全体保存</button>
         <a href="index.html" target="_blank" class="btn-preview">サイトを表示</a>
@@ -139,11 +139,7 @@
             <textarea id="imp-html" class="textarea-import" placeholder="<h2...>..."></textarea>
           </div>
           <div style="flex:1; display:flex; flex-direction:column;">
-            <label class="label-import">【ブロック2】JSコード(任意)</label>
-            <textarea id="imp-js" class="textarea-import" placeholder="window.setup_..."></textarea>
-          </div>
-          <div style="flex:1; display:flex; flex-direction:column;">
-            <label class="label-import">【ブロック3】登録JSON</label>
+            <label class="label-import">【ブロック2】登録JSON</label>
             <textarea id="imp-json" class="textarea-import" placeholder="{ 'id': '...', ... }"></textarea>
           </div>
         </div>
@@ -158,6 +154,9 @@
   <div id="toast-container" class="toast-container"></div>
 
   <script src="js/sim-utils.js"></script>
-  <script src="js/admin.js"></script>
+  <script src="js/admin-core.js"></script>
+  <script src="js/admin-fs.js"></script>
+  <script src="js/admin-ui.js"></script>
+  <script src="js/admin-actions.js"></script>
 </body>
 </html>
