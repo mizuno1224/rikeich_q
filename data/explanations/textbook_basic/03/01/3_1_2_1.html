@@ -1,0 +1,216 @@
+<h2 class="prob-title-sub">問10：波の重ね合わせと合成波の作図</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    複数の波が同じ場所に重なるとき、各点の変位はそれぞれの波の変位を足し合わせたものになります。これを<strong class="highlight">波の重ね合わせの原理</strong>と呼びます。
+  </p>
+  <ul>
+    <li><strong>ステップ1</strong>：指定された時刻において、各波（波A・波B）がどこに位置しているかを個別に作図します。</li>
+    <li><strong>ステップ2</strong>：各 $x$ 座標において、波Aの変位 $y_{\text{A}}$ と波Bの変位 $y_{\text{B}}$ を足し算（$y = y_{\text{A}} + y_{\text{B}}$）します。</li>
+    <li><strong>ステップ3</strong>：足し合わせた点（合成波の点）を滑らかにつなぎます。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>(1) 2秒後の合成波</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    波Aは右向き、波Bは左向きに、それぞれ <span class="highlight">1秒間に1目盛り</span> 進みます。<br>
+    2秒後には、波Aは右に2目盛り、波Bは左に2目盛り移動します。
+  </p>
+  <p>
+    このとき、2つの波は $x$ 軸上の中央付近で重なります。以下のシミュレーターで $t=2.0$ に合わせて確認してみましょう。
+  </p>
+  <ul>
+    <li>$x=4$ の地点：波Aの頂点($y=2$) ＋ 波Bの始点($y=0$) ＝ 合成変位 $2$</li>
+    <li>$x=6$ の地点：波Aの終点($y=0$) ＋ 波Bの底($y=-2$) ＝ 合成変位 $-2$</li>
+    <li>$x=5$ の地点：波A($y=1$) ＋ 波B($y=-1$) ＝ 合成変位 $0$</li>
+  </ul>
+  <p>
+    これらを直線で結ぶと、急な勾配を持つ波形（平行四辺形のような形の一部）が現れます。
+  </p>
+
+  <div id="sim-wave-superposition" class="sim-embed" style="height: 400px;"></div>
+  
+  <script>
+    (function(){
+      const el = document.getElementById('sim-wave-superposition');
+      if(!el) return;
+
+      const sketch = (p) => {
+        let t = 0.0;
+        
+        // グリッド設定
+        const xMin = 0, xMax = 12;
+        const yMin = -3, yMax = 3;
+        let scaleX, scaleY;
+
+        p.setup = () => {
+          const w = el.clientWidth;
+          const h = el.clientHeight;
+          p.createCanvas(w, h).parent(el);
+          p.textSize(14);
+          
+          scaleX = w / (xMax - xMin);
+          scaleY = h / (yMax - yMin);
+
+          // SimUtilsが使える場合はスライダーを追加
+          if (window.SimUtils) {
+            const { container } = SimUtils.createControls(el, {
+              onReset: () => { 
+                t = 0; 
+                if(window.updateSliderT) window.updateSliderT(0);
+              }
+            });
+            const slider = SimUtils.addSlider(container, "経過時間 t [s]", 0, 4.0, 0, 0.1, (val) => {
+              t = val;
+            });
+            window.updateSliderT = (val) => { slider.value = val; slider.dispatchEvent(new Event('input')); };
+          }
+        };
+
+        p.draw = () => {
+          p.background(255);
+          p.push();
+          // 座標変換: 原点を左中央へ
+          p.translate(0, p.height / 2);
+
+          drawGrid(p);
+
+          // 波A (右へ進む)
+          const centerA = 2 + t; // 初期中心x=2, 速度+1
+          const funcA = (x) => {
+            if (Math.abs(x - centerA) <= 2) return 2 - Math.abs(x - centerA);
+            return 0;
+          };
+
+          // 波B (左へ進む)
+          const centerB = 8 - t; // 初期中心x=8, 速度-1
+          const funcB = (x) => {
+            if (Math.abs(x - centerB) <= 2) return -(2 - Math.abs(x - centerB));
+            return 0;
+          };
+
+          // 波Aの描画（薄い青）
+          p.stroke(59, 130, 246, 100);
+          p.strokeWeight(2);
+          p.noFill();
+          drawGraph(p, funcA);
+          // ラベル
+          p.noStroke();
+          p.fill(59, 130, 246);
+          p.text("A", (centerA) * scaleX - 10, -2.2 * scaleY);
+
+          // 波Bの描画（薄い赤）
+          p.stroke(244, 63, 94, 100);
+          p.strokeWeight(2);
+          p.noFill();
+          drawGraph(p, funcB);
+          // ラベル
+          p.noStroke();
+          p.fill(244, 63, 94);
+          p.text("B", (centerB) * scaleX - 10, 2.5 * scaleY);
+
+          // 合成波の描画（濃い紫、太線）
+          p.stroke(139, 92, 246);
+          p.strokeWeight(4);
+          p.noFill();
+          drawGraph(p, (x) => funcA(x) + funcB(x));
+
+          p.pop();
+
+          // 情報表示
+          p.fill(51);
+          p.noStroke();
+          p.textAlign(p.LEFT, p.TOP);
+          p.text(`t = ${t.toFixed(1)} s`, 10, 10);
+        };
+
+        function drawGraph(p, func) {
+          p.beginShape();
+          for (let x = xMin; x <= xMax; x += 0.05) {
+            const px = x * scaleX;
+            const py = -func(x) * scaleY; // y軸反転
+            p.vertex(px, py);
+          }
+          p.endShape();
+        }
+
+        function drawGrid(p) {
+          p.stroke(220);
+          p.strokeWeight(1);
+          // 縦線
+          for(let x=0; x<=12; x++) {
+            const px = x * scaleX;
+            p.line(px, -p.height/2, px, p.height/2);
+          }
+          // 横線
+          for(let y=-3; y<=3; y++) {
+            const py = -y * scaleY;
+            p.line(0, py, p.width, py);
+          }
+          // 軸
+          p.stroke(0);
+          p.line(0, 0, p.width, 0); // x軸
+          p.line(0, -p.height/2, 0, p.height/2); // y軸
+          
+          // 目盛り数字
+          p.noStroke();
+          p.fill(100);
+          p.textAlign(p.CENTER, p.TOP);
+          for(let x=1; x<=12; x++) {
+            p.text(x, x*scaleX, 5);
+          }
+        }
+        
+        p.windowResized = () => {
+          if(el) {
+             p.resizeCanvas(el.clientWidth, el.clientHeight);
+             scaleX = el.clientWidth / (xMax - xMin);
+             scaleY = el.clientHeight / (yMax - yMin);
+          }
+        };
+      };
+      
+      const myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    （図示のポイント）<br>
+    $x=2$ から $x=4$ までは右上がりの直線、$x=4$ から $x=6$ までは急な右下がりの直線（$y=2$ から $y=-2$ へ）、$x=6$ から $x=8$ までは右上がりの直線となる波形を描く。
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 3秒後の合成波</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    $t=3$ 秒後、波Aは $3$ 目盛り右へ、波Bは $3$ 目盛り左へ進みます。<br>
+    このとき、波Aの中心は $x=2+3=5$、波Bの中心は $x=8-3=5$ となり、<span class="highlight">2つの波が完全に重なります</span>。
+  </p>
+  <p>
+    波Aは上に凸の三角形、波Bは下に凸の三角形で、形と大きさは同じです。<br>
+    したがって、すべての点において $y_{\text{A}} + y_{\text{B}} = 0$ となり、互いに打ち消し合います。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $x$ 軸と重なる直線（変位がどこでも $0$）を描く。
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>作図のコツ</h3>
+  <ul>
+    <li>いきなり合成波を描こうとせず、まずは<strong>薄い線で移動後の波Aと波Bを描く</strong>こと。</li>
+    <li>特徴的な点（山の頂点、波の端、交点）の $y$ 座標を数値で読み取り、足し算して点を打つと確実です。</li>
+  </ul>
+</div>

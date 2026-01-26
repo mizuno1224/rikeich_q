@@ -53,6 +53,12 @@
               "title": "例題2：波のグラフの読み取り",
               "desc": "y-x図から波長・振幅を読み取り、計算で周期を求め、y-t図を描く等価変換の問題。",
               "explanationPath": "data/explanations/textbook_basic/03/01/13.html"
+            },
+            {
+              "id": "3_1_2_1",
+              "title": "問10：波の重ね合わせと合成波の作図",
+              "desc": "互いに逆向きに進む三角波の重ね合わせを作図する問題",
+              "explanationPath": "data/explanations/textbook_basic/03/01/3_1_2_1.html"
             }
           ]
         },
