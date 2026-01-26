@@ -38,7 +38,7 @@
           <li><strong>$t=20.0\,\text{s}$</strong> のとき、波形が初期状態（薄いグレーの線）とぴったり重なること。</li>
         </ul>
 
-        <div id="sim-wave-propagation" class="sim-embed" style="height: 320px;"></div>
+        <div id="sim-wave-propagation" class="sim-embed" style="height: 320px; margin-bottom: 60px; overflow: visible;"></div>
 
         <script>
           (function() {
@@ -48,15 +48,15 @@
 
             const sketch = (p) => {
               // 物理パラメータ
-              const v = 0.10;   // 速さ [m/s]
-              const lam = 2.0;  // 波長 [m] (グラフより読み取り: 0→2.0で1波長)
-              const A = 1.5;    // 振幅 (表示上のスケール係数)
+              const v = 0.10;   
+              const lam = 2.0;  
+              const A = 1.5;    
               
-              // シミュレーション状態
               let time = 0.0;
+              let isPlaying = false; 
+              let slider = null;
               
-              // 描画設定
-              const xMax = 3.5; // グラフの横幅 [m]
+              const xMax = 3.5; 
               let scaleX, scaleY;
               
               p.setup = () => {
@@ -65,36 +65,43 @@
                 p.createCanvas(w, h).parent(el);
                 
                 scaleX = w / xMax; 
-                scaleY = h / 5; // Y軸スケール
+                scaleY = h / 5; 
 
-                // コントローラー (SimUtils使用)
                 if (window.SimUtils) {
+                  // initialPlaying: false で「最初から一時停止」状態に
                   const { container } = SimUtils.createControls(el, {
-                    onReset: () => { time = 0; if(window.updateSlider) window.updateSlider(0); }
-                  });
-                  // スライダー追加
-                  const slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 25.0, 0, 0.1, (val) => {
+                    onPlay: () => { isPlaying = true; },
+                    onPause: () => { isPlaying = false; },
+                    onReset: () => { 
+                      time = 0; 
+                      isPlaying = false;
+                      if(slider && slider.updateUI) slider.updateUI(0); 
+                    }
+                  }, { initialPlaying: false });
+                  
+                  container.style.bottom = "-50px";
+
+                  slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 25.0, 0, 0.1, (val) => {
                     time = val;
                   });
-                  // 外部からスライダー値を更新する関数を保持
-                  window.updateSlider = (val) => { slider.value = val; slider.dispatchEvent(new Event('input')); time = val; };
                 }
               };
 
               p.draw = () => {
+                if (isPlaying) {
+                  time += 0.1; 
+                  if (time > 25.0) time = 0;
+                  // updateUIでUIのみ更新
+                  if(slider && slider.updateUI) slider.updateUI(time);
+                }
+
                 p.background(255);
-                p.translate(40, p.height / 2); // 原点移動
+                p.translate(40, p.height / 2);
 
-                // 軸描画
                 drawAxes(p);
+                drawWave(p, 0, 200, 2); // 初期
+                drawWave(p, time, p.color(59, 130, 246), 3); // 現在
 
-                // 1. 初期波形 (t=0) : 薄いグレー
-                drawWave(p, 0, 200, 2);
-
-                // 2. 現在の波形 (t) : 青色
-                drawWave(p, time, p.color(59, 130, 246), 3);
-
-                // 情報表示
                 p.noStroke();
                 p.fill(51);
                 p.textSize(14);
@@ -108,7 +115,6 @@
               function drawAxes(p) {
                 p.stroke(0);
                 p.strokeWeight(1);
-                // X軸
                 p.line(0, 0, p.width-50, 0);
                 p.noStroke();
                 p.fill(0);
@@ -116,7 +122,6 @@
                 p.text("y [m]", -30, -p.height/3);
                 p.text("O", -20, 20);
 
-                // 目盛り
                 p.stroke(150);
                 for(let x=0.5; x<=3.0; x+=0.5) {
                   const px = x * scaleX;
@@ -135,10 +140,8 @@
                 p.noFill();
                 p.beginShape();
                 for (let x = 0; x <= xMax; x += 0.05) {
-                  // 正弦波の式: y = A sin( 2π/λ (x - vt) )
-                  // グラフは原点スタートで上に上がるサインカーブ
                   const phase = (2 * Math.PI / lam) * (x - v * t);
-                  const y = -A * Math.sin(phase) * scaleY; // p5のy軸は下が正なのでマイナス
+                  const y = -A * Math.sin(phase) * scaleY; 
                   p.vertex(x * scaleX, y);
                 }
                 p.endShape();

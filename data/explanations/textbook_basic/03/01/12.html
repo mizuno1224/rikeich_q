@@ -23,7 +23,7 @@
           <span style="font-size:0.9em; color:#666;">（点線は $t=0$ の波形、実線は時刻 $t$ の波形を表します）</span>
         </p>
 
-        <div id="sim-wave-shift" class="sim-embed" style="height: 350px;"></div>
+        <div id="sim-wave-shift" class="sim-embed" style="height: 350px; margin-bottom: 60px; overflow: visible;"></div>
 
         <script>
           (function() {
@@ -33,10 +33,12 @@
 
             const sketch = (p) => {
               // パラメータ
-              const v = 1.0;     // 速さ 1.0 m/s
-              const lambda = 4.0; // 波長 4.0 m
-              const A = 3.0;     // 振幅 3.0 m
-              let t = 0.0;       // 現在の時刻
+              const v = 1.0;     
+              const lambda = 4.0; 
+              const A = 3.0;     
+              let t = 0.0;       
+              let isPlaying = false; 
+              let slider = null;
 
               p.setup = () => {
                 const w = el.clientWidth;
@@ -45,16 +47,31 @@
                 p.textSize(16);
 
                 if (window.SimUtils) {
+                  // initialPlaying: false
                   const { container } = SimUtils.createControls(el, {
-                    onPlay: () => p.loop(),
-                    onPause: () => p.noLoop(),
-                    onReset: () => { t = 0; if(window.sliderTime) { window.sliderTime.value = 0; window.sliderTime.dispatchEvent(new Event('input')); } }
-                  });
-                  window.sliderTime = SimUtils.addSlider(container, "時刻 t [s]", 0, 8.0, 0, 0.1, (val) => { t = val; });
+                    onPlay: () => { isPlaying = true; },
+                    onPause: () => { isPlaying = false; },
+                    onReset: () => { 
+                      t = 0; 
+                      isPlaying = false;
+                      if(slider && slider.updateUI) slider.updateUI(0);
+                    }
+                  }, { initialPlaying: false });
+                  
+                  container.style.bottom = "-50px";
+
+                  slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 8.0, 0, 0.1, (val) => { t = val; });
                 }
               };
 
               p.draw = () => {
+                if (isPlaying) {
+                  t += 0.05;
+                  if(t > 8.0) t = 0; // ループ再生
+                  // スライダー同期（値書き戻しなし）
+                  if(slider && slider.updateUI) slider.updateUI(t);
+                }
+
                 p.background(255);
                 p.translate(p.width / 2 - 100, p.height / 2);
                 const scX = 60, scY = 30;

@@ -32,7 +32,7 @@
     これらを直線で結ぶと、急な勾配を持つ波形（平行四辺形のような形の一部）が現れます。
   </p>
 
-  <div id="sim-wave-superposition" class="sim-embed" style="height: 400px;"></div>
+  <div id="sim-wave-superposition" class="sim-embed" style="height: 400px; margin-bottom: 60px; overflow: visible;"></div>
   
   <script>
     (function(){
@@ -41,6 +41,8 @@
 
       const sketch = (p) => {
         let t = 0.0;
+        let isPlaying = false; // 初期状態: 停止
+        let slider = null;
         
         // グリッド設定
         const xMin = 0, xMax = 12;
@@ -56,64 +58,73 @@
           scaleX = w / (xMax - xMin);
           scaleY = h / (yMax - yMin);
 
-          // SimUtilsが使える場合はスライダーを追加
           if (window.SimUtils) {
+            // 第3引数で初期状態を「停止」に指定
             const { container } = SimUtils.createControls(el, {
+              onPlay: () => { isPlaying = true; },
+              onPause: () => { isPlaying = false; },
               onReset: () => { 
                 t = 0; 
-                if(window.updateSliderT) window.updateSliderT(0);
+                isPlaying = false;
+                if(slider && slider.updateUI) slider.updateUI(0);
               }
-            });
-            const slider = SimUtils.addSlider(container, "経過時間 t [s]", 0, 4.0, 0, 0.1, (val) => {
+            }, { initialPlaying: false });
+            
+            container.style.bottom = "-50px";
+
+            slider = SimUtils.addSlider(container, "経過時間 t [s]", 0, 4.0, 0, 0.1, (val) => {
               t = val;
             });
-            window.updateSliderT = (val) => { slider.value = val; slider.dispatchEvent(new Event('input')); };
           }
         };
 
         p.draw = () => {
+          if (isPlaying) {
+            t += 0.02; 
+            if (t > 4.0) t = 0;
+            // スライダーのUIのみ更新（値を書き戻さない）
+            if (slider && slider.updateUI) slider.updateUI(t);
+          }
+
           p.background(255);
           p.push();
-          // 座標変換: 原点を左中央へ
           p.translate(0, p.height / 2);
 
           drawGrid(p);
 
           // 波A (右へ進む)
-          const centerA = 2 + t; // 初期中心x=2, 速度+1
+          const centerA = 2 + t; 
           const funcA = (x) => {
             if (Math.abs(x - centerA) <= 2) return 2 - Math.abs(x - centerA);
             return 0;
           };
 
           // 波B (左へ進む)
-          const centerB = 8 - t; // 初期中心x=8, 速度-1
+          const centerB = 8 - t; 
           const funcB = (x) => {
             if (Math.abs(x - centerB) <= 2) return -(2 - Math.abs(x - centerB));
             return 0;
           };
 
-          // 波Aの描画（薄い青）
+          // 波Aの描画
           p.stroke(59, 130, 246, 100);
           p.strokeWeight(2);
           p.noFill();
           drawGraph(p, funcA);
-          // ラベル
           p.noStroke();
           p.fill(59, 130, 246);
           p.text("A", (centerA) * scaleX - 10, -2.2 * scaleY);
 
-          // 波Bの描画（薄い赤）
+          // 波Bの描画
           p.stroke(244, 63, 94, 100);
           p.strokeWeight(2);
           p.noFill();
           drawGraph(p, funcB);
-          // ラベル
           p.noStroke();
           p.fill(244, 63, 94);
           p.text("B", (centerB) * scaleX - 10, 2.5 * scaleY);
 
-          // 合成波の描画（濃い紫、太線）
+          // 合成波の描画
           p.stroke(139, 92, 246);
           p.strokeWeight(4);
           p.noFill();
@@ -121,7 +132,6 @@
 
           p.pop();
 
-          // 情報表示
           p.fill(51);
           p.noStroke();
           p.textAlign(p.LEFT, p.TOP);
@@ -132,7 +142,7 @@
           p.beginShape();
           for (let x = xMin; x <= xMax; x += 0.05) {
             const px = x * scaleX;
-            const py = -func(x) * scaleY; // y軸反転
+            const py = -func(x) * scaleY;
             p.vertex(px, py);
           }
           p.endShape();
@@ -141,22 +151,18 @@
         function drawGrid(p) {
           p.stroke(220);
           p.strokeWeight(1);
-          // 縦線
           for(let x=0; x<=12; x++) {
             const px = x * scaleX;
             p.line(px, -p.height/2, px, p.height/2);
           }
-          // 横線
           for(let y=-3; y<=3; y++) {
             const py = -y * scaleY;
             p.line(0, py, p.width, py);
           }
-          // 軸
           p.stroke(0);
-          p.line(0, 0, p.width, 0); // x軸
-          p.line(0, -p.height/2, 0, p.height/2); // y軸
+          p.line(0, 0, p.width, 0); 
+          p.line(0, -p.height/2, 0, p.height/2); 
           
-          // 目盛り数字
           p.noStroke();
           p.fill(100);
           p.textAlign(p.CENTER, p.TOP);

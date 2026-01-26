@@ -226,7 +226,9 @@ async function openEditor(problem) {
   currentProblem = problem;
   ui.editorMainWrapper.style.display = "flex";
   ui.emptyState.style.display = "none";
-  if (ui.tabEdit) ui.tabEdit.click();
+  
+  // 修正: 初期状態で編集タブをクリックしない（最後にプレビューをクリックする）
+  // if (ui.tabEdit) ui.tabEdit.click();
 
   ui.editingTitle.textContent = problem.title;
   ui.editingId.textContent = problem.id;
@@ -379,6 +381,9 @@ async function openEditor(problem) {
       alert("保存エラー: " + e);
     }
   };
+
+  // 修正: 最後にプレビュータブをアクティブにする
+  if (ui.tabPreview) ui.tabPreview.click();
 }
 
 // --- UI Helper Functions ---

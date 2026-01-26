@@ -87,22 +87,23 @@
           薄いグレーの線は「少し未来の波」を表しており、これを見ると点が次にどちらへ動くかがわかります。
         </p>
         
-        <div id="sim-wave-graph" class="sim-embed" style="height: auto; min-height: 700px; padding: 20px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center;"></div>
+        <div id="sim-wave-graph" class="sim-embed" style="height: auto; min-height: 700px; padding: 20px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 60px; overflow: visible;"></div>
 
         <script>
         (function(){
-            const container = document.getElementById('sim-wave-graph');
+            const containerElem = document.getElementById('sim-wave-graph'); // 変数名を重複しないように変更
+            if (!containerElem) return;
+
             const canvas = document.createElement('canvas');
             
             // Canvasサイズの設定
             const canvasHeight = 600; 
-            canvas.width = container.clientWidth;
+            canvas.width = containerElem.clientWidth;
             canvas.height = canvasHeight;
-            // Canvasのスタイル調整（縮小を防ぐ）
             canvas.style.flex = "0 0 auto"; 
             canvas.style.maxWidth = "100%";
             
-            container.appendChild(canvas);
+            containerElem.appendChild(canvas);
             const ctx = canvas.getContext('2d');
 
             // 波のパラメータ
@@ -110,24 +111,26 @@
             const lambda = 4.0;
             const T = 2.0;
             let time = 0;
+            let isPlaying = false; 
 
             // レイアウト定数
             const margin = { top: 40, right: 30, bottom: 40, left: 70 };
+
+            // スライダー参照用
+            let sliderElem = null;
             
             // 描画ループ
             function draw() {
-                // コンテナ幅に追従（リサイズ時）
-                if (canvas.width !== container.clientWidth) {
-                    canvas.width = container.clientWidth;
+                if (canvas.width !== containerElem.clientWidth) {
+                    canvas.width = containerElem.clientWidth;
                 }
                 const w = canvas.width;
                 const h = canvas.height;
                 
-                // 上下グラフの高さ配分
                 const availableH = h - margin.top - margin.bottom;
                 const h1 = availableH * 0.45; // 上段
                 const h2 = availableH * 0.45; // 下段
-                const gap = availableH * 0.10; // 隙間
+                const gap = availableH * 0.10; 
                 
                 const originY_yx = margin.top + h1 / 2;
                 const originY_yt = margin.top + h1 + gap + h2 / 2;
@@ -137,29 +140,26 @@
                 // --- 共通設定 ---
                 const plotW = w - margin.left - margin.right;
                 
-                // スケール計算
-                const scaleX_yx = plotW / 8.0; // 0~8m
+                const scaleX_yx = plotW / 8.0; 
                 const toSx_yx = (x) => margin.left + x * scaleX_yx;
                 const toSy_yx = (y) => originY_yx - y * (h1 / 5.0);
 
-                const scaleX_yt = plotW / 4.0; // 0~4s
+                const scaleX_yt = plotW / 4.0; 
                 const toSx_yt = (t) => margin.left + t * scaleX_yt;
                 const toSy_yt = (y) => originY_yt - y * (h2 / 5.0);
 
                 // --- 上段: y-x図 ---
                 ctx.save();
                 
-                // 軸とグリッド
                 drawAxis(ctx, margin.left, originY_yx, plotW, "x [m]", "y [m]", "y-x図：波の写真 (t=" + time.toFixed(2) + "s)");
                 
                 // 少し未来の波 (予測ガイド)
                 ctx.beginPath();
-                ctx.strokeStyle = '#e2e8f0'; // 薄いグレー
+                ctx.strokeStyle = '#e2e8f0'; 
                 ctx.lineWidth = 2;
                 ctx.setLineDash([5, 5]);
                 const dt_future = 0.2; 
                 for(let x = 0; x <= 8.0; x += 0.05) {
-                    // x=0でsin波形 (右上がりスタート)
                     let y = -A * Math.sin(2 * Math.PI * (x / lambda - (time + dt_future) / T));
                     let sx = toSx_yx(x);
                     let sy = toSy_yx(y);
@@ -170,7 +170,7 @@
 
                 // 現在の波形 (実線)
                 ctx.beginPath();
-                ctx.strokeStyle = '#3b82f6'; // Blue
+                ctx.strokeStyle = '#3b82f6'; 
                 ctx.lineWidth = 3;
                 for(let x = 0; x <= 8.0; x += 0.05) {
                     let y = -A * Math.sin(2 * Math.PI * (x / lambda - time / T));
@@ -200,7 +200,7 @@
 
                 // 履歴プロット
                 ctx.beginPath();
-                ctx.strokeStyle = '#ef4444'; // Red
+                ctx.strokeStyle = '#ef4444'; 
                 ctx.lineWidth = 3;
                 let hasMoved = false;
                 for(let t = 0; t <= 4.0; t += 0.05) {
@@ -220,7 +220,6 @@
                 
                 drawPoint(ctx, sx_now, sy_now, '#ef4444');
 
-                // 連動ガイド線
                 ctx.beginPath();
                 ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
                 ctx.lineWidth = 1;
@@ -236,13 +235,10 @@
                 ctx.strokeStyle = '#94a3b8';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                // X軸
                 ctx.moveTo(ox, oy); ctx.lineTo(ox + w, oy);
-                // Y軸 (上下に少し余裕を持たせる)
                 ctx.moveTo(ox, oy - 90); ctx.lineTo(ox, oy + 90);
                 ctx.stroke();
 
-                // ラベル
                 ctx.fillStyle = '#475569';
                 ctx.font = '12px sans-serif';
                 ctx.textAlign = 'right';
@@ -250,7 +246,6 @@
                 ctx.textAlign = 'center';
                 ctx.fillText(labelY, ox - 30, oy - 80); 
                 
-                // タイトル
                 ctx.font = 'bold 15px sans-serif';
                 ctx.fillStyle = '#0f172a';
                 ctx.textAlign = 'left';
@@ -267,11 +262,36 @@
                 ctx.stroke();
             }
 
+            // アニメーションループ
+            function loop() {
+                if (isPlaying) {
+                    time += 0.02; 
+                    if (time > 4.0) time = 0;
+                    if (sliderElem && sliderElem.updateUI) {
+                        sliderElem.updateUI(time);
+                    }
+                }
+                draw();
+                requestAnimationFrame(loop);
+            }
+
             // スライダー生成
             if (typeof SimUtils !== 'undefined') {
-                SimUtils.addSlider(container, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
+                // container -> ctrlContainer に変数名を変更して重複回避
+                const { container: ctrlContainer } = SimUtils.createControls(containerElem, {
+                    onPlay: () => { isPlaying = true; },
+                    onPause: () => { isPlaying = false; },
+                    onReset: () => { 
+                        time = 0; 
+                        isPlaying = false;
+                        if(sliderElem && sliderElem.updateUI) sliderElem.updateUI(0);
+                    }
+                }, { initialPlaying: false });
+                
+                ctrlContainer.style.bottom = "-50px";
+
+                sliderElem = SimUtils.addSlider(ctrlContainer, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
                     time = val;
-                    draw();
                 });
             } else {
                 const slider = document.createElement('input');
@@ -282,13 +302,11 @@
                 slider.style.display = 'block';
                 slider.oninput = (e) => {
                     time = parseFloat(e.target.value);
-                    draw();
                 };
-                container.appendChild(slider);
+                containerElem.appendChild(slider);
             }
             
-            // スライダーを含むコンテナ内の要素が重ならないように、最後に描画更新
-            requestAnimationFrame(draw);
+            loop();
             window.addEventListener('resize', draw);
         })();
         </script>
