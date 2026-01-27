@@ -37,28 +37,46 @@
           "folderId": "03/01",
           "problems": [
             {
-              "id": "basic_3_1_ex1_wave_graph",
-              "title": "例題1：正弦波の進行と周期",
+              "id": "basic_03_01_11",
+              "title": "例題1：波形の移動",
               "desc": "波のグラフの読み取りと、波の進行による波形の変化",
               "explanationPath": "data/explanations/textbook_basic/03/01/11.html"
             },
             {
-              "id": "textbook_basic_03_01_ruidai1",
-              "title": "類題1：正弦波の進行",
+              "id": "basic_03_01_12",
+              "title": "類題1：波形の移動",
               "desc": "負の向きに進む波の作図と周期の計算",
               "explanationPath": "data/explanations/textbook_basic/03/01/12.html"
             },
             {
-              "id": "textbook_basic_03_01_13",
-              "title": "例題2：波のグラフの読み取り",
+              "id": "basic_03_01_13",
+              "title": "例題2：y-x図とy-t図",
               "desc": "y-x図から波長・振幅を読み取り、計算で周期を求め、y-t図を描く等価変換の問題。",
               "explanationPath": "data/explanations/textbook_basic/03/01/13.html"
             },
             {
-              "id": "3_1_2_1",
-              "title": "問10：波の重ね合わせと合成波の作図",
+              "id": "basic_03_01_18",
+              "title": "問10：重ね合わせの原理",
               "desc": "互いに逆向きに進む三角波の重ね合わせを作図する問題",
-              "explanationPath": "data/explanations/textbook_basic/03/01/3_1_2_1.html"
+              "explanationPath": "data/explanations/textbook_basic/03/01/18.html"
+            },
+            {
+              "id": "basic_03_01_19",
+              "title": "問11：定在波",
+              "desc": "互いに逆向きに進む波が重なってできる定在波の、節の間隔や腹の振幅・周期を求める問題",
+              "explanationPath": "data/explanations/textbook_basic/03/01/19.html"
+            },
+            {
+              "id": "basic_03_01_20",
+              "title": "問12：波の反射（自由端・固定端）",
+              "desc": "パルス波の自由端反射と固定端反射を作図し、合成波の形状を理解する。",
+              "explanationPath": "data/explanations/textbook_basic/03/01/20.html"
+            },
+            {
+              "id": "basic_03_01_21",
+              "title": "例題4：正弦波の反射",
+              "desc": "自由端の位置をx=9とした場合における波の反射と合成プロセス。入射波の谷が原点にある瞬間をターゲットに、合成波形の形成をシミュレーションします。",
+              "explanationPath": "data/explanations/textbook_basic/03/01/21.html"
             }
           ]
         },

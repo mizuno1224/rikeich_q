@@ -1,0 +1,357 @@
+<h2 class="prob-title-sub">問11：定在波</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    互いに逆向きに進む、振幅・波長・速さが同じ2つの正弦波が重なると、合成波は左右に移動しない<strong>定在波（定常波）</strong>となります。
+    この問題では、グラフから波の基本情報（波長 $\lambda$、振幅 $A_0$）を読み取り、定在波特有の性質（節の間隔、腹の振幅）を用いて解きます。
+  </p>
+  <ul>
+    <li><strong>節と節の間隔：</strong> 半波長 $\frac{\lambda}{2}$ となります。</li>
+    <li><strong>定在波の振幅：</strong> もとの波の振幅の2倍となります。</li>
+    <li><strong>定在波の周期：</strong> もとの波の周期と同じです。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>シミュレーション：波の合成と定在波</h3>
+  <p>
+    図のように、初期状態（$t=0$）では2つの波はまだ重なっていません。<br>
+    再生して、波が出会い、定在波が形成される様子を確認しましょう。
+  </p>
+  
+  <div class="box-note" style="margin-bottom: 15px;">
+    <strong>操作ガイド：</strong><br>
+    <ul>
+      <li><strong>再生/停止：</strong> 時間を進めます。</li>
+      <li><strong>コマ送り/戻し：</strong> 波が重なる瞬間や、山と山が出会う瞬間を詳しく確認できます。</li>
+      <li><strong>リセット：</strong> $t=0$（重なる前）に戻します。</li>
+    </ul>
+  </div>
+
+  <div id="sim-standing-wave-final" class="sim-embed" style="height: 350px; border: 1px solid #ccc; background: #fff;"></div>
+  
+  <div style="text-align: center; margin-top: 10px; display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+    <button id="btn-back" class="btn-secondary" style="padding: 5px 10px;">◀ コマ戻し</button>
+    <button id="btn-play-pause" class="btn-primary" style="padding: 5px 20px;">再生</button>
+    <button id="btn-forward" class="btn-secondary" style="padding: 5px 10px;">コマ送り ▶</button>
+    <button id="btn-reset" class="btn-danger" style="padding: 5px 15px;">リセット</button>
+  </div>
+  <div style="text-align: center; margin-top: 5px; font-size: 0.9em; color: #666;">経過時間: <span id="time-display">0.00</span> s</div>
+
+  <script>
+    (function(){
+      // --- 設定 ---
+      var containerId = 'sim-standing-wave-final';
+      var container = document.getElementById(containerId);
+      var btnPlay = document.getElementById('btn-play-pause');
+      var btnReset = document.getElementById('btn-reset');
+      var btnBack = document.getElementById('btn-back');
+      var btnForward = document.getElementById('btn-forward');
+      var timeDisplay = document.getElementById('time-display');
+
+      if(!container) return;
+
+      // キャンバス作成
+      var canvas = document.createElement('canvas');
+      container.appendChild(canvas);
+      var ctx = canvas.getContext('2d');
+
+      // 物理パラメータ
+      var v = 2.0;       // 速さ 2.0 m/s
+      var lambda = 8.0;  // 波長 8.0 m
+      var Amp = 1.5;     // 振幅 1.5 m
+      var T = lambda / v; // 周期 4.0 s
+      var omega = 2 * Math.PI / T;
+      var k = 2 * Math.PI / lambda;
+
+      // シミュレーション状態
+      var t = 0;
+      var isRunning = false;
+      var animationId = null;
+      var dt = 0.05; // 1フレームの時間刻み
+      var stepT = 0.1; // コマ送りの時間刻み
+
+      // 描画範囲設定 (x=-1〜15)
+      var xMin = -1.0;
+      var xMax = 15.0;
+      var yMin = -3.5;
+      var yMax = 3.5;
+
+      // 座標変換関数
+      var scaleX, scaleY, offsetX, offsetY;
+      function updateScale() {
+        var w = canvas.width;
+        var h = canvas.height;
+        scaleX = w / (xMax - xMin);
+        scaleY = h / (yMax - yMin);
+        offsetX = -xMin * scaleX;
+        offsetY = yMax * scaleY;
+      }
+
+      function toScreenX(x) { return x * scaleX + offsetX; }
+      function toScreenY(y) { return offsetY - y * scaleY; }
+
+      // リサイズ処理
+      function resize() {
+        var rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+        updateScale();
+        if(!isRunning) draw();
+      }
+      window.addEventListener('resize', resize);
+
+      // --- 描画関数群 ---
+
+      // 波の高さ計算関数
+      function getWaveA(x, time) {
+        return Amp * Math.sin(k * x - omega * time);
+      }
+      function getWaveB(x, time) {
+        return Amp * Math.sin(k * x + omega * time - Math.PI/2);
+      }
+
+      // 指定範囲の波を描画するヘルパー
+      // startXからendXまで描画。closeStrokeがtrueならstroke()する。
+      function drawPath(startX, endX, color, width, func, isDashed) {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = width;
+        if (isDashed) ctx.setLineDash([5, 3]);
+        else ctx.setLineDash([]);
+
+        var step = 0.05;
+        var started = false;
+        
+        // 範囲内でループ
+        for (var x = startX; x <= endX; x += step) {
+          var sx = toScreenX(x);
+          var sy = toScreenY(func(x));
+          if (!started) { ctx.moveTo(sx, sy); started = true; }
+          else { ctx.lineTo(sx, sy); }
+        }
+        
+        // 終端を正確に描画（ループの誤差埋め）
+        var lastSx = toScreenX(endX);
+        var lastSy = toScreenY(func(endX));
+        ctx.lineTo(lastSx, lastSy);
+        
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      function draw() {
+        var w = canvas.width;
+        var h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // 1. グリッドと軸
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 1;
+        ctx.font = '12px Arial';
+        ctx.fillStyle = '#666';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+
+        // X軸目盛り
+        for (var x = 0; x <= 14; x += 2.0) {
+          var sx = toScreenX(x);
+          var sy = toScreenY(0);
+          ctx.beginPath(); ctx.moveTo(sx, 0); ctx.lineTo(sx, h); ctx.stroke();
+          ctx.fillText(x.toFixed(1), sx, sy + 5);
+        }
+        // Y軸目盛り
+        var yTicks = [1.5, -1.5, 3.0, -3.0];
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right';
+        for (var i = 0; i < yTicks.length; i++) {
+          var yVal = yTicks[i];
+          var sy = toScreenY(yVal);
+          var sx = toScreenX(0);
+          ctx.setLineDash([2, 2]);
+          ctx.beginPath(); ctx.moveTo(0, sy); ctx.lineTo(w, sy); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillText(yVal.toFixed(1), sx - 5, sy);
+        }
+
+        // 軸線
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(0, toScreenY(0)); ctx.lineTo(w, toScreenY(0)); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(toScreenX(0), 0); ctx.lineTo(toScreenX(0), h); ctx.stroke();
+        ctx.fillStyle = '#000';
+        ctx.fillText('y [m]', toScreenX(0) + 30, toScreenY(yMax) + 10);
+        ctx.fillText('x [m]', toScreenX(xMax) - 20, toScreenY(0) - 20);
+
+        // 2. 波の位置計算
+        var xA_head = 6.0 + v * t; // 波Aの先端
+        var xB_head = 8.0 - v * t; // 波Bの先端
+
+        // 3. 波A, 波Bの描画 (先端まで)
+        // 波A (xMin 〜 xA_head)
+        drawPath(xMin, Math.min(xMax, xA_head), 'rgba(0, 100, 255, 0.5)', 2, function(x){
+          return getWaveA(x, t);
+        }, true);
+
+        // 波B (xB_head 〜 xMax)
+        drawPath(Math.max(xMin, xB_head), xMax, 'rgba(0, 180, 0, 0.5)', 2, function(x){
+          return getWaveB(x, t);
+        }, false);
+
+        // 4. 合成波の描画
+        // 重なっているかどうかで分岐
+        var waveColor = 'rgba(255, 0, 0, 0.9)';
+        var waveWidth = 3;
+
+        if (xA_head < xB_head) {
+          // まだ出会っていない -> 分離して描画
+          
+          // 左側 (波Aと同じ)
+          drawPath(xMin, xA_head, waveColor, waveWidth, function(x){
+            return getWaveA(x, t); // Bはまだ来ていないのでAのみ
+          }, false);
+
+          // 右側 (波Bと同じ)
+          drawPath(xB_head, xMax, waveColor, waveWidth, function(x){
+            return getWaveB(x, t); // Aはまだ来ていないのでBのみ
+          }, false);
+          
+          // ※間の区間は描画しないので線は出ない
+
+        } else {
+          // 出会った後 -> 全体を1本のパスで描画 (ただし画面範囲内)
+          drawPath(xMin, xMax, waveColor, waveWidth, function(x){
+            var val = 0;
+            // Aが存在する範囲
+            if (x <= xA_head) val += getWaveA(x, t);
+            // Bが存在する範囲
+            if (x >= xB_head) val += getWaveB(x, t);
+            return val;
+          }, false);
+        }
+      }
+
+      // --- 制御ロジック ---
+      function updateTimeDisplay() {
+        timeDisplay.textContent = t.toFixed(2);
+      }
+
+      function loop() {
+        if (!isRunning) return;
+        t += dt;
+        updateTimeDisplay();
+        draw();
+        animationId = requestAnimationFrame(loop);
+      }
+
+      btnPlay.onclick = function() {
+        isRunning = !isRunning;
+        if (isRunning) {
+          btnPlay.textContent = '一時停止';
+          loop();
+        } else {
+          btnPlay.textContent = '再生';
+          cancelAnimationFrame(animationId);
+        }
+      };
+
+      btnReset.onclick = function() {
+        isRunning = false;
+        t = 0;
+        updateTimeDisplay();
+        btnPlay.textContent = '再生';
+        cancelAnimationFrame(animationId);
+        draw();
+      };
+
+      btnForward.onclick = function() {
+        isRunning = false;
+        btnPlay.textContent = '再生';
+        cancelAnimationFrame(animationId);
+        t += stepT;
+        updateTimeDisplay();
+        draw();
+      };
+
+      btnBack.onclick = function() {
+        isRunning = false;
+        btnPlay.textContent = '再生';
+        cancelAnimationFrame(animationId);
+        t = Math.max(0, t - stepT);
+        updateTimeDisplay();
+        draw();
+      };
+
+      // 初期描画
+      resize();
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) 隣りあう節と節の間隔</h3>
+  
+  <h4>考え方と導出</h4>
+  <p>
+    まず、グラフからこの正弦波の<strong>波長 $\lambda$</strong> を読み取ります。<br>
+    図の原点 $\text{O}$ から $x=2.0$ で山、$x=4.0$ で変位0、$x=6.0$ で谷、$x=8.0$ で再び変位0に戻っていることがわかります。
+    したがって、1波長分の長さは <span class="highlight">$\lambda = 8.0 \, \text{m}$</span> です。
+  </p>
+  <p>
+    定在波において、隣りあう節と節（または腹と腹）の間隔は、波長の半分（半波長）になります。
+  </p>
+  <p>
+    $$ \text{節の間隔} = \frac{\lambda}{2} = \frac{8.0}{2} = 4.0 \, \text{m} $$
+  </p>
+  <p>
+    シミュレーションで $t=2.0\,\text{s}$ くらいまで進めると、合成波（赤色）が $x=0, 4.0, 8.0, 12.0 \dots$ で全く振動しない（節になる）ことがはっきり確認できます。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    4.0 m
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 腹の位置の振動の振幅 A と周期 T</h3>
+  
+  <h4>考え方と導出</h4>
+  <p>
+    <strong>振幅について：</strong><br>
+    グラフの縦軸を確認すると、もとの波（進行波）の振幅 $A_0$ は <span class="highlight">$1.5 \, \text{m}$</span> です。<br>
+    定在波の腹（最も大きく振動する点）では、2つの波の山と山、谷と谷が重なるため、振幅はもとの波の<strong>2倍</strong>になります。
+  </p>
+  <p>
+    $$ A = 2 \times A_0 = 2 \times 1.5 = 3.0 \, \text{m} $$
+  </p>
+  <p>
+    シミュレーションを「コマ送り」して、山と山が重なる瞬間を探してみてください。赤色の波の山が $y=3.0$ まで達しているはずです。
+  </p>
+  <p>
+    <strong>周期について：</strong><br>
+    定在波の振動の周期 $T$ は、もとの波の周期と一致します。<br>
+    波の基本公式 $v = \frac{\lambda}{T}$ より、$T = \frac{\lambda}{v}$ を用いて計算します。<br>
+    問題文より速さ $v = 2.0 \, \text{m/s}$、(1)より波長 $\lambda = 8.0 \, \text{m}$ なので、
+  </p>
+  <p>
+    $$ T = \frac{8.0}{2.0} = 4.0 \, \text{s} $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    振幅 $A$ : 3.0 m, 周期 $T$ : 4.0 s
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>定在波の重要公式まとめ</h3>
+  <ul>
+    <li><strong>節の間隔（＝腹の間隔）：</strong> $\displaystyle \frac{\lambda}{2}$ （波長の半分）</li>
+    <li><strong>腹の振幅：</strong> $\displaystyle 2A$ （もとの波の2倍）</li>
+    <li><strong>節の位置：</strong> 全く振動しない点（変位が常に0）</li>
+    <li><strong>腹の位置：</strong> 激しく振動する点（変位が最大 $\pm 2A$）</li>
+  </ul>
+</div>

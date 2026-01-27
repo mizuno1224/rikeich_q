@@ -1,343 +1,330 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>例題2 解説</title>
-  <link rel="stylesheet" href="../../../../../css/base.css">
-  <link rel="stylesheet" href="../../../../../css/components.css">
-  <link rel="stylesheet" href="../../../../../css/viewer.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-</head>
-<body>
-  <div class="viewer-container">
-    <div class="explanation-area">
+<h2 class="prob-title-sub">例題2：波のグラフ（$y-x$図と$y-t$図）</h2>
 
-      <h2 class="prob-title-sub">例題2：波のグラフ（$y-x$図と$y-t$図）</h2>
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    波のグラフには、以下の2種類があり、これらを正しく区別して使いこなすことが重要です。
+  </p>
+  <ul>
+    <li><strong>$y-x$ 図（波形グラフ）：</strong> ある時刻 $t$ における波の写真を撮ったもの。横軸は位置 $x$。ここから <span class="highlight">波長
+        $\lambda$</span> が読み取れます。</li>
+    <li><strong>$y-t$ 図（振動グラフ）：</strong> ある位置 $x$ における媒質の動きを記録したもの。横軸は時間 $t$。ここから <span class="highlight">周期 $T$</span>
+      が読み取れます。</li>
+  </ul>
+  <p>
+    この問題では、与えられた $y-x$ 図（写真）から波の情報を読み取り、特定の点での $y-t$ 図（ムービーの記録）を作成します。
+  </p>
+</div>
 
-      <div class="card">
-        <h3>解法の指針</h3>
-        <p>
-          波のグラフには、以下の2種類があり、これらを正しく区別して使いこなすことが重要です。
-        </p>
-        <ul>
-          <li><strong>$y-x$ 図（波形グラフ）：</strong> ある時刻 $t$ における波の写真を撮ったもの。横軸は位置 $x$。ここから <span class="highlight">波長 $\lambda$</span> が読み取れます。</li>
-          <li><strong>$y-t$ 図（振動グラフ）：</strong> ある位置 $x$ における媒質の動きを記録したもの。横軸は時間 $t$。ここから <span class="highlight">周期 $T$</span> が読み取れます。</li>
-        </ul>
-        <p>
-          この問題では、与えられた $y-x$ 図（写真）から波の情報を読み取り、特定の点での $y-t$ 図（ムービーの記録）を作成します。
-        </p>
-      </div>
+<div class="card">
+  <h3>(1) 波の要素（振幅・波長・周期・振動数）</h3>
 
-      <div class="card">
-        <h3>(1) 波の要素（振幅・波長・周期・振動数）</h3>
-        
-        <h4>1. グラフからの読み取り</h4>
-        <p>
-          問題の $y-x$ 図を見てみましょう。
-        </p>
-        <ul>
-          <li><strong>振幅 $A$</strong>：山の高さ（または谷の深さ）を読み取ります。<br>
-          グラフより、最大変位は $y = 2.0$ m なので、<br>
-          $$A = 2.0 \text{ m}$$</li>
-          
-          <li><strong>波長 $\lambda$</strong>：山から山、または谷から谷までの距離（波1つ分の長さ）を読み取ります。<br>
-          グラフより、波1つ分の長さは $4.0$ m なので、<br>
-          $$\lambda = 4.0 \text{ m}$$</li>
-        </ul>
+  <h4>1. グラフからの読み取り</h4>
+  <p>
+    問題の $y-x$ 図を見てみましょう。
+  </p>
+  <ul>
+    <li><strong>振幅 $A$</strong>：山の高さ（または谷の深さ）を読み取ります。<br>
+      グラフより、最大変位は $y = 2.0$ m なので、<br>
+      $$A = 2.0 \text{ m}$$</li>
 
-        <h4>2. 計算による導出</h4>
-        <p>
-          波の速さが $v = 2.0 \text{ m/s}$ と与えられています。波の基本公式 <span class="highlight">$v = \frac{\lambda}{T}$</span>（または $v = f\lambda$）を用いて、周期 $T$ と振動数 $f$ を求めます。
-        </p>
-        <p>
-          <strong>周期 $T$ の計算：</strong><br>
-          $$T = \frac{\lambda}{v} = \frac{4.0 \text{ m}}{2.0 \text{ m/s}} = 2.0 \text{ s}$$
-        </p>
-        <p>
-          <strong>振動数 $f$ の計算：</strong><br>
-          $$f = \frac{1}{T} = \frac{1}{2.0 \text{ s}} = 0.50 \text{ Hz}$$
-        </p>
+    <li><strong>波長 $\lambda$</strong>：山から山、または谷から谷までの距離（波1つ分の長さ）を読み取ります。<br>
+      グラフより、波1つ分の長さは $4.0$ m なので、<br>
+      $$\lambda = 4.0 \text{ m}$$</li>
+  </ul>
 
-        <div class="box-note">
-          <strong>答え：</strong><br>
-          振幅 $2.0 \text{ m}$, 波長 $4.0 \text{ m}$, 周期 $2.0 \text{ s}$, 振動数 $0.50 \text{ Hz}$
-        </div>
-      </div>
+  <h4>2. 計算による導出</h4>
+  <p>
+    波の速さが $v = 2.0 \text{ m/s}$ と与えられています。波の基本公式 <span class="highlight">$v = \frac{\lambda}{T}$</span>（または $v =
+    f\lambda$）を用いて、周期 $T$ と振動数 $f$ を求めます。
+  </p>
+  <p>
+    <strong>周期 $T$ の計算：</strong><br>
+    $$T = \frac{\lambda}{v} = \frac{4.0 \text{ m}}{2.0 \text{ m/s}} = 2.0 \text{ s}$$
+  </p>
+  <p>
+    <strong>振動数 $f$ の計算：</strong><br>
+    $$f = \frac{1}{T} = \frac{1}{2.0 \text{ s}} = 0.50 \text{ Hz}$$
+  </p>
 
-      <div class="card">
-        <h3>(2) $x=0$ における $y-t$ 図の描画</h3>
-
-        <h4>考え方：波を少し進めてみる</h4>
-        <p>
-          $y-x$ 図は「$t=0$ の瞬間の写真」です。ここから $t>0$ の未来の動きを知るには、<strong>「波を進行方向に少しずらして描く」</strong>のが鉄則です。
-        </p>
-        <ol>
-          <li>現在の波形（$t=0$）を実線で描く。</li>
-          <li>少し時間が経った後の波形（点線）を、進行方向（右）に少しずらして描く。</li>
-          <li>注目している点（$x=0$）の媒質が、実線から点線に向かって<strong>上に行くか下に行くか</strong>を確認する。</li>
-        </ol>
-        <p>
-          この問題の場合、波を右にずらすと、$x=0$ の原点の山は<strong>下向き</strong>に動くことがわかります。つまり、$t=0$ の直後は <span class="highlight">$y < 0$</span> となります。
-        </p>
-
-        <h4>シミュレーションで確認</h4>
-        <p>
-          以下のシミュレーターで「時間」スライダーを動かし、<strong>上のグラフの赤い点（$x=0$）</strong>と、<strong>下のグラフの赤い点（その時刻の変位）</strong>が連動している様子を確認しましょう。<br>
-          薄いグレーの線は「少し未来の波」を表しており、これを見ると点が次にどちらへ動くかがわかります。
-        </p>
-        
-        <div id="sim-wave-graph" class="sim-embed" style="height: auto; min-height: 700px; padding: 20px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 60px; overflow: visible;"></div>
-
-        <script>
-        (function(){
-            const containerElem = document.getElementById('sim-wave-graph'); // 変数名を重複しないように変更
-            if (!containerElem) return;
-
-            const canvas = document.createElement('canvas');
-            
-            // Canvasサイズの設定
-            const canvasHeight = 600; 
-            canvas.width = containerElem.clientWidth;
-            canvas.height = canvasHeight;
-            canvas.style.flex = "0 0 auto"; 
-            canvas.style.maxWidth = "100%";
-            
-            containerElem.appendChild(canvas);
-            const ctx = canvas.getContext('2d');
-
-            // 波のパラメータ
-            const A = 1.5; 
-            const lambda = 4.0;
-            const T = 2.0;
-            let time = 0;
-            let isPlaying = false; 
-
-            // レイアウト定数
-            const margin = { top: 40, right: 30, bottom: 40, left: 70 };
-
-            // スライダー参照用
-            let sliderElem = null;
-            
-            // 描画ループ
-            function draw() {
-                if (canvas.width !== containerElem.clientWidth) {
-                    canvas.width = containerElem.clientWidth;
-                }
-                const w = canvas.width;
-                const h = canvas.height;
-                
-                const availableH = h - margin.top - margin.bottom;
-                const h1 = availableH * 0.45; // 上段
-                const h2 = availableH * 0.45; // 下段
-                const gap = availableH * 0.10; 
-                
-                const originY_yx = margin.top + h1 / 2;
-                const originY_yt = margin.top + h1 + gap + h2 / 2;
-
-                ctx.clearRect(0, 0, w, h);
-
-                // --- 共通設定 ---
-                const plotW = w - margin.left - margin.right;
-                
-                const scaleX_yx = plotW / 8.0; 
-                const toSx_yx = (x) => margin.left + x * scaleX_yx;
-                const toSy_yx = (y) => originY_yx - y * (h1 / 5.0);
-
-                const scaleX_yt = plotW / 4.0; 
-                const toSx_yt = (t) => margin.left + t * scaleX_yt;
-                const toSy_yt = (y) => originY_yt - y * (h2 / 5.0);
-
-                // --- 上段: y-x図 ---
-                ctx.save();
-                
-                drawAxis(ctx, margin.left, originY_yx, plotW, "x [m]", "y [m]", "y-x図：波の写真 (t=" + time.toFixed(2) + "s)");
-                
-                // 少し未来の波 (予測ガイド)
-                ctx.beginPath();
-                ctx.strokeStyle = '#e2e8f0'; 
-                ctx.lineWidth = 2;
-                ctx.setLineDash([5, 5]);
-                const dt_future = 0.2; 
-                for(let x = 0; x <= 8.0; x += 0.05) {
-                    let y = -A * Math.sin(2 * Math.PI * (x / lambda - (time + dt_future) / T));
-                    let sx = toSx_yx(x);
-                    let sy = toSy_yx(y);
-                    if(x===0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-                }
-                ctx.stroke();
-                ctx.setLineDash([]);
-
-                // 現在の波形 (実線)
-                ctx.beginPath();
-                ctx.strokeStyle = '#3b82f6'; 
-                ctx.lineWidth = 3;
-                for(let x = 0; x <= 8.0; x += 0.05) {
-                    let y = -A * Math.sin(2 * Math.PI * (x / lambda - time / T));
-                    let sx = toSx_yx(x);
-                    let sy = toSy_yx(y);
-                    if(x===0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
-                }
-                ctx.stroke();
-
-                // 注目点 (x=0)
-                let y_at_0 = -A * Math.sin(2 * Math.PI * (0 / lambda - time / T));
-                let sx_0 = toSx_yx(0);
-                let sy_0 = toSy_yx(y_at_0);
-                
-                drawPoint(ctx, sx_0, sy_0, '#ef4444'); 
-                ctx.fillStyle = '#1e293b';
-                ctx.font = 'bold 14px sans-serif';
-                ctx.textAlign = 'left';
-                ctx.fillText("x=0", sx_0 + 12, sy_0);
-                
-                ctx.restore();
-
-                // --- 下段: y-t図 ---
-                ctx.save();
-                
-                drawAxis(ctx, margin.left, originY_yt, plotW, "t [s]", "y [m]", "y-t図：x=0 の時間変化");
-
-                // 履歴プロット
-                ctx.beginPath();
-                ctx.strokeStyle = '#ef4444'; 
-                ctx.lineWidth = 3;
-                let hasMoved = false;
-                for(let t = 0; t <= 4.0; t += 0.05) {
-                    if(t > time) break;
-                    let y = -A * Math.sin(2 * Math.PI * (0 / lambda - t / T));
-                    let sx = toSx_yt(t);
-                    let sy = toSy_yt(y);
-                    if(!hasMoved) { ctx.moveTo(sx, sy); hasMoved=true; }
-                    else ctx.lineTo(sx, sy);
-                }
-                ctx.stroke();
-
-                // 現在のプロット点
-                let y_now = y_at_0; 
-                let sx_now = toSx_yt(time);
-                let sy_now = toSy_yt(y_now);
-                
-                drawPoint(ctx, sx_now, sy_now, '#ef4444');
-
-                ctx.beginPath();
-                ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
-                ctx.lineWidth = 1;
-                ctx.setLineDash([4, 4]);
-                ctx.moveTo(sx_0, sy_0);     
-                ctx.lineTo(sx_now, sy_now); 
-                ctx.stroke();
-
-                ctx.restore();
-            }
-
-            function drawAxis(ctx, ox, oy, w, labelX, labelY, title) {
-                ctx.strokeStyle = '#94a3b8';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(ox, oy); ctx.lineTo(ox + w, oy);
-                ctx.moveTo(ox, oy - 90); ctx.lineTo(ox, oy + 90);
-                ctx.stroke();
-
-                ctx.fillStyle = '#475569';
-                ctx.font = '12px sans-serif';
-                ctx.textAlign = 'right';
-                ctx.fillText(labelX, ox + w, oy + 20); 
-                ctx.textAlign = 'center';
-                ctx.fillText(labelY, ox - 30, oy - 80); 
-                
-                ctx.font = 'bold 15px sans-serif';
-                ctx.fillStyle = '#0f172a';
-                ctx.textAlign = 'left';
-                ctx.fillText(title, ox, oy - 110);
-            }
-
-            function drawPoint(ctx, x, y, color) {
-                ctx.beginPath();
-                ctx.arc(x, y, 6, 0, Math.PI * 2);
-                ctx.fillStyle = color;
-                ctx.fill();
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-            }
-
-            // アニメーションループ
-            function loop() {
-                if (isPlaying) {
-                    time += 0.02; 
-                    if (time > 4.0) time = 0;
-                    if (sliderElem && sliderElem.updateUI) {
-                        sliderElem.updateUI(time);
-                    }
-                }
-                draw();
-                requestAnimationFrame(loop);
-            }
-
-            // スライダー生成
-            if (typeof SimUtils !== 'undefined') {
-                // container -> ctrlContainer に変数名を変更して重複回避
-                const { container: ctrlContainer } = SimUtils.createControls(containerElem, {
-                    onPlay: () => { isPlaying = true; },
-                    onPause: () => { isPlaying = false; },
-                    onReset: () => { 
-                        time = 0; 
-                        isPlaying = false;
-                        if(sliderElem && sliderElem.updateUI) sliderElem.updateUI(0);
-                    }
-                }, { initialPlaying: false });
-                
-                ctrlContainer.style.bottom = "-50px";
-
-                sliderElem = SimUtils.addSlider(ctrlContainer, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
-                    time = val;
-                });
-            } else {
-                const slider = document.createElement('input');
-                slider.type = 'range';
-                slider.min = 0; slider.max = 4.0; slider.step = 0.05; slider.value = 0;
-                slider.style.width = '90%';
-                slider.style.margin = '10px auto';
-                slider.style.display = 'block';
-                slider.oninput = (e) => {
-                    time = parseFloat(e.target.value);
-                };
-                containerElem.appendChild(slider);
-            }
-            
-            loop();
-            window.addEventListener('resize', draw);
-        })();
-        </script>
-
-        <h4>グラフを描く手順</h4>
-        <ol>
-          <li><strong>スタート位置を確認</strong>：$t=0$ で $y=0$ です。</li>
-          <li><strong>初期動作を確認</strong>：シミュレーションの薄い点線（未来の波）を見ると、波が右に進むにつれて $x=0$ の点は<strong>下（負の方向）</strong>に引っ張られることがわかります。</li>
-          <li><strong>周期を確認</strong>：(1)で求めた通り、周期は $T=2.0$ s です。したがって、$t=2.0$ s で再び元の状態に戻ります。</li>
-        </ol>
-        <p>
-          これらを組み合わせると、<strong>原点から始まり、まず下に下がり、2.0秒で1回振動する正弦波（サインカーブ）</strong>を描けば正解です。
-        </p>
-
-        <div class="box-note">
-          <strong>答え：</strong><br>
-          原点から負の向きにスタートし、周期 $2.0 \text{ s}$、振幅 $2.0 \text{ m}$ の正弦波（サインカーブ）を描く。
-        </div>
-      </div>
-
-      <div class="box-alert">
-        <span class="box-alert-label">Point</span>
-        <h3>解法のポイント：2つのグラフの変換</h3>
-        <ul>
-          <li><strong>$y-x$ 図（写真）</strong>：波長 $\lambda$ がわかる。「波を少し進めて」次の瞬間の変位を予測する。</li>
-          <li><strong>$y-t$ 図（ムービー）</strong>：周期 $T$ がわかる。$t=0$ の変位は $y-x$ 図の注目点の座標と同じ。</li>
-          <li>シミュレーションで確認したように、<strong>「位置のグラフの波の動き」と「時間のグラフの点の動き」は連動している</strong>ことをイメージしましょう。</li>
-        </ul>
-      </div>
-
-    </div>
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    振幅 $2.0 \text{ m}$, 波長 $4.0 \text{ m}$, 周期 $2.0 \text{ s}$, 振動数 $0.50 \text{ Hz}$
   </div>
-</body>
-</html>
+</div>
+
+<div class="card">
+  <h3>(2) $x=0$ における $y-t$ 図の描画</h3>
+
+  <h4>考え方：波を少し進めてみる</h4>
+  <p>
+    $y-x$ 図は「$t=0$ の瞬間の写真」です。ここから $t>0$ の未来の動きを知るには、<strong>「波を進行方向に少しずらして描く」</strong>のが鉄則です。
+  </p>
+  <ol>
+    <li>現在の波形（$t=0$）を実線で描く。</li>
+    <li>少し時間が経った後の波形（点線）を、進行方向（右）に少しずらして描く。</li>
+    <li>注目している点（$x=0$）の媒質が、実線から点線に向かって<strong>上に行くか下に行くか</strong>を確認する。</li>
+  </ol>
+  <p>
+    この問題の場合、波を右にずらすと、$x=0$ の原点の山は<strong>下向き</strong>に動くことがわかります。つまり、$t=0$ の直後は <span class="highlight">$y < 0$</span>
+        となります。
+  </p>
+
+  <h4>シミュレーションで確認</h4>
+  <p>
+    以下のシミュレーターで「時間」スライダーを動かし、<strong>上のグラフの赤い点（$x=0$）</strong>と、<strong>下のグラフの赤い点（その時刻の変位）</strong>が連動している様子を確認しましょう。<br>
+    薄いグレーの線は「少し未来の波」を表しており、これを見ると点が次にどちらへ動くかがわかります。
+  </p>
+
+  <div id="sim-wave-graph" class="sim-embed"
+    style="height: auto; min-height: 700px; padding: 20px 0; background: #fff; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 60px; overflow: visible;">
+  </div>
+
+  <script>
+    (function () {
+      const containerElem = document.getElementById('sim-wave-graph'); // 変数名を重複しないように変更
+      if (!containerElem) return;
+
+      const canvas = document.createElement('canvas');
+
+      // Canvasサイズの設定
+      const canvasHeight = 600;
+      canvas.width = containerElem.clientWidth;
+      canvas.height = canvasHeight;
+      canvas.style.flex = "0 0 auto";
+      canvas.style.maxWidth = "100%";
+
+      containerElem.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      // 波のパラメータ
+      const A = 1.5;
+      const lambda = 4.0;
+      const T = 2.0;
+      let time = 0;
+      let isPlaying = false;
+
+      // レイアウト定数
+      const margin = { top: 40, right: 30, bottom: 40, left: 70 };
+
+      // スライダー参照用
+      let sliderElem = null;
+
+      // 描画ループ
+      function draw() {
+        if (canvas.width !== containerElem.clientWidth) {
+          canvas.width = containerElem.clientWidth;
+        }
+        const w = canvas.width;
+        const h = canvas.height;
+
+        const availableH = h - margin.top - margin.bottom;
+        const h1 = availableH * 0.45; // 上段
+        const h2 = availableH * 0.45; // 下段
+        const gap = availableH * 0.10;
+
+        const originY_yx = margin.top + h1 / 2;
+        const originY_yt = margin.top + h1 + gap + h2 / 2;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // --- 共通設定 ---
+        const plotW = w - margin.left - margin.right;
+
+        const scaleX_yx = plotW / 8.0;
+        const toSx_yx = (x) => margin.left + x * scaleX_yx;
+        const toSy_yx = (y) => originY_yx - y * (h1 / 5.0);
+
+        const scaleX_yt = plotW / 4.0;
+        const toSx_yt = (t) => margin.left + t * scaleX_yt;
+        const toSy_yt = (y) => originY_yt - y * (h2 / 5.0);
+
+        // --- 上段: y-x図 ---
+        ctx.save();
+
+        drawAxis(ctx, margin.left, originY_yx, plotW, "x [m]", "y [m]", "y-x図：波の写真 (t=" + time.toFixed(2) + "s)");
+
+        // 少し未来の波 (予測ガイド)
+        ctx.beginPath();
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        const dt_future = 0.2;
+        for (let x = 0; x <= 8.0; x += 0.05) {
+          let y = -A * Math.sin(2 * Math.PI * (x / lambda - (time + dt_future) / T));
+          let sx = toSx_yx(x);
+          let sy = toSy_yx(y);
+          if (x === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 現在の波形 (実線)
+        ctx.beginPath();
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 3;
+        for (let x = 0; x <= 8.0; x += 0.05) {
+          let y = -A * Math.sin(2 * Math.PI * (x / lambda - time / T));
+          let sx = toSx_yx(x);
+          let sy = toSy_yx(y);
+          if (x === 0) ctx.moveTo(sx, sy); else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+
+        // 注目点 (x=0)
+        let y_at_0 = -A * Math.sin(2 * Math.PI * (0 / lambda - time / T));
+        let sx_0 = toSx_yx(0);
+        let sy_0 = toSy_yx(y_at_0);
+
+        drawPoint(ctx, sx_0, sy_0, '#ef4444');
+        ctx.fillStyle = '#1e293b';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText("x=0", sx_0 + 12, sy_0);
+
+        ctx.restore();
+
+        // --- 下段: y-t図 ---
+        ctx.save();
+
+        drawAxis(ctx, margin.left, originY_yt, plotW, "t [s]", "y [m]", "y-t図：x=0 の時間変化");
+
+        // 履歴プロット
+        ctx.beginPath();
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        let hasMoved = false;
+        for (let t = 0; t <= 4.0; t += 0.05) {
+          if (t > time) break;
+          let y = -A * Math.sin(2 * Math.PI * (0 / lambda - t / T));
+          let sx = toSx_yt(t);
+          let sy = toSy_yt(y);
+          if (!hasMoved) { ctx.moveTo(sx, sy); hasMoved = true; }
+          else ctx.lineTo(sx, sy);
+        }
+        ctx.stroke();
+
+        // 現在のプロット点
+        let y_now = y_at_0;
+        let sx_now = toSx_yt(time);
+        let sy_now = toSy_yt(y_now);
+
+        drawPoint(ctx, sx_now, sy_now, '#ef4444');
+
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.moveTo(sx_0, sy_0);
+        ctx.lineTo(sx_now, sy_now);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function drawAxis(ctx, ox, oy, w, labelX, labelY, title) {
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(ox, oy); ctx.lineTo(ox + w, oy);
+        ctx.moveTo(ox, oy - 90); ctx.lineTo(ox, oy + 90);
+        ctx.stroke();
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(labelX, ox + w, oy + 20);
+        ctx.textAlign = 'center';
+        ctx.fillText(labelY, ox - 30, oy - 80);
+
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillStyle = '#0f172a';
+        ctx.textAlign = 'left';
+        ctx.fillText(title, ox, oy - 110);
+      }
+
+      function drawPoint(ctx, x, y, color) {
+        ctx.beginPath();
+        ctx.arc(x, y, 6, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // アニメーションループ
+      function loop() {
+        if (isPlaying) {
+          time += 0.02;
+          if (time > 4.0) time = 0;
+          if (sliderElem && sliderElem.updateUI) {
+            sliderElem.updateUI(time);
+          }
+        }
+        draw();
+        requestAnimationFrame(loop);
+      }
+
+      // スライダー生成
+      if (typeof SimUtils !== 'undefined') {
+        // container -> ctrlContainer に変数名を変更して重複回避
+        const { container: ctrlContainer } = SimUtils.createControls(containerElem, {
+          onPlay: () => { isPlaying = true; },
+          onPause: () => { isPlaying = false; },
+          onReset: () => {
+            time = 0;
+            isPlaying = false;
+            if (sliderElem && sliderElem.updateUI) sliderElem.updateUI(0);
+          }
+        }, { initialPlaying: false });
+
+        ctrlContainer.style.bottom = "-50px";
+
+        sliderElem = SimUtils.addSlider(ctrlContainer, '時間 t [s]', 0, 4.0, 0, 0.05, (val) => {
+          time = val;
+        });
+      } else {
+        const slider = document.createElement('input');
+        slider.type = 'range';
+        slider.min = 0; slider.max = 4.0; slider.step = 0.05; slider.value = 0;
+        slider.style.width = '90%';
+        slider.style.margin = '10px auto';
+        slider.style.display = 'block';
+        slider.oninput = (e) => {
+          time = parseFloat(e.target.value);
+        };
+        containerElem.appendChild(slider);
+      }
+
+      loop();
+      window.addEventListener('resize', draw);
+    })();
+  </script>
+
+  <h4>グラフを描く手順</h4>
+  <ol>
+    <li><strong>スタート位置を確認</strong>：$t=0$ で $y=0$ です。</li>
+    <li><strong>初期動作を確認</strong>：シミュレーションの薄い点線（未来の波）を見ると、波が右に進むにつれて $x=0$ の点は<strong>下（負の方向）</strong>に引っ張られることがわかります。
+    </li>
+    <li><strong>周期を確認</strong>：(1)で求めた通り、周期は $T=2.0$ s です。したがって、$t=2.0$ s で再び元の状態に戻ります。</li>
+  </ol>
+  <p>
+    これらを組み合わせると、<strong>原点から始まり、まず下に下がり、2.0秒で1回振動する正弦波（サインカーブ）</strong>を描けば正解です。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    原点から負の向きにスタートし、周期 $2.0 \text{ s}$、振幅 $2.0 \text{ m}$ の正弦波（サインカーブ）を描く。
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント：2つのグラフの変換</h3>
+  <ul>
+    <li><strong>$y-x$ 図（写真）</strong>：波長 $\lambda$ がわかる。「波を少し進めて」次の瞬間の変位を予測する。</li>
+    <li><strong>$y-t$ 図（ムービー）</strong>：周期 $T$ がわかる。$t=0$ の変位は $y-x$ 図の注目点の座標と同じ。</li>
+    <li>シミュレーションで確認したように、<strong>「位置のグラフの波の動き」と「時間のグラフの点の動き」は連動している</strong>ことをイメージしましょう。</li>
+  </ul>
+</div>

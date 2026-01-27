@@ -1,239 +1,220 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>例題1 解説</title>
-  <link rel="stylesheet" href="../../../../../css/base.css">
-  <link rel="stylesheet" href="../../../../../css/components.css">
-  <link rel="stylesheet" href="../../../../../css/viewer.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-</head>
-<body>
-  <div class="viewer-container">
-    <div class="explanation-area">
+<h2 class="prob-title-sub">例題1：正弦波の進行と周期</h2>
 
-      <h2 class="prob-title-sub">例題1：正弦波の進行と周期</h2>
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    この問題は、横軸が位置 $x$ のグラフ（波形グラフ）です。
+  </p>
+  <ul>
+    <li><strong>(1) 波の進行</strong>：時間が経過すると、波全体が進行方向（$x$軸正の向き）にズレていきます。<br>
+      進む距離は <span class="highlight">$\text{距離} = \text{速さ} \times \text{時間}$</span> で求められます。</li>
+    <li><strong>(2) 波の周期</strong>：波形が元の位置に重なるまでの時間は、波がちょうど1波長分進む時間、すなわち <span class="highlight">周期 $T$</span> に等しいです。
+    </li>
+  </ul>
+</div>
 
-      <div class="card">
-        <h3>解法の指針</h3>
-        <p>
-          この問題は、横軸が位置 $x$ のグラフ（波形グラフ）です。
-        </p>
-        <ul>
-          <li><strong>(1) 波の進行</strong>：時間が経過すると、波全体が進行方向（$x$軸正の向き）にズレていきます。<br>
-          進む距離は <span class="highlight">$\text{距離} = \text{速さ} \times \text{時間}$</span> で求められます。</li>
-          <li><strong>(2) 波の周期</strong>：波形が元の位置に重なるまでの時間は、波がちょうど1波長分進む時間、すなわち <span class="highlight">周期 $T$</span> に等しいです。</li>
-        </ul>
-      </div>
+<div class="card">
+  <h3>シミュレーション：波の平行移動</h3>
+  <p>
+    時間 $t$ を進めると、波が右へ移動していく様子を確認できます。<br>
+    スライダーを動かして、以下の点に注目してください。
+  </p>
+  <ul>
+    <li><strong>$t=5.0\,\text{s}$</strong> のとき、波の山や谷がどれだけ右に動いているか？</li>
+    <li><strong>$t=20.0\,\text{s}$</strong> のとき、波形が初期状態（薄いグレーの線）とぴったり重なること。</li>
+  </ul>
 
-      <div class="card">
-        <h3>シミュレーション：波の平行移動</h3>
-        <p>
-          時間 $t$ を進めると、波が右へ移動していく様子を確認できます。<br>
-          スライダーを動かして、以下の点に注目してください。
-        </p>
-        <ul>
-          <li><strong>$t=5.0\,\text{s}$</strong> のとき、波の山や谷がどれだけ右に動いているか？</li>
-          <li><strong>$t=20.0\,\text{s}$</strong> のとき、波形が初期状態（薄いグレーの線）とぴったり重なること。</li>
-        </ul>
+  <div id="sim-wave-propagation" class="sim-embed" style="height: 320px; margin-bottom: 60px; overflow: visible;"></div>
 
-        <div id="sim-wave-propagation" class="sim-embed" style="height: 320px; margin-bottom: 60px; overflow: visible;"></div>
+  <script>
+    (function () {
+      const targetId = 'sim-wave-propagation';
+      const el = document.getElementById(targetId);
+      if (!el) return;
 
-        <script>
-          (function() {
-            const targetId = 'sim-wave-propagation';
-            const el = document.getElementById(targetId);
-            if (!el) return;
+      const sketch = (p) => {
+        // 物理パラメータ
+        const v = 0.10;
+        const lam = 2.0;
+        const A = 1.5;
 
-            const sketch = (p) => {
-              // 物理パラメータ
-              const v = 0.10;   
-              const lam = 2.0;  
-              const A = 1.5;    
-              
-              let time = 0.0;
-              let isPlaying = false; 
-              let slider = null;
-              
-              const xMax = 3.5; 
-              let scaleX, scaleY;
-              
-              p.setup = () => {
-                const w = el.clientWidth;
-                const h = el.clientHeight;
-                p.createCanvas(w, h).parent(el);
-                
-                scaleX = w / xMax; 
-                scaleY = h / 5; 
+        let time = 0.0;
+        let isPlaying = false;
+        let slider = null;
 
-                if (window.SimUtils) {
-                  // initialPlaying: false で「最初から一時停止」状態に
-                  const { container } = SimUtils.createControls(el, {
-                    onPlay: () => { isPlaying = true; },
-                    onPause: () => { isPlaying = false; },
-                    onReset: () => { 
-                      time = 0; 
-                      isPlaying = false;
-                      if(slider && slider.updateUI) slider.updateUI(0); 
-                    }
-                  }, { initialPlaying: false });
-                  
-                  container.style.bottom = "-50px";
+        const xMax = 3.5;
+        let scaleX, scaleY;
 
-                  slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 25.0, 0, 0.1, (val) => {
-                    time = val;
-                  });
-                }
-              };
+        p.setup = () => {
+          const w = el.clientWidth;
+          const h = el.clientHeight;
+          p.createCanvas(w, h).parent(el);
 
-              p.draw = () => {
-                if (isPlaying) {
-                  time += 0.1; 
-                  if (time > 25.0) time = 0;
-                  // updateUIでUIのみ更新
-                  if(slider && slider.updateUI) slider.updateUI(time);
-                }
+          scaleX = w / xMax;
+          scaleY = h / 5;
 
-                p.background(255);
-                p.translate(40, p.height / 2);
-
-                drawAxes(p);
-                drawWave(p, 0, 200, 2); // 初期
-                drawWave(p, time, p.color(59, 130, 246), 3); // 現在
-
-                p.noStroke();
-                p.fill(51);
-                p.textSize(14);
-                p.textAlign(p.LEFT, p.TOP);
-                p.text(`t = ${time.toFixed(1)} s`, 10, -p.height/2 + 10);
-                
-                const dist = v * time;
-                p.text(`進んだ距離 x = ${v.toFixed(2)} × ${time.toFixed(1)} = ${dist.toFixed(2)} m`, 10, -p.height/2 + 30);
-              };
-
-              function drawAxes(p) {
-                p.stroke(0);
-                p.strokeWeight(1);
-                p.line(0, 0, p.width-50, 0);
-                p.noStroke();
-                p.fill(0);
-                p.text("x [m]", p.width - 80, 20);
-                p.text("y [m]", -30, -p.height/3);
-                p.text("O", -20, 20);
-
-                p.stroke(150);
-                for(let x=0.5; x<=3.0; x+=0.5) {
-                  const px = x * scaleX;
-                  p.line(px, -5, px, 5);
-                  if(Number.isInteger(x) || x%0.5===0) {
-                    p.noStroke();
-                    p.text(x.toFixed(1), px-10, 20);
-                    p.stroke(150);
-                  }
-                }
+          if (window.SimUtils) {
+            // initialPlaying: false で「最初から一時停止」状態に
+            const { container } = SimUtils.createControls(el, {
+              onPlay: () => { isPlaying = true; },
+              onPause: () => { isPlaying = false; },
+              onReset: () => {
+                time = 0;
+                isPlaying = false;
+                if (slider && slider.updateUI) slider.updateUI(0);
               }
+            }, { initialPlaying: false });
 
-              function drawWave(p, t, col, weight) {
-                p.stroke(col);
-                p.strokeWeight(weight);
-                p.noFill();
-                p.beginShape();
-                for (let x = 0; x <= xMax; x += 0.05) {
-                  const phase = (2 * Math.PI / lam) * (x - v * t);
-                  const y = -A * Math.sin(phase) * scaleY; 
-                  p.vertex(x * scaleX, y);
-                }
-                p.endShape();
-              }
-              
-              p.windowResized = () => {
-                const parent = document.getElementById(targetId);
-                if(parent) {
-                   p.resizeCanvas(parent.clientWidth, parent.clientHeight);
-                   scaleX = parent.clientWidth / xMax;
-                   scaleY = parent.clientHeight / 5;
-                }
-              };
-            };
+            container.style.bottom = "-50px";
 
-            const myP5 = new p5(sketch);
-            if (!window.p5Instances) window.p5Instances = [];
-            window.p5Instances.push(myP5);
-          })();
-        </script>
-      </div>
+            slider = SimUtils.addSlider(container, "時刻 t [s]", 0, 25.0, 0, 0.1, (val) => {
+              time = val;
+            });
+          }
+        };
 
-      <div class="card">
-        <h3>(1) $t=5.0\,\text{s}$ での波形</h3>
-        
-        <h4>考え方</h4>
-        <p>
-          まず、グラフから波の情報を読み取ります。
-        </p>
-        <ul>
-          <li>山から次の山までの長さ（1周期分の長さ）が <strong>波長 $\lambda$</strong> です。<br>
-          グラフより、<span class="highlight">$\lambda = 2.0 \, \text{m}$</span> です。</li>
-          <li>問題文より、速さ <span class="highlight">$v = 0.10 \, \text{m/s}$</span> です。</li>
-        </ul>
-        <p>
-          $t=5.0\,\text{s}$ の間に波が進む距離 $\Delta x$ は、
-        </p>
-        <p>
-          $$ \Delta x = v \times t = 0.10 \times 5.0 = \strong{0.50 \, \text{m}} $$
-        </p>
-        <p>
-          つまり、<strong>$t=0$ の波形全体を、右（$x$軸正の向き）に <span class="highlight">$0.50\,\text{m}$ だけ平行移動</span></strong>させればよいことになります。
-        </p>
-        <p>
-          具体的な点の移動を見てみましょう：
-        </p>
-        <ul>
-          <li>$x=0$ の点 ($y=0$) $\rightarrow$ $x=0.5$ に移動</li>
-          <li>$x=0.5$ の山 ($y=2.0$) $\rightarrow$ $x=1.0$ に移動</li>
-          <li>$x=1.0$ の点 ($y=0$) $\rightarrow$ $x=1.5$ に移動</li>
-          <li>$x=1.5$ の谷 ($y=-2.0$) $\rightarrow$ $x=2.0$ に移動</li>
-        </ul>
-        <p>
-          これらをつなぐと、上記のシミュレーションで $t=5.0$ としたときの青い線のようになります。
-        </p>
+        p.draw = () => {
+          if (isPlaying) {
+            time += 0.1;
+            if (time > 25.0) time = 0;
+            // updateUIでUIのみ更新
+            if (slider && slider.updateUI) slider.updateUI(time);
+          }
 
-        <div class="box-note">
-          <strong>答え：</strong><br>
-          （図示：元の波形を右へ $0.50\,\text{m}$ 平行移動させた正弦波）
-        </div>
-      </div>
+          p.background(255);
+          p.translate(40, p.height / 2);
 
-      <div class="card">
-        <h3>(2) 元の波形と重なる最初の時刻</h3>
-        
-        <h4>考え方</h4>
-        <p>
-          波形が元の形とぴったり重なるのは、波が<strong>ちょうど1波長分 ($\lambda$)</strong> 進んだときです。<br>
-          （さらに時間が経てば2波長、3波長…進んだときも重なりますが、最初は1波長分です）
-        </p>
-        <p>
-          波が1波長分進むのにかかる時間を <span class="highlight">周期 $T$</span> といいます。<br>
-          周期の公式 $T = \frac{\lambda}{v}$ を用いて計算します。
-        </p>
+          drawAxes(p);
+          drawWave(p, 0, 200, 2); // 初期
+          drawWave(p, time, p.color(59, 130, 246), 3); // 現在
 
-        <div class="box-note">
-          <strong>答え：</strong><br>
-          $$ T = \frac{\lambda}{v} = \frac{2.0}{0.10} = \strong{20 \, \text{s}} $$
-          よって、求める時刻 $t_0$ は <strong>$20 \, \text{s}$</strong>
-        </div>
-      </div>
+          p.noStroke();
+          p.fill(51);
+          p.textSize(14);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text(`t = ${time.toFixed(1)} s`, 10, -p.height / 2 + 10);
 
-      <div class="box-alert">
-        <span class="box-alert-label">Point</span>
-        <h3>解法のポイント</h3>
-        <ul>
-          <li>波のグラフ（$y-x$図）の問題では、<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。</li>
-          <li>波の基本公式 <span class="highlight">$v = \frac{\lambda}{T} = f\lambda$</span> の関係をグラフから読み取れるようにしましょう。</li>
-        </ul>
-      </div>
+          const dist = v * time;
+          p.text(`進んだ距離 x = ${v.toFixed(2)} × ${time.toFixed(1)} = ${dist.toFixed(2)} m`, 10, -p.height / 2 + 30);
+        };
 
-    </div>
+        function drawAxes(p) {
+          p.stroke(0);
+          p.strokeWeight(1);
+          p.line(0, 0, p.width - 50, 0);
+          p.noStroke();
+          p.fill(0);
+          p.text("x [m]", p.width - 80, 20);
+          p.text("y [m]", -30, -p.height / 3);
+          p.text("O", -20, 20);
+
+          p.stroke(150);
+          for (let x = 0.5; x <= 3.0; x += 0.5) {
+            const px = x * scaleX;
+            p.line(px, -5, px, 5);
+            if (Number.isInteger(x) || x % 0.5 === 0) {
+              p.noStroke();
+              p.text(x.toFixed(1), px - 10, 20);
+              p.stroke(150);
+            }
+          }
+        }
+
+        function drawWave(p, t, col, weight) {
+          p.stroke(col);
+          p.strokeWeight(weight);
+          p.noFill();
+          p.beginShape();
+          for (let x = 0; x <= xMax; x += 0.05) {
+            const phase = (2 * Math.PI / lam) * (x - v * t);
+            const y = -A * Math.sin(phase) * scaleY;
+            p.vertex(x * scaleX, y);
+          }
+          p.endShape();
+        }
+
+        p.windowResized = () => {
+          const parent = document.getElementById(targetId);
+          if (parent) {
+            p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+            scaleX = parent.clientWidth / xMax;
+            scaleY = parent.clientHeight / 5;
+          }
+        };
+      };
+
+      const myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) $t=5.0\,\text{s}$ での波形</h3>
+
+  <h4>考え方</h4>
+  <p>
+    まず、グラフから波の情報を読み取ります。
+  </p>
+  <ul>
+    <li>山から次の山までの長さ（1周期分の長さ）が <strong>波長 $\lambda$</strong> です。<br>
+      グラフより、<span class="highlight">$\lambda = 2.0 \, \text{m}$</span> です。</li>
+    <li>問題文より、速さ <span class="highlight">$v = 0.10 \, \text{m/s}$</span> です。</li>
+  </ul>
+  <p>
+    $t=5.0\,\text{s}$ の間に波が進む距離 $\Delta x$ は、
+  </p>
+  <p>
+    $$ \Delta x = v \times t = 0.10 \times 5.0 = \strong{0.50 \, \text{m}} $$
+  </p>
+  <p>
+    つまり、<strong>$t=0$ の波形全体を、右（$x$軸正の向き）に <span class="highlight">$0.50\,\text{m}$ だけ平行移動</span></strong>させればよいことになります。
+  </p>
+  <p>
+    具体的な点の移動を見てみましょう：
+  </p>
+  <ul>
+    <li>$x=0$ の点 ($y=0$) $\rightarrow$ $x=0.5$ に移動</li>
+    <li>$x=0.5$ の山 ($y=2.0$) $\rightarrow$ $x=1.0$ に移動</li>
+    <li>$x=1.0$ の点 ($y=0$) $\rightarrow$ $x=1.5$ に移動</li>
+    <li>$x=1.5$ の谷 ($y=-2.0$) $\rightarrow$ $x=2.0$ に移動</li>
+  </ul>
+  <p>
+    これらをつなぐと、上記のシミュレーションで $t=5.0$ としたときの青い線のようになります。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    （図示：元の波形を右へ $0.50\,\text{m}$ 平行移動させた正弦波）
   </div>
-</body>
-</html>
+</div>
+
+<div class="card">
+  <h3>(2) 元の波形と重なる最初の時刻</h3>
+
+  <h4>考え方</h4>
+  <p>
+    波形が元の形とぴったり重なるのは、波が<strong>ちょうど1波長分 ($\lambda$)</strong> 進んだときです。<br>
+    （さらに時間が経てば2波長、3波長…進んだときも重なりますが、最初は1波長分です）
+  </p>
+  <p>
+    波が1波長分進むのにかかる時間を <span class="highlight">周期 $T$</span> といいます。<br>
+    周期の公式 $T = \frac{\lambda}{v}$ を用いて計算します。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $$ T = \frac{\lambda}{v} = \frac{2.0}{0.10} = \strong{20 \, \text{s}} $$
+    よって、求める時刻 $t_0$ は <strong>$20 \, \text{s}$</strong>
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li>波のグラフ（$y-x$図）の問題では、<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。</li>
+    <li>波の基本公式 <span class="highlight">$v = \frac{\lambda}{T} = f\lambda$</span> の関係をグラフから読み取れるようにしましょう。</li>
+  </ul>
+</div>

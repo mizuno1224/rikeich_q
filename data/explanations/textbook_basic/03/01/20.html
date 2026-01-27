@@ -1,0 +1,302 @@
+<h2 class="prob-title-sub">問12：波の反射（自由端・固定端）</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    波の反射の作図は、以下の3ステップで行うのが鉄則です。
+  </p>
+  <ol>
+    <li><strong>通過波（入射波の延長）を描く</strong>：反射壁がないと仮定して、波をそのまま通過させた波形（点線など）を描きます。</li>
+    <li><strong>反射波を描く</strong>：通過波を壁の位置で折り返します。
+      <ul>
+        <li><strong>自由端</strong>：壁に対して<span class="highlight">線対称</span>に折り返す（山は山のまま）。</li>
+        <li><strong>固定端</strong>：壁に対して<span class="highlight">点対称</span>に折り返す（山は谷になる）。</li>
+      </ul>
+    </li>
+    <li><strong>合成波を描く</strong>：入射波と反射波の変位を足し合わせます（重ね合わせの原理）。</li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3>(1) 自由端の場合</h3>
+  
+  <h4>1. 通過波の作図</h4>
+  <p>
+    $t=2.0\,\text{s}$ の間に波は $2.0\,\text{cm}$（2目盛り）右に進みます。<br>
+    指定の波形（幅4目盛り、左寄りに頂点）は、$t=0$ で先端が壁P($x=0$)にあります。$t=2.0\,\text{s}$ では、波の先端は壁を越えて $x=2$ まで進み、頂点（もともと $x=-3$）は $x=-1$ まで進みます。
+  </p>
+  
+  <h4>2. 反射波の作図（自由端）</h4>
+  <p>
+    壁Pより右側にある「通過波」を、壁Pを軸にして<strong>左右対称（線対称）</strong>に左側へ折り返します。これが反射波です。
+  </p>
+  
+  <h4>3. 合成波の作図</h4>
+  <p>
+    入射波と反射波の変位を足し合わせます。自由端では、壁の位置で入射波と反射波の変位が同じ符号（山と山）で重なるため、振幅が大きくなります。
+  </p>
+
+  <div id="sim-free-end" class="sim-embed"></div>
+
+  <div class="box-note">
+    <strong>ポイント：</strong><br>
+    自由端では壁が「腹（はら）」となり、波が激しく振動します。
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 固定端の場合</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    手順は自由端と同じですが、折り返し方が異なります。<br>
+    壁Pを越えた通過波を<strong>上下反転</strong>させてから、左右対称に折り返します。つまり、「山」として入射しようとした部分は、壁で引っくり返されて「谷」となって戻ってきます。
+  </p>
+  <ul>
+    <li>入射波のPでの変位と、反射波のPでの変位は常に逆符号（大きさは同じ）。</li>
+    <li>したがって、和をとると常に $0$ になります。</li>
+  </ul>
+
+  <div id="sim-fixed-end" class="sim-embed"></div>
+
+  <div class="box-note">
+    <strong>ポイント：</strong><br>
+    固定端では壁が「節（ふし）」となり、変位は常に0になります。
+  </div>
+</div>
+
+<script>
+  (function(){
+    // 共通描画関数
+    function drawWave(canvasId, type) {
+      const container = document.getElementById(canvasId);
+      if (!container) return;
+
+      // キャンバス作成
+      const canvas = document.createElement('canvas');
+      container.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+
+      // スライダー作成
+      const sliderContainer = document.createElement('div');
+      sliderContainer.style.marginTop = '10px';
+      sliderContainer.style.display = 'flex';
+      sliderContainer.style.alignItems = 'center';
+      sliderContainer.style.gap = '10px';
+      
+      const sliderLabel = document.createElement('span');
+      sliderLabel.textContent = '時刻 t: 0.00 s';
+      sliderLabel.style.fontFamily = 'monospace';
+      sliderLabel.style.minWidth = '120px';
+
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = '0';
+      slider.max = '5.0'; // 波が通り過ぎるまで
+      slider.step = '0.05';
+      slider.value = '0.0'; // 初期値0
+      slider.style.flexGrow = '1';
+
+      sliderContainer.appendChild(sliderLabel);
+      sliderContainer.appendChild(slider);
+      container.appendChild(sliderContainer);
+
+      // 凡例
+      const legend = document.createElement('div');
+      legend.innerHTML = `
+        <span style="color:#bbb; margin-right:10px; border-bottom: 2px dashed #bbb;">通過波(仮想)</span>
+        <span style="color:blue; margin-right:10px;">― 入射波</span>
+        <span style="color:green; margin-right:10px;">― 反射波</span>
+        <span style="color:red; font-weight:bold;">― 合成波</span>
+      `;
+      legend.style.fontSize = '0.9em';
+      legend.style.marginTop = '5px';
+      legend.style.textAlign = 'center';
+      container.appendChild(legend);
+
+      // 定数設定
+      const gridUnit = 30; // 1目盛り(1cm)あたりのピクセル数
+      // 高さを確保するためCanvasサイズを大きくし、原点位置を調整
+      // 波高3cm = 90px。正負で余裕を見て上下に。
+      const originY = 200; // Y座標の中心（ここが変位0）
+      const originX = 250; // 壁Pの位置
+      
+      function resize() {
+        const rect = container.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = 400; // 高さを十分に確保（見切れ防止）
+        draw();
+      }
+
+      window.addEventListener('resize', resize);
+
+      // 波形関数 (t=0における形状, P=0基準)
+      // 指定: 横4マス、縦3マス、頂点は左下を原点として(1,3)
+      // t=0で波の先端(右端)がP(0)にある。
+      // つまり波の存在範囲は [-4, 0]。
+      // ローカル座標で左端(-4)から+1進んだ位置 = -3 が頂点。
+      function waveShape(x) {
+        // xはcm単位。
+        
+        // 左側のスロープ: xは -4 から -3
+        // (-4, 0) -> (-3, 3) : 傾き 3
+        if (x >= -4 && x <= -3) {
+          return 3 * (x + 4);
+        }
+        
+        // 右側のスロープ: xは -3 から 0
+        // (-3, 3) -> (0, 0) : 傾き -1
+        if (x > -3 && x <= 0) {
+          return -1 * x; // y = -x
+        }
+        
+        return 0;
+      }
+
+      function draw() {
+        const t = parseFloat(slider.value);
+        sliderLabel.textContent = `時刻 t: ${t.toFixed(2)} s`;
+
+        // クリア
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // グリッド描画
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        
+        // 縦線
+        for (let x = originX; x > 0; x -= gridUnit) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+        for (let x = originX; x < canvas.width; x += gridUnit) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+        
+        // 横線
+        for (let y = originY; y > 0; y -= gridUnit) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+        for (let y = originY; y < canvas.height; y += gridUnit) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+        // 壁P
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.moveTo(originX, 0);
+        ctx.lineTo(originX, canvas.height);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        
+        // Pラベル（統一表記）
+        ctx.fillStyle = 'black';
+        ctx.font = '14px sans-serif';
+        const labelText = type === 'free' ? 'P (自由端)' : 'P (固定端)';
+        ctx.fillText(labelText, originX + 5, originY - 120); // 少し上に表示
+
+        // X軸
+        ctx.beginPath();
+        ctx.moveTo(0, originY);
+        ctx.lineTo(canvas.width, originY);
+        ctx.stroke();
+
+        // 描画用ヘルパー
+        const toCanvasX = (x_cm) => originX + x_cm * gridUnit;
+        const toCanvasY = (y_val) => originY - y_val * gridUnit;
+
+        const step = 0.05; // 描画の細かさ(cm)
+
+        // 描画範囲全体をスキャン
+        const xMin = -originX / gridUnit;
+        const xMax = (canvas.width - originX) / gridUnit;
+
+        // 1. 通過波 (仮想) - 点線
+        ctx.strokeStyle = '#bbb';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        let started = false;
+        
+        for (let x = xMin; x <= xMax; x += step) {
+          const y = waveShape(x - t); // 波は右へ進む f(x-vt)
+          if (Math.abs(y) > 0.01 || started) {
+             if (!started) { ctx.moveTo(toCanvasX(x), toCanvasY(y)); started = true; }
+             else ctx.lineTo(toCanvasX(x), toCanvasY(y));
+          }
+        }
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // 2. 入射波 (青) - 実体のみ (x <= 0)
+        ctx.strokeStyle = 'rgba(0, 0, 255, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        started = false;
+        for (let x = xMin; x <= 0; x += step) {
+          const y = waveShape(x - t);
+          // 壁での処理: 線をつなげるため x=0 まで描く
+          if (x > 0.01) break; 
+          
+          if (Math.abs(y) > 0.01 || started || x >= -0.1) { // 0付近も描く
+             if (!started) { ctx.moveTo(toCanvasX(x), toCanvasY(y)); started = true; }
+             else ctx.lineTo(toCanvasX(x), toCanvasY(y));
+          }
+        }
+        ctx.stroke();
+
+        // 3. 反射波 (緑)
+        ctx.strokeStyle = 'rgba(0, 128, 0, 0.7)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        started = false;
+        for (let x = xMin; x <= 0; x += step) {
+          // 入射波が f(x-t)。反射波は壁の右側にある通過波 f(x-t) [x>0] を折り返す。
+          // 座標変換: 対称点 x' = -x の変位を見る
+          let y_ref = waveShape(-x - t);
+          
+          if (type === 'fixed') {
+            y_ref = -y_ref; // 固定端は反転
+          }
+          
+          if (Math.abs(y_ref) > 0.01 || started || x >= -0.1) {
+             if (!started) { ctx.moveTo(toCanvasX(x), toCanvasY(y_ref)); started = true; }
+             else ctx.lineTo(toCanvasX(x), toCanvasY(y_ref));
+          }
+        }
+        ctx.stroke();
+
+        // 4. 合成波 (赤)
+        ctx.strokeStyle = 'rgba(255, 0, 0, 1.0)';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        started = false;
+        for (let x = xMin; x <= 0; x += step) {
+          // 入射成分
+          const y_in = waveShape(x - t);
+          
+          // 反射成分
+          let y_ref = waveShape(-x - t);
+          if (type === 'fixed') y_ref = -y_ref;
+          
+          const y_sum = y_in + y_ref;
+
+          if (!started) { ctx.moveTo(toCanvasX(x), toCanvasY(y_sum)); started = true; }
+          else ctx.lineTo(toCanvasX(x), toCanvasY(y_sum));
+        }
+        ctx.stroke();
+      }
+
+      slider.addEventListener('input', draw);
+      resize(); // 初期描画
+    }
+
+    // 実行
+    setTimeout(() => {
+        drawWave('sim-free-end', 'free');
+        drawWave('sim-fixed-end', 'fixed');
+    }, 100);
+  })();
+</script>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>反射波の作図の合言葉</h3>
+  <ul>
+    <li><strong>自由端</strong>：「そのまま折り返す」（位相の変化なし）<br>→ 端点では変位が2倍になりやすい（腹になる）。</li>
+    <li><strong>固定端</strong>：「ひっくり返して折り返す」（位相が $\pi$ ずれる）<br>→ 端点では変位が常に0になる（節になる）。</li>
+  </ul>
+</div>
