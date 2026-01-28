@@ -19,25 +19,6 @@
           ]
         }
       ]
-    },
-    {
-      "subjectName": "慶應義塾大学(理工)",
-      "folderName": "keio_sci",
-      "fields": [
-        {
-          "fieldName": "2024年度",
-          "folderId": "2024",
-          "problems": [
-            {
-              "id": "2024_sci_zenki_q1",
-              "title": "第1問 電磁気",
-              "desc": "ホール効果",
-              "explanationPath": "data/explanations/exam_private/keio_sci/2024/2024_sci_zenki_q1.html",
-              "layout": "article"
-            }
-          ]
-        }
-      ]
     }
   ]
 }

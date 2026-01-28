@@ -316,19 +316,32 @@
           let html = `<div class="subject-grid">`;
           if (material.subjects) {
             material.subjects.forEach((subject) => {
-              // 科目名の表示（subject-name）を削除し、直接中身を展開
-              if (subject.fields) {
+              // 科目(Subject)ごとにカードを作成
+              // Subject内に問題があるかチェック
+              const hasProblems =
+                subject.fields &&
+                subject.fields.some((f) => f.problems && f.problems.length > 0);
+
+              if (hasProblems) {
+                html += `<div class="subject-card">`;
+                // Subject名を表示 (例: "2025年度" や "東京大学")
+                html += `<h3 class="subject-name">${subject.subjectName}</h3>`;
+                html += `<ul class="field-list">`;
+
                 subject.fields.forEach((field) => {
                   if (field.problems && field.problems.length > 0) {
-                    html += `<div class="subject-card"><ul class="field-list">`;
-                    html += `<li class="field-item"><span class="field-name">${field.fieldName}</span><div class="prob-grid">`;
+                    html += `<li class="field-item">`;
+                    // Field名を表示 (例: "本試験" や "2024年度")
+                    html += `<span class="field-name">${field.fieldName}</span>`;
+                    html += `<div class="prob-grid">`;
                     field.problems.forEach((p) => {
                       const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}`;
                       html += `<a href="${targetUrl}" class="prob-link" target="_blank"><span>${p.title}</span></a>`;
                     });
-                    html += `</div></li></ul></div>`;
+                    html += `</div></li>`;
                   }
                 });
+                html += `</ul></div>`;
               }
             });
           }

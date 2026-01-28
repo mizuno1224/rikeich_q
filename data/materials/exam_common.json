@@ -16,33 +16,6 @@
           "problems": []
         }
       ]
-    },
-    {
-      "subjectName": "2024年度",
-      "folderName": "2024",
-      "fields": [
-        {
-          "fieldName": "本試験",
-          "folderId": "main",
-          "problems": []
-        }
-      ]
-    },
-    {
-      "fields": [
-        {
-          "fieldName": "標準",
-          "folderId": "",
-          "problems": [
-            {
-              "id": "textbook_physics_mechanics_buoyancy_shm",
-              "title": "立方体の浮き沈みと単振動",
-              "desc": "浮力による単振動の導出から、完全水没を含む大振幅運動のエネルギー保存則までを解説します。",
-              "explanationPath": "data/explanations/exam_common/floating_cube_shm.html"
-            }
-          ]
-        }
-      ]
     }
   ]
 }

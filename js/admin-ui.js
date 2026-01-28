@@ -50,6 +50,24 @@ function renderTree() {
     const stableSubId = sub.folderName || sub.subjectName || sIdx;
     const subPath = `s-${stableSubId}`;
 
+    // Subject (科目/年度/大学) のツリーアイテムを作成
+    const subDetails = createTreeItem(labelSubj, sub.subjectName, subPath);
+    subDetails.open = true;
+
+    // Subjectに対するアクション (追加/リネーム/削除)
+    addActions(
+      subDetails.querySelector("summary"),
+      () => handleRenameSubject(sub, labelSubj),
+      () => handleDeleteSubject(sub, sIdx),
+      () => handleAddField(sub, labelField),
+    );
+
+    const subContent = document.createElement("div");
+    subContent.className = "tree-content";
+    // インデントと左線で見やすくする
+    subContent.style.paddingLeft = "15px";
+    subContent.style.borderLeft = "1px solid #e2e8f0";
+
     // Part (編) グルーピング用変数
     let currentPartName = null;
     let currentPartContainer = null;
@@ -60,7 +78,8 @@ function renderTree() {
       const partName = isGrouped ? nameParts[0] : null;
       const chapName = isGrouped ? nameParts[1] : fld.fieldName;
 
-      let targetContainer = ui.treeRoot;
+      // デフォルトはSubject直下に追加
+      let targetContainer = subContent;
 
       if (isGrouped) {
         if (partName !== currentPartName) {
@@ -82,7 +101,7 @@ function renderTree() {
           partInner.style.paddingLeft = "10px";
           partDetails.appendChild(partInner);
 
-          ui.treeRoot.appendChild(partDetails);
+          subContent.appendChild(partDetails);
           currentPartContainer = partInner;
         }
         targetContainer = currentPartContainer;
@@ -213,6 +232,9 @@ function renderTree() {
       fldDetails.appendChild(fldContent);
       targetContainer.appendChild(fldDetails);
     });
+
+    subDetails.appendChild(subContent);
+    ui.treeRoot.appendChild(subDetails);
   });
 
   // 2. 状態の復元
@@ -226,7 +248,7 @@ async function openEditor(problem) {
   currentProblem = problem;
   ui.editorMainWrapper.style.display = "flex";
   ui.emptyState.style.display = "none";
-  
+
   // 修正: 初期状態で編集タブをクリックしない（最後にプレビューをクリックする）
   // if (ui.tabEdit) ui.tabEdit.click();
 

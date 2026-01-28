@@ -2,51 +2,22 @@
   "materialName": "国公立入試",
   "subjects": [
     {
-      "subjectName": "東京大学",
-      "folderName": "tokyo",
+      "subjectName": "東京都立",
+      "folderName": "tokyotoritu",
       "fields": [
         {
-          "fieldName": "2024年度",
-          "folderId": "2024",
+          "fieldName": "2025年度",
+          "folderId": "2025",
           "problems": [
             {
-              "id": "2024_zenki_q2",
-              "title": "第2問 電磁気",
-              "desc": "電磁誘導と回路",
-              "explanationPath": "data/explanations/exam_national/tokyo/2024/2024_zenki_q2.html"
-            },
-            {
-              "id": "2024_zenki_q1",
-              "title": "第1問 力学",
-              "desc": "二体問題と重心運動",
-              "explanationPath": "data/explanations/exam_national/tokyo/2024/2024_zenki_q1.html"
+              "id": "2025_zenki_1",
+              "title": "前期 大問1",
+              "desc": "立方体の浮き沈みと単振動",
+              "explanationPath": "data/explanations/exam_national/tokyotoritu/2025/2025_zenki_1.html"
             }
           ]
         }
       ]
-    },
-    {
-      "subjectName": "名古屋大学",
-      "folderName": "nagoya",
-      "fields": [
-        {
-          "fieldName": "2023年度",
-          "folderId": "2023",
-          "problems": [
-            {
-              "id": "2023_zenki_q3",
-              "title": "第3問 熱力学",
-              "desc": "気体分子運動論",
-              "explanationPath": "data/explanations/exam_national/nagoya/2023/2023_zenki_q3.html"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "subjectName": "2025年度",
-      "folderName": "2025年度",
-      "fields": []
     }
   ]
 }

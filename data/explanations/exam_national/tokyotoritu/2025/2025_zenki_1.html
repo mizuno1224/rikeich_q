@@ -1,10 +1,19 @@
-<h2 class="prob-title-sub">問題番号：物理2026-001 立方体の浮き沈みと単振動</h2>
+<h2 class="prob-title-sub">大問1：立方体の浮き沈みと単振動</h2>
 
 <div class="card">
   <h3>解法の指針</h3>
   <p>
     水に浮かんだ物体を押し込んで離すと、ボヨンボヨンと上下に揺れます。この運動は、振幅が小さいときは綺麗な「<span class="highlight">単振動</span>」になりますが、大きく押し込みすぎると「<span class="highlight">非線形な振動</span>」へと変化します。
   </p>
+  
+  <div class="box-note">
+    <strong>用語：線形（Linear）と非線形（Non-linear）</strong>
+    <ul>
+      <li><strong>線形（単振動）</strong>：力が変位に比例する（$F \propto x$）状態です。グラフは「直線」になり、重ね合わせの理が成り立ちます。バネの伸び縮みなどがこれにあたります。</li>
+      <li><strong>非線形</strong>：力が変位に比例しない状態です。この問題のCase Cのように、グラフが「折れ曲がる」場合や「曲線」になる場合を指します。計算が複雑になり、単振動の便利な性質（等時性など）が崩れます。</li>
+    </ul>
+  </div>
+
   <ul>
     <li><strong>つり合い（$x=0$）</strong>：重力と浮力が等しい基準点です。</li>
     <li><strong>単振動（Small Amplitude）</strong>：物体が部分的に水没している範囲では、<span class="highlight">復元力が変位に比例</span>し、等時性を持つ単振動になります。</li>
@@ -88,30 +97,17 @@
         valDisplay.innerText = "x=" + (x/L).toFixed(2) + "L";
         ctx.clearRect(0,0,W,H);
         
-        // Water
         ctx.fillStyle = "#e1f5fe"; ctx.fillRect(0, waterY, W, H-waterY);
         ctx.strokeStyle = "#0288d1"; ctx.beginPath(); ctx.moveTo(0, waterY); ctx.lineTo(W, waterY); ctx.stroke();
         
-        // Axis (Left)
-        var axisX = 40;
-        var eqY = originY = waterY - (L/3);
+        var axisX = 40; var eqY = waterY - (L/3);
         ctx.strokeStyle = "#444"; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(axisX, 20); ctx.lineTo(axisX, H-20); ctx.stroke();
         
-        // Ticks
         ctx.textAlign = "right"; ctx.fillStyle = "#444"; ctx.font = "12px monospace";
-        var ticks = [
-            {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"},
-            {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"}
-        ];
+        var ticks = [ {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"}, {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"} ];
         for(var i=0; i<ticks.length; i++){
-            var ty = eqY - ticks[i].v * scale; // Assuming scale ~80 for L
-            // Wait, previous code used L directly. L=80.
-            // visual y = waterY - L/3 - val.
-            // Let's stick to consistent visual coordinates.
-            // Tick for v: y = waterY - (L/3) - v.
             var ty = waterY - (L/3) - ticks[i].v;
-            
             if(ty > 10 && ty < H-10){
               ctx.beginPath(); ctx.moveTo(axisX-5, ty); ctx.lineTo(axisX+5, ty); ctx.stroke();
               ctx.fillText(ticks[i].l, axisX-8, ty+4);
@@ -119,42 +115,32 @@
         }
         ctx.fillText("x", axisX+10, 20);
 
-        // Box
         var boxTopY = waterY - (L/3) - x;
         ctx.fillStyle = "#ffcc80"; ctx.strokeStyle = "#ef6c00"; ctx.lineWidth = 2;
         ctx.fillRect(centerX - L/2, boxTopY, L, L); ctx.strokeRect(centerX - L/2, boxTopY, L, L);
         
-        // Indicator Line
         ctx.strokeStyle = "#ef6c00"; ctx.setLineDash([2,4]);
         ctx.beginPath(); ctx.moveTo(axisX, boxTopY); ctx.lineTo(centerX - L/2, boxTopY); ctx.stroke();
         ctx.setLineDash([]);
 
-        // Equilibrium Line
         ctx.strokeStyle = "#888"; ctx.setLineDash([4,4]);
         ctx.beginPath(); ctx.moveTo(axisX, eqY); ctx.lineTo(W, eqY); ctx.stroke();
         ctx.setLineDash([]); ctx.fillStyle = "#666"; ctx.textAlign="left";
         ctx.fillText("つり合い位置 (x=0)", W - 120, eqY-5);
 
-        // Forces
         var h_sub = (2/3)*L - x; 
         if(h_sub > L) h_sub = L; if(h_sub < 0) h_sub = 0;
-        var len_g = 60;
-        var len_b = len_g * (h_sub / ((2/3)*L));
-        var arrowX = centerX + L/2 + 60;
-        var arrowCenterY = boxTopY + L/2; 
+        var len_g = 60; var len_b = len_g * (h_sub / ((2/3)*L));
+        var arrowX = centerX + L/2 + 60; var arrowCenterY = boxTopY + L/2; 
         
         drawArrow(ctx, arrowX, arrowCenterY, arrowX, arrowCenterY + len_g, "#d32f2f", "重力 mg");
         drawArrow(ctx, arrowX + 40, arrowCenterY, arrowX + 40, arrowCenterY - len_b, "#1976d2", "浮力 f");
         
-        // Net Force Text - FIXED POSITION (Top Right) to avoid overlap
         ctx.fillStyle = "#333"; ctx.font = "bold 14px sans-serif";
         var diff = len_b - len_g;
         var sign = diff > 1 ? "上向き" : (diff < -1 ? "下向き" : "つり合い");
         
-        // Draw text box at top right
-        ctx.textAlign = "right";
-        ctx.fillText("現在の合力: " + sign, W - 20, 40);
-        ctx.textAlign = "left";
+        ctx.textAlign = "right"; ctx.fillText("現在の合力: " + sign, W - 20, 40); ctx.textAlign = "left";
       }
       
       function drawArrow(ctx, x1, y1, x2, y2, color, label) {
@@ -168,8 +154,7 @@
             ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI/6), y2 - headLen * Math.sin(angle + Math.PI/6));
             ctx.fill();
         }
-        ctx.textAlign = "center";
-        ctx.font = "12px sans-serif";
+        ctx.textAlign = "center"; ctx.font = "12px sans-serif";
         if(y2 > y1) ctx.fillText(label, x2, y2 + 15); else ctx.fillText(label, x2, y2 - 8);
         ctx.textAlign = "left";
       }
@@ -186,17 +171,32 @@
     $$ F = \boldsymbol{- \rho L^2 g x} $$
     このように、合力は変位 $x$ に比例する<span class="highlight">復元力</span>（$F=-Kx$）となり、単振動の方程式が導かれます。
   </p>
+  
+  <div class="box-note">
+    <strong>注意点：復元力の向き</strong><br>
+    式にマイナスがついていることに注目しましょう。<br>
+    $x > 0$（上に変位）のときは $F < 0$（下向き）、$x < 0$（下に変位）のときは $F > 0$（上向き）となり、常に<strong>「つり合いの位置に戻そうとする力」</strong>がはたらいています。
+  </div>
 
   <h4>(2) 最高点の位置</h4>
   <p>
     $x = -L/4$ で放した場合、これは単振動の範囲内なので、振動の中心 $x=0$ に対して対称な位置まで上がります。
     $$ x = \boldsymbol{\frac{L}{4}} $$
   </p>
+  <p>
+    <strong>【別解】運動方程式から解く</strong><br>
+    運動方程式 $ma = -Kx$ より、この運動は単振動です。初速0で動き出した位置が振幅の端点となるため、
+    変位 $x$ は時間 $t$ の関数として次のように表せます（$t=0$ で $x=-L/4$）。
+    $$ x(t) = -\frac{L}{4} \cos(\omega t) $$
+    最高点は $\cos(\omega t) = -1$ となるときなので、
+    $$ x_{\text{max}} = -\frac{L}{4} \times (-1) = \boldsymbol{\frac{L}{4}} $$
+  </p>
 
   <h4>(3) 中心通過時の速さ</h4>
   <p>
-    角振動数を $\omega$ とすると、運動方程式 $ma = -Kx$ より $\omega = \sqrt{K/m} = \sqrt{\frac{3g}{2L}}$。
-    最大速さは $v_{\text{max}} = A\omega = \frac{L}{4}\sqrt{\frac{3g}{2L}} = \boldsymbol{\frac{1}{4}\sqrt{\frac{3gL}{2}}}$
+    角振動数を $\omega$ とすると、運動方程式 $ma = -Kx$ より $\omega = \sqrt{K/m} = \sqrt{\frac{3g}{2L}}$。<br>
+    最大速さは、
+    $$ v_{\text{max}} = A\omega = \frac{L}{4}\sqrt{\frac{3g}{2L}} = \boldsymbol{\frac{1}{4}\sqrt{\frac{3gL}{2}}} $$
   </p>
 </div>
 
@@ -264,18 +264,12 @@
         ctxMain.fillStyle = "#e1f5fe"; ctxMain.fillRect(0, originY, canvasMain.width, canvasMain.height - originY);
         ctxMain.strokeStyle = "#0288d1"; ctxMain.beginPath(); ctxMain.moveTo(0, originY); ctxMain.lineTo(canvasMain.width, originY); ctxMain.stroke();
         
-        // Axis (Left side of Main Canvas)
-        var axisX = 40;
-        var eqY = originY - (L/3)*scale;
+        var axisX = 40; var eqY = originY - (L/3)*scale;
         ctxMain.strokeStyle = "#444"; ctxMain.lineWidth = 1;
         ctxMain.beginPath(); ctxMain.moveTo(axisX, 20); ctxMain.lineTo(axisX, canvasMain.height - 20); ctxMain.stroke();
         
-        // Ticks
         ctxMain.textAlign = "right"; ctxMain.fillStyle = "#444"; ctxMain.font = "12px monospace";
-        var ticks = [
-            {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"},
-            {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"}
-        ];
+        var ticks = [ {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"}, {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"} ];
         for(var i=0; i<ticks.length; i++){
             var ty = eqY - ticks[i].v * scale;
             if(ty > 0 && ty < canvasMain.height){
@@ -289,7 +283,6 @@
         ctxMain.fillStyle = state.dragging ? "#ffe0b2" : "#ffcc80"; ctxMain.strokeStyle = "#ef6c00"; ctxMain.lineWidth = 2;
         ctxMain.fillRect(originX - boxSize/2, boxTopY, boxSize, boxSize); ctxMain.strokeRect(originX - boxSize/2, boxTopY, boxSize, boxSize);
 
-        // Indicator
         ctxMain.strokeStyle = "#ef6c00"; ctxMain.setLineDash([2,4]);
         ctxMain.beginPath(); ctxMain.moveTo(axisX, boxTopY); ctxMain.lineTo(originX - boxSize/2, boxTopY); ctxMain.stroke();
         ctxMain.setLineDash([]);
@@ -304,7 +297,6 @@
         ctxGraph.clearRect(0,0, canvasGraph.width, canvasGraph.height);
         var h1 = canvasGraph.height / 2; var w = canvasGraph.width;
         
-        // Backgrounds
         var scaleG = scale * 0.5;
         var y_boundary = h1/2 - (-L/3)*scaleG;
         ctxGraph.fillStyle = "#fff0f0"; ctxGraph.fillRect(0, y_boundary, w, h1 - y_boundary);
@@ -329,7 +321,6 @@
         } else { var x_px = h1/2 - state.x * scaleG; ctxGraph.moveTo(w, x_px); ctxGraph.arc(w, x_px, 2, 0, 6.28); }
         ctxGraph.stroke();
 
-        // F-x Graph
         var top2 = h1; var h2 = h1; var cx = w/2; var cy = top2 + h2/2;
         ctxGraph.fillStyle = "#fff"; ctxGraph.fillRect(0,top2,w,h2);
         ctxGraph.strokeStyle = "#ccc"; ctxGraph.beginPath(); 
@@ -405,23 +396,7 @@
 <div class="card">
   <h3>問4・問5 大振幅運動と周期</h3>
   
-  <h4>問4 解法1：エネルギー保存則によるアプローチ</h4>
-  <p>
-    $x = -L/3 - d$ まで沈めると、最初は「完全水没」の状態からスタートします。<br>
-    始点（$x = -L/3 - d$）から最高点（$x = 2L/3$）まで、合力 $F$ がした仕事の総和は、運動エネルギーの変化（$0 \to 0$）に等しいためゼロになります。
-  </p>
-  <ul>
-    <li><strong>完全水没区間</strong>：一定の合力 $F_1 = \text{浮力}-\text{重力} = \frac{1}{3}\rho L^3 g$ が距離 $d$ だけ正の仕事をします。<br>
-    $W_1 = \frac{1}{3}\rho L^3 g d$</li>
-    <li><strong>単振動区間</strong>：バネ定数 $K=\rho L^2 g$ のバネのエネルギー変化と同じ（負の仕事）です。<br>
-    $W_2 = [ポテンシャル変化] = -\frac{1}{6}K L^2 = -\frac{1}{6}\rho L^4 g$</li>
-  </ul>
-  <p>
-    $W_1 + W_2 = 0$ より、
-    $$ \frac{1}{3}\rho L^3 g d - \frac{1}{6}\rho L^4 g = 0 \quad \Rightarrow \quad d = \boldsymbol{\frac{L}{2}} $$
-  </p>
-
-  <h4>問4 解法2：運動方程式によるアプローチ</h4>
+  <h4>問4 解法1：運動方程式によるアプローチ</h4>
   <p>
     ダイナミクス（力と加速度）の視点でも解いてみましょう。完全水没区間では合力が一定なので、<span class="highlight">等加速度運動</span>になります。
   </p>
@@ -437,12 +412,34 @@
       $$ v^2 = 2 \cdot \frac{1}{2}g \cdot d = gd $$
     </li>
     <li>
-      <strong>単振動区間のエネルギー保存</strong><br>
-      この運動エネルギー $\frac{1}{2}mv^2$ が、最高点でのポテンシャルエネルギー $\frac{1}{6}KL^2$ に変換されます。
-      $$ \frac{1}{2}m(gd) = \frac{1}{6}KL^2 $$
-      各値を代入して解くと、やはり $d = L/2$ が得られます。
+      <strong>単振動区間の力学的エネルギー保存則</strong><br>
+      単振動の範囲に入る直前（$x=-L/3$）と、最高点（$x=2L/3$）の2か所で力学的エネルギー保存則を立てます。<br>
+      $$ \underbrace{\frac{1}{2}mv^2 + \frac{1}{2}K\left(-\frac{L}{3}\right)^2}_{\text{直前のエネルギー}} = \underbrace{0 + \frac{1}{2}K\left(\frac{2L}{3}\right)^2}_{\text{最高点のエネルギー}} $$
+      これを整理すると、$\frac{1}{2}mv^2 = \frac{1}{6}KL^2$ となり、各値を代入して解くと $d = L/2$ が得られます。
     </li>
   </ol>
+
+  <h4>問4 解法2：エネルギー保存則によるアプローチ</h4>
+  <p>
+    $x = -L/3 - d$ まで沈めると、最初は「完全水没」の状態からスタートします。<br>
+    始点（$x = -L/3 - d$）から最高点（$x = 2L/3$）まで、合力 $F$ がした仕事の総和は、運動エネルギーの変化（$0 \to 0$）に等しいためゼロになります。
+  </p>
+  <ul>
+    <li><strong>完全水没区間</strong>：一定の合力 $F_1 = \text{浮力}-\text{重力} = \frac{1}{3}\rho L^3 g$ が距離 $d$ だけ<span class="highlight">正の仕事</span>をします。<br>
+    $$ W_1 = \frac{1}{3}\rho L^3 g d $$</li>
+    <li><strong>単振動区間</strong>：この区間の運動は、バネ定数 $K=\rho L^2 g$ のバネにつながれた物体の運動と同じです。物体は<strong>「バネの伸びが短い位置（$|x|=L/3$）から、長い位置（$|x|=2L/3$）へ」</strong>と変位するため、バネを伸ばすためにエネルギーが消費されます（負の仕事）。<br>
+    消費された仕事の量は、バネのエネルギー（<span class="highlight">弾性力による位置エネルギー</span>）の増加分と等しくなります。<br>
+    $$ W_2 = -(\text{位置エネルギーの増加}) $$
+    $$ W_2 = -\left( \frac{1}{2}K(2L/3)^2 - \frac{1}{2}K(-L/3)^2 \right) = -\frac{1}{6}K L^2 = -\frac{1}{6}\rho L^4 g $$
+    <div class="box-note-light" style="font-size:0.9em; margin-top:5px;">
+      ※ 位置エネルギーの増加量は「(終点のエネルギー) - (始点のエネルギー)」で計算しています。
+    </div>
+    </li>
+  </ul>
+  <p>
+    $W_1 + W_2 = 0$ より、
+    $$ \frac{1}{3}\rho L^3 g d - \frac{1}{6}\rho L^4 g = 0 \quad \Rightarrow \quad d = \boldsymbol{\frac{L}{2}} $$
+  </p>
 
   <h4>問5 周期の比較と解説</h4>
   <p>
@@ -497,7 +494,39 @@
     <strong>② $t_{\text{C}}$ の計算（等加速度＋単振動）</strong><br>
     まず、赤エリアを距離 $d=L/2$ だけ加速度 $g/2$ で進む時間 $t_{\text{const}}$ は、
     $$ \frac{L}{2} = \frac{1}{2}\left(\frac{g}{2}\right)t_{\text{const}}^2 \quad \Rightarrow \quad t_{\text{const}} = \sqrt{\frac{2L}{g}} \approx \boldsymbol{1.41 \sqrt{\frac{L}{g}}} $$
-    次に、青エリアに入ってから最高点までの時間は、位相角 $120^\circ$（$2/3 \pi$ rad）分の回転に相当します（$-A/2$ から $+A$ への移動）。これは周期 $T$ の $1/3$ です。
+    
+    次に、青エリアに入ってから最高点までの時間は、以下の図のように考えると、単振動の周期 $T$ の $1/3$ に相当することが分かります。
+    <div style="text-align:center; margin:15px 0;">
+      <svg width="450" height="220" viewBox="0 0 450 220" style="background:#fff; border:1px solid #ddd; border-radius:4px;">
+        <line x1="100" y1="20" x2="100" y2="200" stroke="#444" stroke-width="1" />
+        <line x1="95" y1="30" x2="105" y2="30" stroke="#444" />
+        <text x="90" y="35" font-size="12" text-anchor="end" fill="#666">2L/3 (A)</text>
+        <line x1="95" y1="110" x2="105" y2="110" stroke="#444" stroke-dasharray="2,2"/>
+        <text x="90" y="115" font-size="12" text-anchor="end" fill="#666">0</text>
+        <line x1="95" y1="150" x2="105" y2="150" stroke="#444" />
+        <text x="90" y="155" font-size="12" text-anchor="end" fill="#666">-L/3 (-A/2)</text>
+        <text x="100" y="15" font-size="12" text-anchor="middle" font-weight="bold">x</text>
+
+        <g transform="translate(250, 110)">
+          <circle cx="0" cy="0" r="80" stroke="#ccc" fill="none" />
+          <line x1="0" y1="-80" x2="0" y2="80" stroke="#eee" />
+          <line x1="-80" y1="0" x2="80" y2="0" stroke="#eee" />
+          
+          <line x1="0" y1="0" x2="0" y2="-80" stroke="#1976d2" stroke-width="2" />
+          <text x="5" y="-85" font-size="12" fill="#1976d2">最高点</text>
+
+          <line x1="0" y1="0" x2="69" y2="40" stroke="#1976d2" stroke-width="2" /> 
+          
+          <line x1="-150" y1="-80" x2="0" y2="-80" stroke="#1976d2" stroke-dasharray="4,4" opacity="0.3" />
+          <line x1="-150" y1="40" x2="69" y2="40" stroke="#1976d2" stroke-dasharray="4,4" opacity="0.3" />
+
+          <path d="M 35 20 A 40 40 0 0 0 0 -40" stroke="#d32f2f" stroke-width="3" fill="none" />
+          <text x="45" y="-15" font-size="14" fill="#d32f2f" font-weight="bold">120° (2π/3)</text>
+          <text x="65" y="70" font-size="11" fill="#666">Start (x=-A/2, v>0)</text>
+        </g>
+      </svg>
+    </div>
+
     $$ t_{\text{SHM}} = \frac{T}{3} = \frac{2}{3}\pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{1.71 \sqrt{\frac{L}{g}}} $$
     合計すると、
     $$ t_{\text{C}} = t_{\text{const}} + t_{\text{SHM}} \approx (1.41 + 1.71)\sqrt{\frac{L}{g}} = \boldsymbol{3.12 \sqrt{\frac{L}{g}}} $$
@@ -506,7 +535,7 @@
   <div class="box-note">
     <strong>発展：接続点での滑らかさ</strong><br>
     $x = -L/3$ の境界で、グラフはカクッと折れ曲がるのではなく、<strong>滑らかに</strong>接続します。<br>
-    単振動の力 $F = -K(-L/3) = \frac{1}{3}\rho L^3 g$ と、完全水没の一定力 $F = \frac{1}{3}\rho L^3 g$ が一致するため、加速度も連続的になるからです。
+    これは、境界点において単振動の力 $F = -K(-L/3) = \frac{1}{3}\rho L^3 g$ と、完全水没時の一定力 $F = \frac{1}{3}\rho L^3 g$ が一致するためです。力が一致するということは加速度も急変せず、物体は衝撃を受けずにスムーズに運動が切り替わります。
   </div>
 </div>
 
