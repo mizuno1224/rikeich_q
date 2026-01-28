@@ -1,0 +1,521 @@
+<h2 class="prob-title-sub">問題番号：物理2026-001 立方体の浮き沈みと単振動</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    水に浮かんだ物体を押し込んで離すと、ボヨンボヨンと上下に揺れます。この運動は、振幅が小さいときは綺麗な「<span class="highlight">単振動</span>」になりますが、大きく押し込みすぎると「<span class="highlight">非線形な振動</span>」へと変化します。
+  </p>
+  <ul>
+    <li><strong>つり合い（$x=0$）</strong>：重力と浮力が等しい基準点です。</li>
+    <li><strong>単振動（Small Amplitude）</strong>：物体が部分的に水没している範囲では、<span class="highlight">復元力が変位に比例</span>し、等時性を持つ単振動になります。</li>
+    <li><strong>非線形振動（Large Amplitude）</strong>：完全水没すると浮力は一定値で頭打ちになります。この区間では「<span class="highlight">等加速度運動（二次関数）</span>」となり、単振動（三角関数）とは異なる挙動を示します。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>問1 つり合いと密度の導出</h3>
+  
+  <h4>(1) 浮力の大きさ</h4>
+  <p>
+    
+    まず、物体にはたらく力を整理しましょう。<span class="highlight">アルキメデスの原理</span>より、浮力の大きさは「物体が押しのけた流体（水）の重さ」に等しくなります。
+  </p>
+  <p>
+    図1(a)より、一辺 $L$ の立方体のうち、水面より上に出ている部分が $L/3$ なので、水中に沈んでいる部分の高さは $L - L/3 = \frac{2}{3}L$ です。<br>
+    したがって、水没している体積 $V_{\text{sub}}$ は、底面積 $L^2$ を掛けて、
+    $$ V_{\text{sub}} = L^2 \times \frac{2}{3}L = \frac{2}{3}L^3 $$
+  </p>
+  <p>
+    水の密度を $\rho$、重力加速度を $g$ とすると、求める浮力 $F_0$ は以下のようになります。
+    $$ F_0 = \rho V_{\text{sub}} g = \boldsymbol{\frac{2}{3}\rho L^3 g} $$
+  </p>
+
+  <h4>(2) 物体の密度</h4>
+  <p>
+    物体は静止しているので、鉛直方向の「重力」と「浮力」がつり合っています。<br>
+    物体の密度を $\rho_{\text{obj}}$ とすると、物体の質量は $m = \rho_{\text{obj}}L^3$、重力は $mg = \rho_{\text{obj}}L^3 g$ です。
+  </p>
+  <p>
+    つり合いの式 $\text{重力} = \text{浮力}$ より、
+    $$ \rho_{\text{obj}} L^3 g = \frac{2}{3}\rho L^3 g $$
+    両辺を $L^3 g$ で割ると、
+    $$ \rho_{\text{obj}} = \boldsymbol{\frac{2}{3}\rho} $$
+  </p>
+
+  <div class="box-note">
+    <strong>豆知識：氷山の一角</strong><br>
+    この「物体の密度 / 水の密度 = 水没する体積の割合」という関係は、立方体に限らず広く成り立ちます。<br>
+    例えば氷の密度は約 $0.92 \text{g/cm}^3$、海水の密度は約 $1.03 \text{g/cm}^3$ です。比率を計算すると $0.92 / 1.03 \approx 0.89$ となり、<strong>氷山の約90%は水面下にある</strong>ことがわかります。
+  </div>
+</div>
+
+<div class="card">
+  <h3>問2 単振動の運動方程式</h3>
+  
+  <h4>(1) 合力の導出と力の変化</h4>
+  <p>
+    つり合いの位置から $x$ だけ変位した（上がった）状態を考えます。<br>
+    以下のシミュレーターで、スライダーを動かして位置 $x$ を変えたとき、「浮力」と「合力」がどう変化するか確認してください。
+  </p>
+
+  <div id="sim-force-interactive" class="sim-embed" style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:15px; margin: 15px 0;">
+    <div style="margin-bottom:10px; text-align:center;">
+      <label for="range-x" style="font-weight:bold; margin-right:10px;">位置 x:</label>
+      <input type="range" id="range-x" min="-100" max="100" value="0" step="1" style="width:200px; vertical-align:middle;">
+      <span id="val-x" style="display:inline-block; width:60px; text-align:right; font-family:monospace;">0</span>
+    </div>
+    <canvas id="canvas-force" height="300" style="width:100%; border:1px solid #eee;"></canvas>
+    <div style="text-align:center; font-size:0.9em; color:#666; margin-top:5px;">
+      スライダー操作：沈むほど<strong>浮力（青）</strong>が増し、上向きの合力が生まれます。
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var canvas = document.getElementById('canvas-force');
+      var range = document.getElementById('range-x');
+      var valDisplay = document.getElementById('val-x');
+      if(!canvas || !range) return;
+      
+      var ctx = canvas.getContext('2d');
+      var W = canvas.width = canvas.clientWidth;
+      var H = canvas.height;
+      var L = 80; var waterY = 140; var centerX = W / 2 - 40; 
+      
+      function draw() {
+        var sliderVal = parseInt(range.value);
+        var x = sliderVal * (L/100); 
+        valDisplay.innerText = "x=" + (x/L).toFixed(2) + "L";
+        ctx.clearRect(0,0,W,H);
+        
+        // Water
+        ctx.fillStyle = "#e1f5fe"; ctx.fillRect(0, waterY, W, H-waterY);
+        ctx.strokeStyle = "#0288d1"; ctx.beginPath(); ctx.moveTo(0, waterY); ctx.lineTo(W, waterY); ctx.stroke();
+        
+        // Axis (Left)
+        var axisX = 40;
+        var eqY = originY = waterY - (L/3);
+        ctx.strokeStyle = "#444"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(axisX, 20); ctx.lineTo(axisX, H-20); ctx.stroke();
+        
+        // Ticks
+        ctx.textAlign = "right"; ctx.fillStyle = "#444"; ctx.font = "12px monospace";
+        var ticks = [
+            {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"},
+            {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"}
+        ];
+        for(var i=0; i<ticks.length; i++){
+            var ty = eqY - ticks[i].v * scale; // Assuming scale ~80 for L
+            // Wait, previous code used L directly. L=80.
+            // visual y = waterY - L/3 - val.
+            // Let's stick to consistent visual coordinates.
+            // Tick for v: y = waterY - (L/3) - v.
+            var ty = waterY - (L/3) - ticks[i].v;
+            
+            if(ty > 10 && ty < H-10){
+              ctx.beginPath(); ctx.moveTo(axisX-5, ty); ctx.lineTo(axisX+5, ty); ctx.stroke();
+              ctx.fillText(ticks[i].l, axisX-8, ty+4);
+            }
+        }
+        ctx.fillText("x", axisX+10, 20);
+
+        // Box
+        var boxTopY = waterY - (L/3) - x;
+        ctx.fillStyle = "#ffcc80"; ctx.strokeStyle = "#ef6c00"; ctx.lineWidth = 2;
+        ctx.fillRect(centerX - L/2, boxTopY, L, L); ctx.strokeRect(centerX - L/2, boxTopY, L, L);
+        
+        // Indicator Line
+        ctx.strokeStyle = "#ef6c00"; ctx.setLineDash([2,4]);
+        ctx.beginPath(); ctx.moveTo(axisX, boxTopY); ctx.lineTo(centerX - L/2, boxTopY); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Equilibrium Line
+        ctx.strokeStyle = "#888"; ctx.setLineDash([4,4]);
+        ctx.beginPath(); ctx.moveTo(axisX, eqY); ctx.lineTo(W, eqY); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = "#666"; ctx.textAlign="left";
+        ctx.fillText("つり合い位置 (x=0)", W - 120, eqY-5);
+
+        // Forces
+        var h_sub = (2/3)*L - x; 
+        if(h_sub > L) h_sub = L; if(h_sub < 0) h_sub = 0;
+        var len_g = 60;
+        var len_b = len_g * (h_sub / ((2/3)*L));
+        var arrowX = centerX + L/2 + 60;
+        var arrowCenterY = boxTopY + L/2; 
+        
+        drawArrow(ctx, arrowX, arrowCenterY, arrowX, arrowCenterY + len_g, "#d32f2f", "重力 mg");
+        drawArrow(ctx, arrowX + 40, arrowCenterY, arrowX + 40, arrowCenterY - len_b, "#1976d2", "浮力 f");
+        
+        // Net Force Text - FIXED POSITION (Top Right) to avoid overlap
+        ctx.fillStyle = "#333"; ctx.font = "bold 14px sans-serif";
+        var diff = len_b - len_g;
+        var sign = diff > 1 ? "上向き" : (diff < -1 ? "下向き" : "つり合い");
+        
+        // Draw text box at top right
+        ctx.textAlign = "right";
+        ctx.fillText("現在の合力: " + sign, W - 20, 40);
+        ctx.textAlign = "left";
+      }
+      
+      function drawArrow(ctx, x1, y1, x2, y2, color, label) {
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        if(Math.abs(y2-y1) > 1){
+            var angle = Math.atan2(y2-y1, x2-x1);
+            var headLen = 8;
+            ctx.beginPath(); ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI/6), y2 - headLen * Math.sin(angle - Math.PI/6));
+            ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI/6), y2 - headLen * Math.sin(angle + Math.PI/6));
+            ctx.fill();
+        }
+        ctx.textAlign = "center";
+        ctx.font = "12px sans-serif";
+        if(y2 > y1) ctx.fillText(label, x2, y2 + 15); else ctx.fillText(label, x2, y2 - 8);
+        ctx.textAlign = "left";
+      }
+      range.addEventListener('input', draw); draw();
+    })();
+  </script>
+
+  <p>
+    水中に沈んでいる部分の長さは $h(x) = \frac{2}{3}L - x$ です。
+    浮力 $f$ はこれに比例するので、
+    $$ f = \rho L^2 \left( \frac{2}{3}L - x \right) g $$
+    合力 $F$（上向き正）は「浮力 - 重力」です。重力 $mg$ はつり合いの浮力（$x=0$ のときの浮力）と等しいので、
+    $$ F = f - mg = \rho L^2 g \left( \frac{2}{3}L - x \right) - \frac{2}{3}\rho L^3 g $$
+    $$ F = \boldsymbol{- \rho L^2 g x} $$
+    このように、合力は変位 $x$ に比例する<span class="highlight">復元力</span>（$F=-Kx$）となり、単振動の方程式が導かれます。
+  </p>
+
+  <h4>(2) 最高点の位置</h4>
+  <p>
+    $x = -L/4$ で放した場合、これは単振動の範囲内なので、振動の中心 $x=0$ に対して対称な位置まで上がります。
+    $$ x = \boldsymbol{\frac{L}{4}} $$
+  </p>
+
+  <h4>(3) 中心通過時の速さ</h4>
+  <p>
+    角振動数を $\omega$ とすると、運動方程式 $ma = -Kx$ より $\omega = \sqrt{K/m} = \sqrt{\frac{3g}{2L}}$。
+    最大速さは $v_{\text{max}} = A\omega = \frac{L}{4}\sqrt{\frac{3g}{2L}} = \boldsymbol{\frac{1}{4}\sqrt{\frac{3gL}{2}}}$
+  </p>
+</div>
+
+<div class="card">
+  <h3>実験室：グラフ形状の違い（放物線とサインカーブ）</h3>
+  <p>
+    問5の <strong>Case C</strong>（大きく沈める場合）を観察してください。運動の種類が切り替わる様子がグラフにはっきりと表れます。
+  </p>
+  <ul>
+    <li><span style="color:#d32f2f; font-weight:bold;">■ 赤エリア（完全水没 $x < -L/3$）</span>：<br>力が一定なので<span class="highlight">等加速度運動</span>になります。$x-t$ グラフは<strong>「二次関数（放物線）」</strong>を描きます。</li>
+    <li><span style="color:#1976d2; font-weight:bold;">■ 青エリア（部分水没 $x \ge -L/3$）</span>：<br>力が変位に比例するので<span class="highlight">単振動</span>になります。$x-t$ グラフは<strong>「三角関数（サインカーブ）」</strong>を描きます。</li>
+  </ul>
+  
+  <div id="sim-container" class="sim-embed" style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:10px;">
+    <div style="display:flex; justify-content:center; gap:10px; margin-bottom:10px;">
+      <button id="btn-case-a" style="padding:5px 10px;">Case A ($-L/5$)</button>
+      <button id="btn-case-b" style="padding:5px 10px;">Case B ($-L/4$)</button>
+      <button id="btn-case-c" style="padding:5px 10px; font-weight:bold; color:#d32f2f;">Case C ($-L/3 - L/2$)</button>
+      <button id="btn-reset" style="padding:5px 10px;">Reset</button>
+    </div>
+    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+      <canvas id="sim-canvas-main" height="340" style="flex:1; min-width:280px; border:1px solid #eee; cursor: grab;"></canvas>
+      <canvas id="sim-canvas-graph" height="340" style="flex:1; min-width:280px; border:1px solid #eee;"></canvas>
+    </div>
+    <div style="margin-top:5px; text-align:center; font-size:0.9em; color:#666;">
+      左：物体をドラッグして実験できます / 右：<strong>$x-t$グラフ（上）</strong>の曲線の違いに注目！
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var canvasMain = document.getElementById('sim-canvas-main');
+      var canvasGraph = document.getElementById('sim-canvas-graph');
+      if(!canvasMain || !canvasGraph) return;
+
+      var ctxMain = canvasMain.getContext('2d');
+      var ctxGraph = canvasGraph.getContext('2d');
+
+      var L = 1.0; var g = 9.8; var rho = 1.0; 
+      var m = (2/3) * rho * Math.pow(L, 3);
+      var scale = 80; var originY = 170; var originX = canvasMain.width / 2;
+      var state = { t: 0, x: 0, v: 0, history: [], running: false, dragging: false };
+
+      function getForce(x) {
+        var h = (2/3)*L - x;
+        var F_buoy = 0;
+        if (h >= L) F_buoy = rho * Math.pow(L, 3) * g;
+        else if (h <= 0) F_buoy = 0;
+        else F_buoy = rho * Math.pow(L, 2) * h * g;
+        return F_buoy - m * g;
+      }
+
+      function update(dt) {
+        if(!state.running || state.dragging) return;
+        var F = getForce(state.x);
+        state.v += (F / m) * dt;
+        state.x += state.v * dt;
+        state.t += dt;
+        state.history.push({t: state.t, x: state.x});
+        if(state.history.length > 350) state.history.shift();
+      }
+
+      function drawMain() {
+        ctxMain.clearRect(0,0, canvasMain.width, canvasMain.height);
+        ctxMain.fillStyle = "#e1f5fe"; ctxMain.fillRect(0, originY, canvasMain.width, canvasMain.height - originY);
+        ctxMain.strokeStyle = "#0288d1"; ctxMain.beginPath(); ctxMain.moveTo(0, originY); ctxMain.lineTo(canvasMain.width, originY); ctxMain.stroke();
+        
+        // Axis (Left side of Main Canvas)
+        var axisX = 40;
+        var eqY = originY - (L/3)*scale;
+        ctxMain.strokeStyle = "#444"; ctxMain.lineWidth = 1;
+        ctxMain.beginPath(); ctxMain.moveTo(axisX, 20); ctxMain.lineTo(axisX, canvasMain.height - 20); ctxMain.stroke();
+        
+        // Ticks
+        ctxMain.textAlign = "right"; ctxMain.fillStyle = "#444"; ctxMain.font = "12px monospace";
+        var ticks = [
+            {v: L, l: "L"}, {v: 2*L/3, l: "2L/3"}, {v: L/3, l: "L/3"},
+            {v: 0, l: "0"}, {v: -L/3, l: "-L/3"}, {v: -2*L/3, l: "-2L/3"}
+        ];
+        for(var i=0; i<ticks.length; i++){
+            var ty = eqY - ticks[i].v * scale;
+            if(ty > 0 && ty < canvasMain.height){
+              ctxMain.beginPath(); ctxMain.moveTo(axisX-5, ty); ctxMain.lineTo(axisX+5, ty); ctxMain.stroke();
+              ctxMain.fillText(ticks[i].l, axisX-8, ty+4);
+            }
+        }
+        ctxMain.fillText("x", axisX+10, 20);
+
+        var boxSize = L * scale; var boxTopY = originY - (L/3)*scale - state.x * scale;
+        ctxMain.fillStyle = state.dragging ? "#ffe0b2" : "#ffcc80"; ctxMain.strokeStyle = "#ef6c00"; ctxMain.lineWidth = 2;
+        ctxMain.fillRect(originX - boxSize/2, boxTopY, boxSize, boxSize); ctxMain.strokeRect(originX - boxSize/2, boxTopY, boxSize, boxSize);
+
+        // Indicator
+        ctxMain.strokeStyle = "#ef6c00"; ctxMain.setLineDash([2,4]);
+        ctxMain.beginPath(); ctxMain.moveTo(axisX, boxTopY); ctxMain.lineTo(originX - boxSize/2, boxTopY); ctxMain.stroke();
+        ctxMain.setLineDash([]);
+
+        var cx = originX + boxSize/2 + 40; var cy = boxTopY + boxSize/2;
+        var f_g = m * g; var f_b = f_g + getForce(state.x); var fScale = 6.0;
+        drawArrow(ctxMain, cx, cy, cx, cy + f_g * fScale, "#d32f2f", "mg");
+        drawArrow(ctxMain, cx+20, cy, cx+20, cy - Math.max(0, f_b) * fScale, "#1976d2", "f");
+      }
+
+      function drawGraph() {
+        ctxGraph.clearRect(0,0, canvasGraph.width, canvasGraph.height);
+        var h1 = canvasGraph.height / 2; var w = canvasGraph.width;
+        
+        // Backgrounds
+        var scaleG = scale * 0.5;
+        var y_boundary = h1/2 - (-L/3)*scaleG;
+        ctxGraph.fillStyle = "#fff0f0"; ctxGraph.fillRect(0, y_boundary, w, h1 - y_boundary);
+        ctxGraph.fillStyle = "#f0f8ff"; ctxGraph.fillRect(0, 0, w, y_boundary);
+        
+        ctxGraph.strokeStyle = "#ddd"; ctxGraph.strokeRect(0,0,w,h1);
+        ctxGraph.strokeStyle = "#ccc"; ctxGraph.beginPath(); ctxGraph.moveTo(0, h1/2); ctxGraph.lineTo(w, h1/2); ctxGraph.stroke();
+        
+        ctxGraph.fillStyle = "#d32f2f"; ctxGraph.font = "10px sans-serif"; ctxGraph.fillText("等加速度 (二次関数)", 5, h1 - 5);
+        ctxGraph.fillStyle = "#1976d2"; ctxGraph.fillText("単振動 (三角関数)", 5, 15);
+        ctxGraph.fillStyle = "#000"; ctxGraph.font = "bold 12px sans-serif";
+        ctxGraph.fillText("x", 5, h1/2 - 5); ctxGraph.textAlign = "right"; ctxGraph.fillText("t", w-5, h1/2 + 15); ctxGraph.textAlign = "left";
+
+        ctxGraph.strokeStyle = "#333"; ctxGraph.lineWidth = 2; ctxGraph.beginPath();
+        if(state.history.length > 0){
+          for(var i=0; i<state.history.length; i++){
+            var p = state.history[i];
+            var t_px = w - (state.t - p.t) * 50;
+            var x_px = h1/2 - p.x * scaleG;
+            if(i===0) ctxGraph.moveTo(t_px, x_px); else ctxGraph.lineTo(t_px, x_px);
+          }
+        } else { var x_px = h1/2 - state.x * scaleG; ctxGraph.moveTo(w, x_px); ctxGraph.arc(w, x_px, 2, 0, 6.28); }
+        ctxGraph.stroke();
+
+        // F-x Graph
+        var top2 = h1; var h2 = h1; var cx = w/2; var cy = top2 + h2/2;
+        ctxGraph.fillStyle = "#fff"; ctxGraph.fillRect(0,top2,w,h2);
+        ctxGraph.strokeStyle = "#ccc"; ctxGraph.beginPath(); 
+        ctxGraph.moveTo(0, cy); ctxGraph.lineTo(w, cy); ctxGraph.moveTo(cx, top2); ctxGraph.lineTo(cx, top2+h2); ctxGraph.stroke();
+        
+        ctxGraph.strokeStyle = "#1976d2"; ctxGraph.lineWidth = 2; ctxGraph.beginPath();
+        for(var px = -w/2; px < w/2; px+=2){
+          var simX = px / scaleG; var force = getForce(simX); var plotY = cy - force * 3; 
+          if(px === -w/2) ctxGraph.moveTo(cx + px, plotY); else ctxGraph.lineTo(cx + px, plotY);
+        }
+        ctxGraph.stroke();
+        
+        var curX = state.x * scaleG; var curF = getForce(state.x) * 3;
+        ctxGraph.fillStyle = "rgba(0,0,0,0.05)"; ctxGraph.fillRect(0, top2, cx + (-L/3)*scaleG, h2);
+        ctxGraph.fillStyle = "#e65100"; ctxGraph.beginPath(); ctxGraph.arc(cx + curX, cy - curF, 4, 0, 6.28); ctxGraph.fill();
+        ctxGraph.fillStyle = "#000"; ctxGraph.fillText("F", cx+5, top2+15);
+        ctxGraph.textAlign = "right"; ctxGraph.fillText("x", w-5, cy-5); ctxGraph.textAlign = "left";
+      }
+
+      function drawArrow(ctx, x1, y1, x2, y2, color, label){
+        ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+        var ang = Math.atan2(y2-y1, x2-x1);
+        ctx.beginPath(); ctx.moveTo(x2, y2);
+        ctx.lineTo(x2-7*Math.cos(ang-0.5), y2-7*Math.sin(ang-0.5));
+        ctx.lineTo(x2-7*Math.cos(ang+0.5), y2-7*Math.sin(ang+0.5));
+        ctx.fill();
+        ctx.textAlign="center"; ctx.fillText(label, x2, y2 + (y2>y1?15:-5)); ctx.textAlign="left";
+      }
+      function loop(){ update(0.016); drawMain(); drawGraph(); requestAnimationFrame(loop); }
+      function reset(ix){ state.t=0; state.x=ix; state.v=0; state.history=[]; state.running=true; state.dragging=false; }
+      
+      canvasMain.addEventListener('mousedown', function(e){
+        var r = canvasMain.getBoundingClientRect();
+        var mx = e.clientX - r.left, my = e.clientY - r.top;
+        var boxTop = originY - (L/3)*scale - state.x*scale;
+        if(mx > originX - L*scale && mx < originX + L*scale && Math.abs(my - boxTop - L*scale/2) < L*scale){
+          state.dragging = true; state.running = false; state.history=[]; state.v=0;
+          canvasMain.style.cursor="grabbing"; state.dragStartY = my; state.dragStartX = state.x;
+        }
+      });
+      window.addEventListener('mousemove', function(e){
+        if(state.dragging){
+          var r = canvasMain.getBoundingClientRect();
+          var dy = (e.clientY - r.top) - state.dragStartY;
+          state.x = state.dragStartX - dy/scale;
+          if(state.x > 1.2*L) state.x=1.2*L; if(state.x < -2.0*L) state.x=-2.0*L;
+        }
+      });
+      window.addEventListener('mouseup', function(){
+        if(state.dragging) { state.dragging=false; state.running=true; state.t=0; canvasMain.style.cursor="grab"; }
+      });
+
+      document.getElementById('btn-case-a').onclick = function(){ reset(-L/5); };
+      document.getElementById('btn-case-b').onclick = function(){ reset(-L/4); };
+      document.getElementById('btn-case-c').onclick = function(){ reset(-(L/3 + L/2)); };
+      document.getElementById('btn-reset').onclick = function(){ reset(0); state.running=false; };
+
+      reset(0); state.running=false; loop();
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>問3 力と位置のグラフ</h3>
+  <div class="box-note">
+    <strong>答え：(イ)</strong><br>
+    グラフは、完全水没区間（左側）で正の定数、単振動区間（中央）で右下がりの直線、空中（右側）で負の定数となります。<br>
+    上の実験室の右下のグラフ（F-x図）を確認してください。
+  </div>
+</div>
+
+<div class="card">
+  <h3>問4・問5 大振幅運動と周期</h3>
+  
+  <h4>問4 解法1：エネルギー保存則によるアプローチ</h4>
+  <p>
+    $x = -L/3 - d$ まで沈めると、最初は「完全水没」の状態からスタートします。<br>
+    始点（$x = -L/3 - d$）から最高点（$x = 2L/3$）まで、合力 $F$ がした仕事の総和は、運動エネルギーの変化（$0 \to 0$）に等しいためゼロになります。
+  </p>
+  <ul>
+    <li><strong>完全水没区間</strong>：一定の合力 $F_1 = \text{浮力}-\text{重力} = \frac{1}{3}\rho L^3 g$ が距離 $d$ だけ正の仕事をします。<br>
+    $W_1 = \frac{1}{3}\rho L^3 g d$</li>
+    <li><strong>単振動区間</strong>：バネ定数 $K=\rho L^2 g$ のバネのエネルギー変化と同じ（負の仕事）です。<br>
+    $W_2 = [ポテンシャル変化] = -\frac{1}{6}K L^2 = -\frac{1}{6}\rho L^4 g$</li>
+  </ul>
+  <p>
+    $W_1 + W_2 = 0$ より、
+    $$ \frac{1}{3}\rho L^3 g d - \frac{1}{6}\rho L^4 g = 0 \quad \Rightarrow \quad d = \boldsymbol{\frac{L}{2}} $$
+  </p>
+
+  <h4>問4 解法2：運動方程式によるアプローチ</h4>
+  <p>
+    ダイナミクス（力と加速度）の視点でも解いてみましょう。完全水没区間では合力が一定なので、<span class="highlight">等加速度運動</span>になります。
+  </p>
+  <ol>
+    <li>
+      <strong>加速度を求める</strong><br>
+      運動方程式 $ma = F_1$ より、
+      $$ a = \frac{F_1}{m} = \frac{\frac{1}{3}\rho L^3 g}{\frac{2}{3}\rho L^3} = \frac{1}{2}g $$
+    </li>
+    <li>
+      <strong>接続点での速度を求める</strong><br>
+      距離 $d$ だけ加速した直後（$x=-L/3$）の速度 $v$ は、$v^2 - 0 = 2ad$ より、
+      $$ v^2 = 2 \cdot \frac{1}{2}g \cdot d = gd $$
+    </li>
+    <li>
+      <strong>単振動区間のエネルギー保存</strong><br>
+      この運動エネルギー $\frac{1}{2}mv^2$ が、最高点でのポテンシャルエネルギー $\frac{1}{6}KL^2$ に変換されます。
+      $$ \frac{1}{2}m(gd) = \frac{1}{6}KL^2 $$
+      各値を代入して解くと、やはり $d = L/2$ が得られます。
+    </li>
+  </ol>
+
+  <h4>問5 周期の比較と解説</h4>
+  <p>
+    時間の大小関係は以下のようになります。
+    $$ t_{\text{A}} = t_{\text{B}} < t_{\text{C}} $$
+    Case A, Bは通常の単振動（<span class="highlight">等時性</span>）ですが、Case Cは「力が弱い（飽和する）」区間を含むため、引き戻すのに時間がかかります。
+  </p>
+  <p>
+    <strong>Cの場合（遅くなる理由）</strong><br>
+    もし単振動のままなら、深く沈めるほど復元力は「比例して」どこまでも強くなり、その分猛烈な勢いで加速して戻ってきます。<br>
+    しかしCase C（完全水没）では、ある深さを超えると浮力が「最大値」で頭打ちになり、それ以上強くなりません（<span class="highlight">力が飽和する</span>）。<br>
+    本来ならもっと強い力で引き戻されるはずの区間で、弱い一定の力しか受けないため、加速が鈍くなります。その結果、最高点に戻ってくるまでに余計な時間がかかってしまうのです。
+  </p>
+</div>
+
+<div class="card">
+  <h3>【深掘り】運動の数式化とグラフの正体</h3>
+  <p>
+    なぜグラフが「二次関数」や「三角関数」になるのか、運動方程式から実際に式を導いて確かめましょう。
+  </p>
+  
+  <h4>(1) 赤エリア：なぜ二次関数になるのか？</h4>
+  <p>
+    物体が完全に水没している区間（$x < -L/3$）を考えます。<br>
+    ここでは浮力が最大値 $\rho L^3 g$ で一定となるため、合力 $F$ も一定になります。
+    $$ F = \rho L^3 g - mg = \frac{1}{3}\rho L^3 g $$
+    運動方程式 $ma = F$ より、加速度 $a$ も一定です。
+    $$ a = \frac{F}{m} = \frac{\frac{1}{3}\rho L^3 g}{\frac{2}{3}\rho L^3} = \frac{1}{2}g $$
+    <strong>加速度が一定の運動（等加速度運動）</strong>なので、変位 $x$ は時間の<span class="highlight">二次関数</span>になります。
+    $$ x(t) = x_0 + v_0 t + \frac{1}{2}at^2 $$
+    Case Cの場合、初速度 $v_0=0$ なので、まさに放物線（二次関数）を描きます。
+  </p>
+
+  <h4>(2) 青エリア：なぜ三角関数になるのか？</h4>
+  <p>
+    物体が部分的に水没している区間（$-L/3 \le x \le 2L/3$）を考えます。<br>
+    ここでは合力が変位に比例します（問2より）。
+    $$ F = -Kx \quad (K = \rho L^2 g) $$
+    運動方程式 $ma = -Kx$ は単振動の微分方程式であり、その解は時間 $t$ の<strong>三角関数（サイン・コサイン）</strong>になります。
+    $$ x(t) = A \sin(\omega t + \phi) $$
+  </p>
+  
+  <h4>(3) Case C の時間を本気で計算してみる</h4>
+  <p>
+    $t_{\text{A}}$ と $t_{\text{C}}$ の時間を実際に計算して、どのくらい違うのか比較してみましょう。
+  </p>
+  <p>
+    <strong>① $t_{\text{A}}$ の計算（単振動の半周期）</strong><br>
+    $$ t_{\text{A}} = \frac{T}{2} = \pi \sqrt{\frac{m}{K}} = \pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{2.56 \sqrt{\frac{L}{g}}} $$
+  </p>
+  <p>
+    <strong>② $t_{\text{C}}$ の計算（等加速度＋単振動）</strong><br>
+    まず、赤エリアを距離 $d=L/2$ だけ加速度 $g/2$ で進む時間 $t_{\text{const}}$ は、
+    $$ \frac{L}{2} = \frac{1}{2}\left(\frac{g}{2}\right)t_{\text{const}}^2 \quad \Rightarrow \quad t_{\text{const}} = \sqrt{\frac{2L}{g}} \approx \boldsymbol{1.41 \sqrt{\frac{L}{g}}} $$
+    次に、青エリアに入ってから最高点までの時間は、位相角 $120^\circ$（$2/3 \pi$ rad）分の回転に相当します（$-A/2$ から $+A$ への移動）。これは周期 $T$ の $1/3$ です。
+    $$ t_{\text{SHM}} = \frac{T}{3} = \frac{2}{3}\pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{1.71 \sqrt{\frac{L}{g}}} $$
+    合計すると、
+    $$ t_{\text{C}} = t_{\text{const}} + t_{\text{SHM}} \approx (1.41 + 1.71)\sqrt{\frac{L}{g}} = \boldsymbol{3.12 \sqrt{\frac{L}{g}}} $$
+  </p>
+  
+  <div class="box-note">
+    <strong>発展：接続点での滑らかさ</strong><br>
+    $x = -L/3$ の境界で、グラフはカクッと折れ曲がるのではなく、<strong>滑らかに</strong>接続します。<br>
+    単振動の力 $F = -K(-L/3) = \frac{1}{3}\rho L^3 g$ と、完全水没の一定力 $F = \frac{1}{3}\rho L^3 g$ が一致するため、加速度も連続的になるからです。
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>問題の本質まとめ</h3>
+  <ul>
+    <li><strong>浮力の基本</strong>：$F = \rho V g$。変位によって $V$ がどう変わるか（比例か一定か）が運動を決める。</li>
+    <li><strong>グラフの接続</strong>：物理法則が変わる境界点（$x=-L/3$）で、二次関数のグラフと三角関数のグラフが滑らかにつながる。</li>
+    <li><strong>非線形振動</strong>：復元力が比例関係から外れる（飽和する）と、周期の等時性は崩れる。</li>
+  </ul>
+</div>
