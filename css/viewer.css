@@ -164,3 +164,65 @@ mjx-container { font-size: 1.15em !important; }
   
   :root { --card-width: 100%; }
 }
+
+/* --- 印刷用スタイル (追加・修正版) --- */
+@media print {
+  /* 不要なUIを非表示 */
+  .prob-header-top,
+  .sim-controls-panel,
+  #pointer-canvas,
+  #btn-toggle-pointer,
+  .btn-back-circle {
+    display: none !important;
+  }
+
+  /* 背景とレイアウトのリセット */
+  body {
+    background: #fff;
+    height: auto;
+    overflow: visible;
+    display: block; /* Flex解除 */
+    color: #000;
+  }
+
+  .viewer-container {
+    height: auto;
+    display: block;
+  }
+
+  .viewer-split-content {
+    display: block;
+  }
+
+  .explanation-area {
+    width: 100%;
+    max-width: 100% !important; /* 幅をページ一杯に */
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+
+  /* シミュレーション埋め込み枠の調整 */
+  .sim-embed {
+    break-inside: avoid; /* 途中で切れないようにする */
+    page-break-inside: avoid;
+    border: 1px solid #ccc; /* 枠線は残す */
+    box-shadow: none;
+    background: #fff;
+    
+    /* はみ出し防止対応 */
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin: 10px 0;
+    display: block; /* Flexによる予期せぬ拡張を防止 */
+  }
+  
+  /* シミュレーション内部のコンテンツも縮小させる */
+  .sim-embed canvas,
+  .sim-embed > div {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}

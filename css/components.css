@@ -138,3 +138,47 @@ summary::before {
 }
 details[open] summary::before { transform: rotate(90deg); }
 .details-content { padding: 20px; border-top: 1px solid var(--card-border); }
+
+/* --- 印刷用スタイル (追加・修正版) --- */
+@media print {
+  /* カラー印刷の有効化 */
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ページまたぎ防止とPointラベル保護 */
+  .card, 
+  .box-alert, 
+  .box-note, 
+  .sub-sim-area,
+  .responsive-img,
+  details,
+  figure,
+  pre,
+  table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Pointラベル(.box-alert-label)のページまたぎ対策
+     改ページ直後の margin-top 無視によりラベルが見切れるのを防ぐため、
+     印刷時はラベルをボックスの内側に配置し、paddingで余白を確保します。
+  */
+  .box-alert {
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    padding-top: 40px !important; /* ラベルの高さ分+αを確保 */
+  }
+
+  .box-alert-label {
+    top: 10px !important;  /* 枠外(-14px)ではなく枠内(10px)に配置 */
+    left: 15px !important; /* 少し右に寄せる */
+    box-shadow: none !important; /* 印刷時の影削除 */
+  }
+
+  /* インタラクティブボタンの非表示 */
+  .sim-btn {
+    display: none !important;
+  }
+}
