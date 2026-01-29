@@ -77,6 +77,18 @@
               "title": "例題4：正弦波の反射",
               "desc": "自由端の位置をx=9とした場合における波の反射と合成プロセス。入射波の谷が原点にある瞬間をターゲットに、合成波形の形成をシミュレーションします。",
               "explanationPath": "data/explanations/textbook_basic/03/01/21.html"
+            },
+            {
+              "id": "basic_03_01_22",
+              "title": "類題4：正弦波の反射",
+              "desc": "入射波の谷が原点に来る瞬間における、固定端反射による定常波の作図シミュレーション（ラベルなし）。",
+              "explanationPath": "data/explanations/textbook_basic/03/01/22.html"
+            },
+            {
+              "id": "basic_03_01_28",
+              "title": "演習問題1：波形の移動",
+              "desc": "波形グラフから波の要素を読み取り、媒質の速度の向きから進行方向を決定する方法と、時間の経過による波形の移動を作図する問題。",
+              "explanationPath": "data/explanations/textbook_basic/03/01/28.html"
             }
           ]
         },

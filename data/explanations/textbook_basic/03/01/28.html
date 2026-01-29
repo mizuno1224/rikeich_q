@@ -1,0 +1,430 @@
+<h2 class="prob-title-sub">演習問題1：波の要素と波形の移動</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    この問題は、波の基本的な性質である「波長」「周期」「振動速度」と「波の進行」に関する理解を問うものです。
+    <br>以下の2つの視点が重要です。
+  </p>
+  <ul>
+    <li><strong>グラフの読み取り</strong>：$y-x$ グラフ（波形）から、波長 $\lambda$ や振幅 $A$ を読み取る。</li>
+    <li><strong>媒質の動きと波の進行</strong>：波形を「わずかに平行移動」させることで、媒質の速度の向きと波の進行方向の関係を導く。</li>
+  </ul>
+</div>
+
+<div class="card">
+  <h3>(1) 波の進む速度</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    まずはグラフから波の基本量を読み取ります。
+    図より、波は $x=0$ から $x=2.0\,\mathrm{m}$ で1つの波形を描いているので、波長は <span class="highlight">$\lambda = 2.0\,\mathrm{m}$</span> です。
+    また、問題文より周期は <span class="highlight">$T = 0.40\,\mathrm{s}$</span> です。
+  </p>
+  <p>
+    波の速さを求めるために、まずは振動数 $f$ を計算します。
+    $$ f = \frac{1}{T} = \frac{1}{0.40} = 2.5\,\mathrm{Hz} $$
+    波の基本公式 <span class="highlight">$v = f\lambda$</span> より、波の速さの大きさ $v'$ は、
+    $$ v' = 2.5\,\mathrm{Hz} \times 2.0\,\mathrm{m} = 5.0\,\mathrm{m/s} $$
+  </p>
+  <p>
+    次に、波の進行方向（速度の符号）を特定します。<br>
+    問題文には「原点の速度の向きは $y$ 軸の正の向き（上向き）」とあります。
+    下のシミュレーションで、波を左右に少し動かして、原点の動きを確認してみましょう。
+  </p>
+
+  <div id="sim-wave-direction" class="sim-embed"></div>
+  <script>
+    (function(){
+      var container = document.getElementById('sim-wave-direction');
+      if(!container) return;
+      
+      var canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 300;
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
+      container.appendChild(canvas);
+      var ctx = canvas.getContext('2d');
+
+      var currentOffset = 0; // Phase shift amount
+      var targetOffset = 0;
+      
+      // Control UI
+      var btnContainer = document.createElement('div');
+      btnContainer.style.textAlign = 'center';
+      btnContainer.style.marginTop = '10px';
+
+      var btnRight = document.createElement('button');
+      btnRight.textContent = '波を右に少し進める ▶';
+      btnRight.style.margin = '0 10px';
+      btnRight.onclick = function(){ animateTo(0.5); }; // Shift right
+
+      var btnLeft = document.createElement('button');
+      btnLeft.textContent = '◀ 波を左に少し進める';
+      btnLeft.style.margin = '0 10px';
+      btnLeft.onclick = function(){ animateTo(-0.5); }; // Shift left
+
+      var btnReset = document.createElement('button');
+      btnReset.textContent = 'リセット';
+      btnReset.style.margin = '0 10px';
+      btnReset.onclick = function(){ animateTo(0); };
+
+      btnContainer.appendChild(btnLeft);
+      btnContainer.appendChild(btnReset);
+      btnContainer.appendChild(btnRight);
+      container.appendChild(btnContainer);
+
+      var msgDiv = document.createElement('div');
+      msgDiv.style.textAlign = 'center';
+      msgDiv.style.marginTop = '5px';
+      msgDiv.style.fontWeight = 'bold';
+      msgDiv.style.minHeight = '1.5em';
+      container.appendChild(msgDiv);
+
+      function animateTo(val) {
+        targetOffset = val;
+      }
+
+      function draw() {
+        // Animation smoothing
+        var diff = targetOffset - currentOffset;
+        if(Math.abs(diff) > 0.01) {
+            currentOffset += diff * 0.1;
+        } else {
+            currentOffset = targetOffset;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        var width = canvas.width;
+        var height = canvas.height;
+        var ox = 80; 
+        var oy = height / 2;
+        var scaleX = 120; // 120px = 1.0m
+        var scaleY = 200; // 200px = 1.0m (Amplitude 0.25 -> 50px)
+        var amp = 0.25;
+        var k = 2 * Math.PI / 2.0; // lambda = 2.0
+
+        // Draw Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, oy); ctx.lineTo(width, oy);
+        ctx.moveTo(ox, 20); ctx.lineTo(ox, height - 20);
+        ctx.stroke();
+
+        // Ticks and Labels
+        ctx.fillStyle = '#333';
+        ctx.font = '14px sans-serif';
+        
+        // X-axis ticks
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for(var i=1; i<=3; i++) {
+            var tx = ox + i * scaleX;
+            if(tx < width) {
+                ctx.beginPath();
+                ctx.moveTo(tx, oy - 5);
+                ctx.lineTo(tx, oy + 5);
+                ctx.stroke();
+                ctx.fillText(i + '.0', tx, oy + 8);
+            }
+        }
+
+        // Y-axis ticks
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        var yVals = [0.25, -0.25];
+        for(var j=0; j<yVals.length; j++) {
+            var val = yVals[j];
+            var ty = oy - val * scaleY;
+            ctx.beginPath();
+            ctx.moveTo(ox - 5, ty);
+            ctx.lineTo(ox + 5, ty);
+            ctx.stroke();
+            ctx.fillText(val.toFixed(2), ox - 8, ty);
+        }
+
+        // Draw Wave
+        ctx.beginPath();
+        ctx.strokeStyle = '#007bff';
+        ctx.lineWidth = 3;
+        
+        for (var px = 0; px < width; px++) {
+          var x_val = (px - ox) / scaleX;
+          var y_val = amp * Math.sin(k * (x_val - currentOffset));
+          var py = oy - y_val * scaleY;
+          if(px===0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+
+        // Draw Origin Particle
+        var y0 = amp * Math.sin(k * (0 - currentOffset));
+        var py0 = oy - y0 * scaleY;
+        
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(ox, py0, 8, 0, Math.PI*2);
+        ctx.fill();
+
+        // Axis Labels
+        ctx.fillStyle = '#333';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('x [m]', width - 45, oy - 10);
+        ctx.textAlign = 'center';
+        ctx.fillText('y [m]', ox, 20);
+        ctx.fillText('O', ox - 15, oy + 20);
+
+        // Feedback Text
+        if (targetOffset > 0.1) {
+            msgDiv.textContent = "波が右へ進むと、原点は「下」へ動く";
+            msgDiv.style.color = "#666";
+        } else if (targetOffset < -0.1) {
+            msgDiv.textContent = "波が左へ進むと、原点は「上」へ動く（正解！）";
+            msgDiv.style.color = "#d9534f";
+        } else {
+            msgDiv.textContent = "ボタンを押して波を動かしてみましょう";
+            msgDiv.style.color = "#333";
+        }
+        
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+  </script>
+
+  <p>
+    シミュレーションで確認できるように、波を<strong>左（負の向き）</strong>にずらしたとき、原点の媒質は上に動きます。
+    よって、波の進む速度は負の向きとなります。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $v = -5.0\,\mathrm{m/s}$
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) $t=0.70\,\mathrm{s}$ での波形</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    波形の移動は、時間の経過分だけ平行移動させて考えます。
+    <br>
+    経過時間 $t = 0.70\,\mathrm{s}$ と周期 $T = 0.40\,\mathrm{s}$ の関係を調べます。
+    $$ t = 0.70 = 0.40 \times 1 + 0.30 = T + \frac{3}{4}T $$
+    波形は1周期 $T$ ごとに元の形に戻るため、<span class="highlight">残りの $\frac{3}{4}T$（0.30秒）分の移動</span>を考えれば十分です。
+    <br>
+    波は左に速さ $5.0\,\mathrm{m/s}$ で進むので、波形全体を左方向へ移動させます。
+  </p>
+
+  <div id="sim-wave-shift" class="sim-embed"></div>
+  <script>
+    (function(){
+      var container = document.getElementById('sim-wave-shift');
+      if(!container) return;
+      
+      var canvas = document.createElement('canvas');
+      canvas.width = 600;
+      canvas.height = 300;
+      canvas.style.width = '100%';
+      canvas.style.height = 'auto';
+      container.appendChild(canvas);
+      var ctx = canvas.getContext('2d');
+
+      // UI Controls
+      var controls = document.createElement('div');
+      controls.style.display = 'flex';
+      controls.style.alignItems = 'center';
+      controls.style.marginTop = '10px';
+      
+      var playBtn = document.createElement('button');
+      playBtn.textContent = '▶ 再生';
+      playBtn.style.marginRight = '15px';
+      playBtn.style.padding = '5px 15px';
+      
+      var label = document.createElement('span');
+      label.innerHTML = '時刻 t: 0.00 s';
+      label.style.width = '120px';
+      label.style.fontFamily = 'monospace';
+      
+      var slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = 0;
+      slider.max = 80;
+      slider.value = 0;
+      slider.style.flexGrow = 1;
+      
+      controls.appendChild(playBtn);
+      controls.appendChild(label);
+      controls.appendChild(slider);
+      container.appendChild(controls);
+
+      var currentTime = 0;
+      var isPlaying = false;
+      var animationId = null;
+
+      slider.oninput = function() {
+        currentTime = parseInt(this.value) / 100;
+        updateDisplay();
+        stopAnimation();
+      };
+
+      playBtn.onclick = function() {
+        if(isPlaying) {
+            stopAnimation();
+        } else {
+            startAnimation();
+        }
+      };
+
+      function updateDisplay() {
+          label.innerHTML = '時刻 t: ' + currentTime.toFixed(2) + ' s';
+          draw(currentTime);
+      }
+
+      function startAnimation() {
+          isPlaying = true;
+          playBtn.textContent = '■ 停止';
+          
+          if(currentTime >= 0.70) currentTime = 0; // Loop if at end
+
+          function loop() {
+              if(!isPlaying) return;
+              currentTime += 0.01;
+              if (currentTime >= 0.70) {
+                  currentTime = 0.70;
+                  stopAnimation(); // Stop exactly at target
+              }
+              slider.value = currentTime * 100;
+              updateDisplay();
+              animationId = requestAnimationFrame(loop);
+          }
+          loop();
+      }
+
+      function stopAnimation() {
+          isPlaying = false;
+          playBtn.textContent = '▶ 再生';
+          if(animationId) cancelAnimationFrame(animationId);
+      }
+
+      function draw(t) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        var width = canvas.width;
+        var height = canvas.height;
+        var ox = 80; 
+        var oy = height / 2;
+        var scaleX = 120; // 120px = 1m
+        var scaleY = 200; // 200px = 1m
+        var amp = 0.25;
+        var lambda = 2.0;
+        var k = 2 * Math.PI / lambda;
+        var v = -5.0; // velocity (Left)
+        
+        // Axes
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(0, oy); ctx.lineTo(width, oy);
+        ctx.moveTo(ox, 20); ctx.lineTo(ox, height - 20);
+        ctx.stroke();
+        
+        // Ticks and Labels
+        ctx.fillStyle = '#333';
+        ctx.font = '14px sans-serif';
+        
+        // X-axis
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for(var i=1; i<=3; i++) {
+            var tx = ox + i * scaleX;
+            if(tx < width) {
+                ctx.beginPath(); ctx.moveTo(tx, oy-5); ctx.lineTo(tx, oy+5); ctx.stroke();
+                ctx.fillText(i + '.0', tx, oy+8);
+            }
+        }
+        // Y-axis
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        var yVals = [0.25, -0.25];
+        for(var j=0; j<yVals.length; j++) {
+            var val = yVals[j];
+            var ty = oy - val * scaleY;
+            ctx.beginPath(); ctx.moveTo(ox-5, ty); ctx.lineTo(ox+5, ty); ctx.stroke();
+            ctx.fillText(val.toFixed(2), ox-8, ty);
+        }
+
+        // Axis Labels
+        ctx.textAlign = 'left';
+        ctx.font = '16px sans-serif';
+        ctx.fillText('x', width-20, oy-10);
+        ctx.textAlign = 'center';
+        ctx.fillText('y', ox, 20);
+        
+        // Initial Wave (t=0) Dotted
+        ctx.beginPath();
+        ctx.strokeStyle = '#ccc';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        for(var px=0; px<width; px++){
+            var x = (px - ox) / scaleX;
+            var y = amp * Math.sin(k * x);
+            if(px==0) ctx.moveTo(px, oy - y*scaleY);
+            else ctx.lineTo(px, oy - y*scaleY);
+        }
+        ctx.stroke();
+
+        // Moving Wave
+        ctx.beginPath();
+        ctx.strokeStyle = '#d9534f'; 
+        ctx.lineWidth = 3;
+        ctx.setLineDash([]);
+        
+        // y = A sin(k(x - vt))
+        for(var px=0; px<width; px++){
+            var x = (px - ox) / scaleX;
+            var y = amp * Math.sin(k * (x - v * t));
+            if(px==0) ctx.moveTo(px, oy - y*scaleY);
+            else ctx.lineTo(px, oy - y*scaleY);
+        }
+        ctx.stroke();
+        
+        // Target Marker
+        if (Math.abs(t - 0.70) < 0.005) {
+            ctx.fillStyle = '#d9534f';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('正解の波形 (t=0.70)', ox + 150, 50);
+        }
+      }
+
+      // Init
+      draw(0);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    上のシミュレーションで「再生」を押して $t=0.70\,\mathrm{s}$ で止まったときの赤線の波形。<br>
+    （原点で $y=-0.25\,\mathrm{m}$ の谷となり、 $x=1.0\,\mathrm{m}$ で $y=0.25\,\mathrm{m}$ の山となる正弦波）
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>波の進行方向と移動のまとめ</h3>
+  <ul>
+    <li><strong>進行方向の判定</strong>：「波を少し進めて、原点の変位がどう変化するか」を確認する。
+      <ul>
+        <li>波を右にずらす $\rightarrow$ グラフの右側が来る（媒質は下がる）</li>
+        <li>波を左にずらす $\rightarrow$ グラフの左側が来る（媒質は上がる）</li>
+      </ul>
+    </li>
+    <li><strong>時間の経過と波形</strong>：$t$ 秒後の波形は、元の波形を $vt$ だけ平行移動したもの。周期 $T$ を利用して、「余りの時間」分だけずらせばよい。</li>
+  </ul>
+</div>

@@ -1,34 +1,38 @@
-<h2 class="prob-title-sub">例題4：正弦波の反射（自由端）</h2>
+<h2 class="prob-title-sub">類題4：正弦波の反射（固定端）</h2>
 
 <div class="card">
   <h3>解法の指針</h3>
   <p>
-    自由端における反射は、固定端とは異なり<strong>位相がずれません</strong>。作図のポイントは以下の通りです。
+    この問題は、壁（固定端）で反射した波が、やってくる波（入射波）と重なり合ってできる<strong>定常波（定在波）</strong>を作図する問題です。<br>
+    いきなり答えの波を描こうとせず、以下の手順で論理的に作図するのが鉄則です。
   </p>
   <div class="box-note">
-    <strong>自由端反射の作図 2ステップ</strong>
+    <strong>固定端反射の作図 3ステップ</strong>
     <ol>
-      <li><strong>延長する</strong>：壁がないと仮定して、入射波をそのまま壁の奥へ描く。</li>
-      <li><strong>折り返す</strong>：<span class="highlight">壁（$x=9$）を対称軸として線対称</span>に折り返す。これが反射波になる（上下反転はしない）。</li>
+      <li><strong>延長する</strong>：壁がないと仮定して、入射波をそのまま壁の奥へ描く（透過波）。</li>
+      <li><strong>反転する</strong>：固定端では位相が $\pi$ ずれるため、壁の奥の波を<span class="highlight">上下反転</span>させる。</li>
+      <li><strong>折り返す</strong>：<strong>壁</strong>を対称軸として、反転した波を左右に折り返す。これが<strong>反射波</strong>になる。</li>
     </ol>
   </div>
   <p>
-    合成波は、固定端と同様に入射波と反射波の変位を足し合わせることで描けます。
+    最後に、入射波と反射波の高さ（変位）を足し合わせることで、<strong>合成波</strong>が得られます。
   </p>
 </div>
 
 <div class="card">
-  <h3>(1) 合成波の形成シミュレーション</h3>
+  <h3>(1) 定常波の作図と節の位置</h3>
   
+  <h4>考え方</h4>
   <p>
-    以下のシミュレーションは、波が進み、自由端（$x=9$）で反射して定常波が完成するまで進み、<strong>「答えの瞬間（入射波の谷が原点にあるとき）」に自動でストップ</strong>します。<br>
-    固定端の場合と違い、壁の位置で波が大きく振動する（腹になる）様子を確認してください。
+    問題の設定は、壁の位置が $x=9$ で、入射波の谷が原点 $O$ にある瞬間です。<br>
+    以下のシミュレーションは、波が壁に反射して定常波ができあがるまで進み、<strong>条件を満たす「答えの瞬間」に自動でストップ</strong>します。<br>
+    コマ送り機能を使って、入射波と反射波がどのように重なっていくかを確認してください。
   </p>
 
-  <div id="sim-free-reflection-v3" class="sim-embed"></div>
+  <div id="sim-fixed-reflection-v5" class="sim-embed"></div>
   <script>
     (function(){
-      var containerId = 'sim-free-reflection-v3';
+      var containerId = 'sim-fixed-reflection-v5';
       var container = document.getElementById(containerId);
       if(!container) return;
 
@@ -51,32 +55,26 @@
       var wallGrid = 9; 
       var wallX = wallGrid * grid; 
       
-      var amp = 2.0 * grid; // 振幅
-      var lambda = 8 * grid; // 波長
+      var amp = 2.0 * grid; // 振幅：縦2マス
+      var lambda = 8 * grid; // 波長：8マス
       var k = 2 * Math.PI / lambda;
-      var waveSpeed = 2.0; // 速度
+      var waveSpeed = 2.0; // 再生速度
 
       // State
-      var isAnimating = true;
+      var isAnimating = true; 
       var animId;
       var showInc = true;
       var showRef = true;
       var showComp = true;
 
-      // Target Calculation
-      // 条件: 入射波の谷(-A)が原点(x=0)に来る。
-      // 入射波: y = A * sin(k(x - frontX))
-      // x=0 で y = A * sin(-k*frontX) = -A * sin(k*frontX)
-      // -A * sin(...) = -A  =>  sin(k*frontX) = 1
-      // k*frontX = pi/2 + 2n*pi
-      // frontX = 2grid + 8n*grid
-      // 定常波完成のため frontX >= 18grid 程度必要。
-      // n=3 のとき frontX = 2 + 24 = 26 grid.
+      // ターゲット計算（答えの瞬間）
+      // 条件: x=0 で入射波が谷(-A)になる。
+      // 入射波の式: y = A * sin( k * (x - frontX) )
+      // 定常波完成のため frontX = 26 grid をターゲットにする。
+      var startFront = -4 * grid; // 初期位置
+      var targetFront = 26 * grid; // 停止位置
+      var t = startFront; 
       
-      var startFront = -4 * grid; 
-      var targetFront = 26 * grid; // 谷が原点に来る瞬間
-      var t = startFront; // t is frontX
-
       // UI Container
       var uiDiv = document.createElement('div');
       uiDiv.style.marginTop = '12px';
@@ -146,7 +144,7 @@
         for(var i=-2; i<=15; i++){
           var x = originX + i*grid;
           ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-          // Coord labels
+          // Coordinates (excluding labels that might clutter)
           if(i===0 || i===9 || i===5) {
              ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif';
              ctx.fillText(i, x+2, originY+15);
@@ -162,15 +160,17 @@
         ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(0, originY); ctx.lineTo(canvas.width, originY); ctx.stroke();
         
-        // Wall (x=9) - Free End
+        // Wall (No "P" label)
         var wx = originX + wallX;
-        ctx.setLineDash([5, 4]); 
         ctx.beginPath(); ctx.moveTo(wx, 20); ctx.lineTo(wx, canvas.height-20); ctx.stroke();
-        ctx.setLineDash([]);
         
         ctx.fillStyle = '#000'; ctx.font = 'bold 16px sans-serif';
-        // Label "P (自由端)" removed as requested
-        // Just O label
+        // "P" のラベルを削除し、"固定端"のみにする、またはシンプルに何も書かない
+        // ここでは問題設定としての「固定端」であることを示すためにテキストだけ残すか、
+        // ユーザー指示「P（固定端）を消して」を完全に守ってラベルごと消すか。
+        // -> 指示通りラベルを消します。ただし物理的な壁(線)は残します。
+        
+        // ctx.fillText('固定端', wx - 35, 40); // 削除
         ctx.fillText('O', originX - 15, originY + 20);
 
         // --- Wave Calculation ---
@@ -196,19 +196,18 @@
           ctx.globalAlpha = 1.0;
         }
 
-        // 2. Reflected Wave (Free End: No Inversion)
+        // 2. Reflected Wave
         if(showRef && t > wallX) {
           ctx.strokeStyle = '#28a745';
           ctx.lineWidth = 2;
-          ctx.setLineDash([5, 4]);
+          ctx.setLineDash([5, 4]); 
           ctx.beginPath();
           var first = true;
-          
           for(var x = -3*grid; x <= wallX; x += 2) {
             if(x < tipRef) continue;
             var x_virt = 2*wallX - x;
             var y_virt = getIncY(x_virt, t);
-            var y_ref = y_virt; // No inversion
+            var y_ref = -y_virt;
             var dx = originX + x;
             var dy = originY - y_ref;
             if(first){ ctx.moveTo(dx, dy); first=false; }
@@ -217,7 +216,7 @@
           ctx.stroke();
           ctx.setLineDash([]);
           
-          // Source (Symmetric on right)
+          // Source
           if(showInc) {
             ctx.strokeStyle = '#28a745';
             ctx.globalAlpha = 0.2;
@@ -225,7 +224,7 @@
             var f2=true;
             for(var x=wallX; x<=t; x+=2) {
               if(x > wallX + 8*grid) break;
-              var y = getIncY(x, t); // No inversion
+              var y = -getIncY(x, t);
               var dx = originX + x;
               var dy = originY - y;
               if(f2){ ctx.moveTo(dx, dy); f2=false; }
@@ -233,6 +232,9 @@
             }
             ctx.stroke();
             ctx.globalAlpha = 1.0;
+            // Center Dot for symmetry logic
+            ctx.fillStyle = '#000';
+            ctx.beginPath(); ctx.arc(wx, originY, 4, 0, Math.PI*2); ctx.fill();
           }
         }
 
@@ -248,7 +250,7 @@
              y_sum += getIncY(x, t);
              if(x >= tipRef) {
                 var x_virt = 2*wallX - x;
-                y_sum += getIncY(x_virt, t); 
+                y_sum += -getIncY(x_virt, t);
              }
              var dx = originX + x;
              var dy = originY - y_sum;
@@ -269,9 +271,7 @@
            ctx.fillText('★ 答えの瞬間 (定常波完成)', wx - 240, 34);
            
            // Nodes
-           // Free End(9) is Antinode.
-           // Nodes: 7, 3, -1
-           var nodes = [7, 3, -1];
+           var nodes = [9, 5, 1, -3];
            ctx.lineWidth = 2; 
            ctx.strokeStyle = '#333';
            
@@ -280,8 +280,9 @@
              if(nx < 0) return;
              ctx.beginPath(); ctx.arc(nx, originY, 7, 0, Math.PI*2);
              ctx.fillStyle = '#fff'; ctx.fill(); ctx.stroke();
-             // Label
-             if(n===7 || n===3) {
+             
+             // Label: "節"
+             if(n===9 || n===5 || n===1) {
                ctx.fillStyle = '#333'; ctx.font = '12px sans-serif';
                ctx.fillText('節', nx-6, originY-14);
              }
@@ -333,11 +334,11 @@
   <div class="box-note">
     <strong>解答のポイント：</strong><br>
     <ul>
-      <li><strong>合成波の形状</strong>：図の赤線のように、自由端（$x=9$）で大きく振動する（腹になる）波形になります。</li>
+      <li><strong>合成波の形状</strong>：図の赤線のように、入射波・反射波それぞれの振幅を合わせた、大きな振幅（2倍）の波になります。</li>
       <li><strong>節（ふし）の位置</strong>：
         <ul>
-          <li><strong>自由端（$x=9$）</strong>：ここは<strong>腹</strong>になります（最大振幅）。</li>
-          <li><strong>節の位置</strong>：腹から $\frac{\lambda}{4}$（2目盛り）ずれた位置に現れます。すなわち <strong>$x=7, 3, -1$</strong> が節となります（図の白丸）。</li>
+          <li><strong>固定端（$x=9$）</strong>：壁は動かないので必ず節になります。</li>
+          <li><strong>その他の節</strong>：壁から半波長（4目盛り）ごとに現れます。すなわち <strong>$x=5$、$x=1$</strong> の位置も節になります（図の白丸）。</li>
         </ul>
       </li>
     </ul>
@@ -346,18 +347,14 @@
 
 <div class="box-alert">
   <span class="box-alert-label">Point</span>
-  <h3>定常波の節と腹の位置関係（自由端 $x=9$）</h3>
+  <h3>定常波（定在波）の性質まとめ</h3>
   <p>
-    自由端（$x=9$）を基準に考えると：
+    左右から同じ波長の波が重なり合うと、その場で振動しているように見える「定常波」が生まれます。
   </p>
   <ul>
-    <li>$x=9$（自由端）：<strong>腹</strong></li>
-    <li>$x=7$（$1/4$波長）：<span class="highlight">節</span></li>
-    <li>$x=5$（$1/2$波長）：腹</li>
-    <li>$x=3$：<span class="highlight">節</span></li>
-    <li>$x=1$：腹</li>
+    <li><strong>節 (Node)</strong>：全く振動しない点。隣り合う節の間隔は $\frac{\lambda}{2}$。</li>
+    <li><strong>腹 (Antinode)</strong>：最も大きく振動する点。振幅は元の波の2倍。節と節のちょうど中間に位置します。</li>
+    <li><strong>固定端反射</strong>では、壁（端点）が必ず<strong>節</strong>になります。</li>
+    <li><strong>自由端反射</strong>では、壁（端点）が必ず<strong>腹</strong>になります。</li>
   </ul>
-  <p>
-    このように、自由端から $\lambda/4$ （2目盛り）ごとに節と腹が交互に並びます。
-  </p>
 </div>
