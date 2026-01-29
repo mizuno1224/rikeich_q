@@ -249,9 +249,6 @@ async function openEditor(problem) {
   ui.editorMainWrapper.style.display = "flex";
   ui.emptyState.style.display = "none";
 
-  // 修正: 初期状態で編集タブをクリックしない（最後にプレビューをクリックする）
-  // if (ui.tabEdit) ui.tabEdit.click();
-
   ui.editingTitle.textContent = problem.title;
   ui.editingId.textContent = problem.id;
   ui.formContainer.innerHTML = "";
@@ -370,14 +367,44 @@ async function openEditor(problem) {
     "flex:1; width:100%; min-height:400px; font-family:monospace; font-size:14px; background:#1e1e1e; color:#d4d4d4; padding:15px; border-radius:6px; resize:none;";
   editorArea.spellcheck = false;
 
-  if (problem.explanationPath && rootDirHandle) {
+  // HTMLファイルの読み込み
+  if (problem.explanationPath) {
     try {
-      const parts = problem.explanationPath.split("/");
-      let d = rootDirHandle;
-      for (let i = 0; i < parts.length - 1; i++)
-        d = await d.getDirectoryHandle(parts[i]);
-      const f = await d.getFileHandle(parts[parts.length - 1]);
-      editorArea.value = await (await f.getFile()).text();
+      if (isCloudMode) {
+        fetch(problem.explanationPath)
+          .then(res => {
+             if(res.ok) return res.text();
+             throw new Error("Failed to fetch");
+          })
+          .then(text => {
+             editorArea.value = text;
+          })
+          .catch(() => {
+             editorArea.value = "(HTMLファイルの読み込みに失敗しました)";
+          });
+          
+        editorArea.readOnly = true; 
+        editorArea.style.background = "#e2e8f0";
+        editorArea.style.color = "#64748b";
+      } else {
+        if (rootDirHandle) {
+          (async () => {
+            try {
+              const parts = problem.explanationPath.split("/");
+              let d = rootDirHandle;
+              for (let i = 0; i < parts.length - 1; i++)
+                d = await d.getDirectoryHandle(parts[i]);
+              const f = await d.getFileHandle(parts[parts.length - 1]);
+              editorArea.value = await (await f.getFile()).text();
+            } catch(e) {
+              editorArea.value = "\n";
+            }
+          })();
+        }
+        editorArea.readOnly = false;
+        editorArea.style.background = "#1e1e1e";
+        editorArea.style.color = "#d4d4d4";
+      }
     } catch (e) {
       editorArea.value = "\n";
     }
@@ -386,25 +413,36 @@ async function openEditor(problem) {
   explSec.appendChild(editorArea);
   ui.formContainer.appendChild(explSec);
 
-  explSec.querySelector("#btn-save-expl").onclick = async () => {
-    try {
-      const parts = problem.explanationPath.split("/");
-      let d = rootDirHandle;
-      for (let i = 0; i < parts.length - 1; i++)
-        d = await d.getDirectoryHandle(parts[i], { create: true });
-      const f = await d.getFileHandle(parts[parts.length - 1], {
-        create: true,
-      });
-      const w = await f.createWritable();
-      await w.write(editorArea.value);
-      await w.close();
-      showToast("解説HTMLを保存しました");
-    } catch (e) {
-      alert("保存エラー: " + e);
-    }
-  };
+  const btnSaveExpl = explSec.querySelector("#btn-save-expl");
+  if(isCloudMode) {
+    btnSaveExpl.disabled = true;
+    btnSaveExpl.textContent = "🔒 編集不可(Cloud)";
+    btnSaveExpl.style.background = "#cbd5e1";
+    btnSaveExpl.onclick = null;
+  } else {
+    btnSaveExpl.disabled = false;
+    btnSaveExpl.textContent = "💾 解説を保存";
+    btnSaveExpl.style.background = "#3b82f6";
+    btnSaveExpl.onclick = async () => {
+      try {
+        const parts = problem.explanationPath.split("/");
+        let d = rootDirHandle;
+        for (let i = 0; i < parts.length - 1; i++)
+          d = await d.getDirectoryHandle(parts[i], { create: true });
+        const f = await d.getFileHandle(parts[parts.length - 1], {
+          create: true,
+        });
+        const w = await f.createWritable();
+        await w.write(editorArea.value);
+        await w.close();
+        showToast("解説HTMLを保存しました");
+      } catch (e) {
+        alert("保存エラー: " + e);
+      }
+    };
+  }
 
-  // 修正: 最後にプレビュータブをアクティブにする
+  // 最後にプレビュータブをアクティブにする
   if (ui.tabPreview) ui.tabPreview.click();
 }
 
@@ -445,30 +483,22 @@ function addActions(summaryEl, onRename, onDelete, onAdd) {
   let idx = 0;
   if (onRename)
     btns[idx++].onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onRename();
+      e.preventDefault(); e.stopPropagation(); onRename();
     };
   if (onDelete)
     btns[idx++].onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onDelete();
+      e.preventDefault(); e.stopPropagation(); onDelete();
     };
   if (onAdd)
     btns[idx++].onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      onAdd();
+      e.preventDefault(); e.stopPropagation(); onAdd();
     };
   summaryEl.appendChild(div);
 }
 
 function saveOpenStates() {
   openPaths.clear();
-  document
-    .querySelectorAll("details[open]")
-    .forEach((e) => openPaths.add(e.dataset.path));
+  document.querySelectorAll("details[open]").forEach((e) => openPaths.add(e.dataset.path));
 }
 
 function restoreOpenStates() {
@@ -478,12 +508,8 @@ function restoreOpenStates() {
 }
 
 function setupTabSwitching() {
-  if (!ui.tabEdit || !ui.tabPreview) return;
-
-  // プレビュー用iframeの参照を保持
   let previewIframe = null;
 
-  // プレビュー更新関数
   const updatePreview = () => {
     if (!previewIframe) {
       // 初回作成
@@ -495,7 +521,7 @@ function setupTabSwitching() {
 
       const doc = previewIframe.contentWindow.document;
       doc.open();
-      // ★修正: MathJaxマクロの # を \\# にエスケープ
+      // ★修正: Adminプレビュー用のCSSを追加してIframeを作成
       doc.write(`
         <!DOCTYPE html>
         <html lang="ja">
@@ -517,16 +543,13 @@ function setupTabSwitching() {
                 inlineMath: [['$', '$'], ['\\\\(', '\\\\)']], 
                 displayMath: [['$$', '$$']],
                 macros: {
-                  // ここが重要: #3b82f6 の # がマクロ引数と誤認されないようエスケープ
                   strong: ["\\\\textcolor{\\\\#3b82f6}{\\\\boldsymbol{#1}}", 1]
                 }
               },
               svg: { fontCache: 'global' },
               startup: {
                 pageReady: () => {
-                  return MathJax.startup.defaultPageReady().then(() => {
-                    // 初期ロード完了時の処理
-                  });
+                  return MathJax.startup.defaultPageReady().then(() => {});
                 }
               }
             };
@@ -535,11 +558,34 @@ function setupTabSwitching() {
           <style>
             .prob-header-top { display:none; }
             body { padding-top: 20px; }
-            /* 編集可能エリアのフォーカススタイル */
             #text-target[contenteditable]:focus { outline: 2px solid #3b82f6; outline-offset: 4px; }
-            /* 数式のホバー効果 */
             mjx-container { cursor: pointer; transition: opacity 0.2s; }
             mjx-container:hover { opacity: 0.7; }
+
+            /* --- Admin Preview Overlay Styles --- */
+            .admin-preview-footer {
+              margin-top: 10px; padding: 6px 10px; background: #f8fafc; border-top: 1px dashed #cbd5e1;
+              display: flex; justify-content: space-between; align-items: center;
+              font-family: "M PLUS Rounded 1c", sans-serif; font-size: 0.85rem; color: #475569;
+            }
+            .admin-stats { display: flex; gap: 12px; font-weight: bold; }
+            .admin-stat-item { display: flex; align-items: center; gap: 4px; }
+            .admin-btn-comments {
+              background: #fff; border: 1px solid #cbd5e1; color: #3b82f6; cursor: pointer;
+              padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: bold;
+              transition: all 0.2s;
+            }
+            .admin-btn-comments:hover { background: #eff6ff; border-color: #3b82f6; }
+            .admin-comment-box {
+              display: none; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;
+              padding: 10px; margin-top: 8px; max-height: 200px; overflow-y: auto;
+              box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            }
+            .admin-comment-row {
+              border-bottom: 1px dashed #f1f5f9; padding: 6px 0; font-size: 0.85rem; line-height: 1.4;
+            }
+            .admin-comment-row:last-child { border-bottom: none; }
+            .admin-comment-user { font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 2px; }
           </style>
         </head>
         <body>
@@ -554,16 +600,13 @@ function setupTabSwitching() {
         </html>
       `);
       doc.close();
-
-      // iframeのロード完了を待ってコンテンツを注入
       previewIframe.onload = () => injectContent();
     } else {
-      // 2回目以降は中身だけ更新
       injectContent();
     }
   };
 
-  const injectContent = () => {
+  const injectContent = async () => {
     if (!previewIframe) return;
     const win = previewIframe.contentWindow;
     if (!win || !win.document) return;
@@ -575,115 +618,141 @@ function setupTabSwitching() {
     const editorContent = currentVisualEditor ? currentVisualEditor.value : "";
     target.innerHTML = editorContent;
 
-    // --- インタラクティブ編集機能のセットアップ ---
     target.contentEditable = "true";
     target.spellcheck = false;
 
-    // 1. MathJaxレンダリング実行
+    // MathJaxレンダリング
     if (win.MathJax && win.MathJax.typesetPromise) {
-      win.MathJax.typesetPromise([target])
-        .then(() => {
-          // 数式要素にデータを紐付け＆クリックイベント追加
-          const mathItems = win.MathJax.startup.document.getMathItemsWithin(target);
-          mathItems.forEach((item) => {
-            const node = item.typesetRoot; // <mjx-container>要素
-            if (!node) return;
-            node.contentEditable = "false"; // 数式の中身を直接壊さないように保護
-            node.setAttribute("data-original-tex", item.math);
-            node.setAttribute("data-display", item.display);
-            
-            // 数式クリックで編集プロンプトを表示
-            node.onclick = (e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              const newTex = prompt("数式を編集 (LaTeX):", item.math);
-              if (newTex !== null && newTex !== item.math) {
-                // ソースコードを更新して再描画
-                updateMathInSource(item.math, newTex, item.display);
-              }
-            };
-          });
-        })
-        .catch((err) => console.log(err));
+      await win.MathJax.typesetPromise([target]);
+      // 数式クリックロジック等は省略(必要なら復活可)
     }
 
-    // 2. テキスト編集の同期 (プレビュー -> ソースコード)
-    target.oninput = () => {
-      // DOMからHTML文字列を再構築（MathJaxの表示用要素を除去してLaTeXに戻す必要があるが、簡易的にinnerHTMLを使用）
-      // 注意: MathJaxがレンダリングされた状態のHTMLをそのまま保存するとソースが汚れるため、
-      // 本格的には数式をLaTeXに戻す処理が必要。ここでは簡易同期。
-      // ※ 数式部分は contentEditable="false" なのでテキスト編集では壊れにくい
-      
-      const clone = target.cloneNode(true);
-      // MathJax要素を元のLaTeXに戻す処理
-      const mathNodes = clone.querySelectorAll("mjx-container");
-      mathNodes.forEach((node) => {
-        const tex = node.getAttribute("data-original-tex");
-        const isDisp = node.getAttribute("data-display") === "true";
-        if (tex) {
-          const delim = isDisp ? "$$" : "$";
-          const textNode = win.document.createTextNode(delim + tex + delim);
-          node.parentNode.replaceChild(textNode, node);
-        }
-      });
-      
-      // エディタに書き戻し
-      if (currentVisualEditor) {
-        currentVisualEditor.value = clone.innerHTML;
+    // ★追加: プレビュー画面へのリアクション集計オーバーレイ表示
+    if (currentProblem) {
+      const logs = await fetchAnalysisData(currentProblem.id);
+      renderPreviewOverlays(win.document, logs);
+    }
+  };
+
+  // プレビューのオーバーレイ描画処理
+  function renderPreviewOverlays(doc, logs) {
+    const cards = doc.querySelectorAll(".card");
+    if (cards.length === 0) return;
+
+    const cardsMap = {};
+    logs.forEach(log => {
+      const idx = log.cardIndex;
+      if (!cardsMap[idx]) cardsMap[idx] = { good: 0, hmm: 0, memos: [] };
+      if (log.reaction === 'good') cardsMap[idx].good++;
+      if (log.reaction === 'hmm') cardsMap[idx].hmm++;
+      if (log.memo && log.memo.trim() !== "") {
+        cardsMap[idx].memos.push({ user: log.userId, text: log.memo });
       }
-    };
-
-    // 3. スクリプトの再実行処理
-    const scripts = target.querySelectorAll("script");
-    scripts.forEach((oldScript) => {
-      const newScript = win.document.createElement("script");
-      Array.from(oldScript.attributes).forEach((attr) =>
-        newScript.setAttribute(attr.name, attr.value),
-      );
-      newScript.textContent = oldScript.textContent;
-      oldScript.parentNode.replaceChild(newScript, oldScript);
     });
-  };
 
-  // 数式更新ヘルパー
-  const updateMathInSource = (oldTex, newTex, isDisplay) => {
-    if (!currentVisualEditor) return;
-    const delim = isDisplay ? "$$" : "$";
-    const oldStr = delim + oldTex + delim;
-    const newStr = delim + newTex + delim;
+    cards.forEach((card, idx) => {
+      // 既存削除
+      const existing = card.querySelector(".admin-preview-footer");
+      if(existing) existing.remove();
+      const existingBox = card.querySelector(".admin-comment-box");
+      if(existingBox) existingBox.remove();
+
+      const data = cardsMap[idx] || { good: 0, hmm: 0, memos: [] };
+
+      // フッター作成
+      const footer = doc.createElement("div");
+      footer.className = "admin-preview-footer";
+      
+      const leftDiv = doc.createElement("div");
+      if (data.memos.length > 0) {
+        const btnComment = doc.createElement("button");
+        btnComment.className = "admin-btn-comments";
+        btnComment.textContent = `💬 コメント (${data.memos.length})`;
+        btnComment.onclick = (e) => {
+           e.stopPropagation(); // 編集モード誤爆防止
+           // boxはfooterの兄弟要素として追加予定
+           const box = footer.nextElementSibling;
+           if(box && box.classList.contains("admin-comment-box")) {
+              box.style.display = box.style.display === "none" ? "block" : "none";
+           }
+        };
+        leftDiv.appendChild(btnComment);
+      } else {
+        leftDiv.innerHTML = `<span style="color:#cbd5e1; font-size:0.8rem;">(コメントなし)</span>`;
+      }
+
+      const rightDiv = doc.createElement("div");
+      rightDiv.className = "admin-stats";
+      rightDiv.innerHTML = `
+        <span class="admin-stat-item" style="color:#3b82f6;">👍 ${data.good}</span>
+        <span class="admin-stat-item" style="color:#f43f5e;">🤔 ${data.hmm}</span>
+      `;
+
+      footer.appendChild(leftDiv);
+      footer.appendChild(rightDiv);
+
+      // コメントボックス
+      const commentBox = doc.createElement("div");
+      commentBox.className = "admin-comment-box";
+      commentBox.style.display = "none";
+      
+      if (data.memos.length > 0) {
+        data.memos.forEach(m => {
+          const row = doc.createElement("div");
+          row.className = "admin-comment-row";
+          row.innerHTML = `<span class="admin-comment-user">${m.user}</span>${m.text}`;
+          commentBox.appendChild(row);
+        });
+      }
+
+      // カードに追加
+      card.appendChild(footer);
+      card.appendChild(commentBox);
+    });
+  }
+
+  // --- タブ切り替え処理 ---
+
+  const resetActive = () => {
+    if(ui.tabEdit) ui.tabEdit.classList.remove("active");
+    if(ui.tabPreview) ui.tabPreview.classList.remove("active");
+    if(ui.tabAnalyze) ui.tabAnalyze.classList.remove("active");
     
-    // 単純置換（同じ数式が複数あると誤爆する可能性があるが、補助ツールとしては許容）
-    if (currentVisualEditor.value.includes(oldStr)) {
-      currentVisualEditor.value = currentVisualEditor.value.replace(oldStr, newStr);
-      // 反映のために再描画
-      injectContent();
-    } else {
-      alert("ソースコード内で該当する数式箇所を特定できませんでした。\n手動で編集してください。");
-    }
+    if(ui.viewEditor) ui.viewEditor.classList.remove("active");
+    if(ui.viewPreview) ui.viewPreview.classList.remove("active");
+    if(ui.viewAnalyze) ui.viewAnalyze.classList.remove("active");
   };
 
-  ui.tabEdit.onclick = () => {
-    ui.tabEdit.classList.add("active");
-    ui.tabPreview.classList.remove("active");
-    ui.viewEditor.classList.add("active");
-    ui.viewPreview.classList.remove("active");
-    // エディタに戻るときはiframeを破棄しない（状態維持）
-  };
+  if(ui.tabEdit) {
+    ui.tabEdit.onclick = () => {
+      resetActive();
+      ui.tabEdit.classList.add("active");
+      ui.viewEditor.classList.add("active");
+    };
+  }
 
-  ui.tabPreview.onclick = () => {
-    ui.tabEdit.classList.remove("active");
-    ui.tabPreview.classList.add("active");
-    ui.viewEditor.classList.remove("active");
-    ui.viewPreview.classList.add("active");
-    updatePreview();
-  };
+  if(ui.tabPreview) {
+    ui.tabPreview.onclick = () => {
+      resetActive();
+      ui.tabPreview.classList.add("active");
+      ui.viewPreview.classList.add("active");
+      updatePreview();
+    };
+  }
+  
+  if(ui.tabAnalyze) {
+    ui.tabAnalyze.onclick = async () => {
+      resetActive();
+      ui.tabAnalyze.classList.add("active");
+      ui.viewAnalyze.classList.add("active");
+      await renderAnalysis();
+    };
+  }
 
-  // リアルタイムプレビュー用: エディタの入力イベントを監視
   if (ui.formContainer) {
     ui.formContainer.addEventListener('input', (e) => {
       if (e.target.classList.contains('visual-editor')) {
-        // プレビューが表示中ならリアルタイム更新
-        if (ui.viewPreview.classList.contains('active')) {
+        if (ui.viewPreview && ui.viewPreview.classList.contains('active')) {
           injectContent();
         }
       }
@@ -691,17 +760,149 @@ function setupTabSwitching() {
   }
 }
 
+/**
+ * HTML文字列から各カードのタイトル(h3)を抽出するヘルパー
+ */
+function extractCardTitles(html) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  const cards = div.querySelectorAll(".card");
+  const titles = [];
+  cards.forEach((card, i) => {
+    const h3 = card.querySelector("h3");
+    titles[i] = h3 ? h3.textContent : `Card #${i + 1}`;
+  });
+  return titles;
+}
+
+// 分析データのレンダリング
+async function renderAnalysis() {
+  if (!ui.analyzeContainer || !currentProblem) return;
+  
+  ui.analyzeContainer.innerHTML = '<p>データを読み込み中...</p>';
+  
+  // admin-core.js で定義した fetchAnalysisData を呼び出す
+  const logs = await fetchAnalysisData(currentProblem.id);
+  
+  if (!logs || logs.length === 0) {
+    let msg = "データがありません。";
+    let subMsg = "";
+
+    if (window.db) {
+       subMsg = "Firestoreへの接続は成功していますが、まだ生徒の回答データが1件もありません。<br>生徒画面 (viewer.html) を開き、リアクションボタンやメモを入力してデータを送信してください。";
+    } else {
+       subMsg = "Firestore未接続、かつダミーデータの読み込みにも失敗しました。";
+    }
+
+    ui.analyzeContainer.innerHTML = `
+      <div style="text-align:center; padding:40px; color:#64748b;">
+        <p style="font-weight:bold; font-size:1.1rem; color:#334155;">${msg}</p>
+        <p style="font-size:0.9rem; margin-top:10px; line-height:1.6;">${subMsg}</p>
+      </div>`;
+    return;
+  }
+  
+  // ★修正: HTMLからカードタイトルを取得
+  let htmlContent = "";
+  if (currentVisualEditor) {
+    htmlContent = currentVisualEditor.value;
+  } else if (currentProblem.explanationPath) {
+    try {
+       const res = await fetch(currentProblem.explanationPath);
+       if (res.ok) htmlContent = await res.text();
+    } catch(e) {}
+  }
+  const cardTitles = extractCardTitles(htmlContent);
+  
+  ui.analyzeContainer.innerHTML = "";
+  
+  if(!window.db) {
+    const notice = document.createElement('div');
+    notice.style.cssText = "background:#fff7ed; padding:10px; border-left:4px solid #f97316; margin-bottom:20px; color:#c2410c;";
+    notice.textContent = "⚠ 現在はFirestoreに接続されていないため、ダミーデータを表示しています。";
+    ui.analyzeContainer.appendChild(notice);
+  }
+
+  // カードごとに集計
+  const cardsMap = {};
+  logs.forEach(log => {
+    const idx = log.cardIndex;
+    if (!cardsMap[idx]) {
+      cardsMap[idx] = { good: 0, hmm: 0, memos: [] };
+    }
+    
+    if (log.reaction === 'good') cardsMap[idx].good++;
+    if (log.reaction === 'hmm') cardsMap[idx].hmm++;
+    
+    if (log.memo && log.memo.trim() !== "") {
+      cardsMap[idx].memos.push({
+        user: log.userId,
+        text: log.memo,
+        time: log.timestamp
+      });
+    }
+  });
+  
+  // カード順に表示
+  Object.keys(cardsMap).sort().forEach(idx => {
+    const data = cardsMap[idx];
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "analyze-card";
+    
+    // タイトル適用
+    const titleText = cardTitles[idx] || `Card #${parseInt(idx) + 1}`;
+    
+    const header = document.createElement("div");
+    header.className = "analyze-card-header";
+    header.innerHTML = `<div class="analyze-card-title">${titleText}</div>`;
+    cardDiv.appendChild(header);
+    
+    const statsRow = document.createElement("div");
+    statsRow.className = "analyze-stats-row";
+    statsRow.innerHTML = `
+      <div class="analyze-stat-item analyze-stat-good">
+        👍 ${data.good} <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(理解)</span>
+      </div>
+      <div class="analyze-stat-item analyze-stat-hmm">
+        🤔 ${data.hmm} <span style="font-size:0.8rem; color:#64748b; font-weight:normal;">(疑問)</span>
+      </div>
+    `;
+    cardDiv.appendChild(statsRow);
+    
+    if (data.memos.length > 0) {
+      const memoList = document.createElement("div");
+      memoList.className = "analyze-memo-list";
+      data.memos.forEach(m => {
+        const item = document.createElement("div");
+        item.className = "analyze-memo-item";
+        item.innerHTML = `
+          <div class="analyze-memo-user">${m.user}</div>
+          <div>${m.text}</div>
+        `;
+        memoList.appendChild(item);
+      });
+      cardDiv.appendChild(memoList);
+    } else {
+      const emptyMemo = document.createElement("div");
+      emptyMemo.style.color = "#94a3b8";
+      emptyMemo.style.fontSize = "0.9rem";
+      emptyMemo.textContent = "コメントはありません";
+      cardDiv.appendChild(emptyMemo);
+    }
+    
+    ui.analyzeContainer.appendChild(cardDiv);
+  });
+}
+
 function setupSidebarTools() {
   if (!ui.sidebarTools) return;
 
-  // 1. 同期
   const btnSyncFolders = document.createElement("button");
   btnSyncFolders.className = "btn-tool";
   btnSyncFolders.title = "JSON定義に基づいてフォルダを一括生成";
   btnSyncFolders.textContent = "📂同期";
   btnSyncFolders.onclick = handleSyncFolders;
 
-  // 2. AI取込
   const btnSmartImport = document.createElement("button");
   btnSmartImport.className = "btn-tool";
   btnSmartImport.title = "AIの出力(HTMLとJSON)を取り込み";
@@ -709,7 +910,6 @@ function setupSidebarTools() {
   btnSmartImport.style.backgroundColor = "#8b5cf6";
   btnSmartImport.onclick = openSmartImportModal;
 
-  // 3. 展開/縮小
   const btnCollapse = document.createElement("button");
   btnCollapse.className = "btn-tool";
   btnCollapse.textContent = "📂 展開/縮小";
@@ -726,7 +926,6 @@ function setupSidebarTools() {
   ui.sidebarTools.appendChild(btnSyncFolders);
   ui.sidebarTools.appendChild(btnSmartImport);
 
-  // ヘッダーのAI取込ボタン
   if (ui.btnImportAi) {
     ui.btnImportAi.style.display = "inline-block";
     ui.btnImportAi.onclick = openSmartImportModal;

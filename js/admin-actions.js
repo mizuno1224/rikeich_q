@@ -5,7 +5,7 @@
 async function loadMaterial(index) {
   if (index < 0 || index >= manifestData.length) return;
 
-  // ★修正: 開いたタブのインデックスを保存
+  // 開いたタブのインデックスを保存
   activeMaterialIndex = index;
   localStorage.setItem("admin_last_material_index", index);
 
@@ -13,30 +13,52 @@ async function loadMaterial(index) {
   currentMaterialPath = item.path;
   currentMaterialType = item.type || "standard";
 
-  if (currentMaterialType === "exam_year")
-    ui.btnAddSubject.textContent = "＋年度を追加";
-  else if (currentMaterialType === "exam_univ")
-    ui.btnAddSubject.textContent = "＋大学を追加";
-  else ui.btnAddSubject.textContent = "＋分野を追加";
+  // UI更新
+  if (ui.btnAddSubject) {
+    if (currentMaterialType === "exam_year")
+      ui.btnAddSubject.textContent = "＋年度を追加";
+    else if (currentMaterialType === "exam_univ")
+      ui.btnAddSubject.textContent = "＋大学を追加";
+    else ui.btnAddSubject.textContent = "＋分野を追加";
+  }
 
   try {
-    const parts = item.path.split("/");
-    let dir = rootDirHandle;
-    for (let i = 0; i < parts.length - 1; i++) {
-      dir = await dir.getDirectoryHandle(parts[i]);
+    if (isCloudMode) {
+      // ★クラウドモード: fetchで取得
+      const res = await fetch(item.path);
+      if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+      currentMaterialData = await res.json();
+    } else {
+      // ★ローカルモード: FileSystemAPI
+      // data/materials/foo.json のようなパスを分解してハンドル取得
+      if (!rootDirHandle) throw new Error("Root handle is missing");
+      
+      const parts = item.path.split("/");
+      let dir = rootDirHandle;
+      // パスの先頭から順にディレクトリを辿る (重複防止のためparts[0]がルート名と一致する場合はスキップ等の配慮も可能だが、基本はそのままでOK)
+      for (let i = 0; i < parts.length - 1; i++) {
+        // "data" フォルダなどが起点
+        if (parts[i] === "") continue;
+        dir = await dir.getDirectoryHandle(parts[i]);
+      }
+      const fh = await dir.getFileHandle(parts[parts.length - 1]);
+      const file = await fh.getFile();
+      currentMaterialData = JSON.parse(await file.text());
     }
-    const fh = await dir.getFileHandle(parts[parts.length - 1]);
-    const file = await fh.getFile();
-    currentMaterialData = JSON.parse(await file.text());
   } catch (e) {
     console.error(e);
     showToast(`教材読込失敗: ${item.name}`, true);
+    // 読み込み失敗時は空データをセットしてアプリが落ちないようにする
     currentMaterialData = { materialName: item.name, subjects: [] };
   }
+  
   renderApp();
 }
 
 async function saveAll() {
+  // クラウドモードなら保存不可
+  if (isCloudMode) return;
+  
   if (!rootDirHandle) return;
   saveOpenStates();
 
@@ -76,6 +98,8 @@ async function saveAll() {
 // --- Subject / Field Handlers ---
 
 function handleAddSubject() {
+  if (isCloudMode) { alert("閲覧専用モードのため編集できません"); return; }
+
   if (
     currentMaterialType === "standard" ||
     currentMaterialType === "lead_alpha" ||
@@ -117,6 +141,7 @@ function handleAddSubject() {
 }
 
 async function handleRenameSubject(sub, label) {
+  if (isCloudMode) return;
   const newName = prompt(`${label}名を変更:`, sub.subjectName);
   if (!newName || newName === sub.subjectName) return;
 
@@ -153,6 +178,7 @@ async function handleRenameSubject(sub, label) {
 }
 
 async function handleDeleteSubject(sub, idx) {
+  if (isCloudMode) return;
   if (!confirm(`【警告】${sub.subjectName} を削除しますか？`)) return;
   if (sub.folderName && sub.folderName.length > 0) {
     try {
@@ -168,6 +194,8 @@ async function handleDeleteSubject(sub, idx) {
 }
 
 async function handleAddField(sub, label) {
+  if (isCloudMode) return;
+
   const existingParts = [
     ...new Set(
       sub.fields
@@ -232,6 +260,7 @@ async function handleAddField(sub, label) {
 }
 
 async function handleRenameField(sub, fld, label) {
+  if (isCloudMode) return;
   const newName = prompt(
     `${label}名(表示名)を変更:\n※「編 / 章」形式も可能`,
     fld.fieldName,
@@ -243,6 +272,7 @@ async function handleRenameField(sub, fld, label) {
 }
 
 async function handleDeleteField(sub, fld, idx) {
+  if (isCloudMode) return;
   if (!confirm(`分野「${fld.fieldName}」とファイルを削除しますか？`)) return;
 
   if (currentMaterialType !== "exam_year") {
@@ -268,6 +298,8 @@ async function handleDeleteField(sub, fld, idx) {
 // --- Problem Handlers ---
 
 async function createNewProblem(subject, field) {
+  if (isCloudMode) return;
+
   const id = prompt("問題ID/ファイル名 (例: 001_motion):");
   if (!id) return;
   if (field.problems.find((p) => p.id === id)) {
@@ -331,6 +363,7 @@ async function createNewProblem(subject, field) {
 }
 
 async function handleDeleteProblem(sub, fld, prob, idx) {
+  if (isCloudMode) return;
   if (!confirm(`問題「${prob.title}」を削除しますか？`)) return;
   fld.problems.splice(idx, 1);
   try {
@@ -345,6 +378,7 @@ async function handleDeleteProblem(sub, fld, prob, idx) {
 
   if (currentProblem === prob) {
     ui.editorMainWrapper.style.display = "none";
+    ui.emptyState.style.display = "block";
     currentProblem = null;
   }
   renderTree();
@@ -352,6 +386,7 @@ async function handleDeleteProblem(sub, fld, prob, idx) {
 }
 
 async function handleDropProblem(e, targetSub, targetFld) {
+  if (isCloudMode) return;
   e.preventDefault();
   document
     .querySelectorAll(".drag-over")
@@ -423,6 +458,8 @@ async function handleDropProblem(e, targetSub, targetFld) {
 }
 
 async function createNewMaterial() {
+  if (isCloudMode) return;
+
   const name = prompt("新しい教材名:");
   if (!name) return;
   const id = prompt("教材ID:", "chemistry");
@@ -459,6 +496,8 @@ async function createNewMaterial() {
 // --- Import & Sync ---
 
 async function handleSyncFolders() {
+  if (isCloudMode) { alert("クラウドモードでは実行できません"); return; }
+
   if (!currentMaterialData) return;
   const matName = currentMaterialData.materialName;
   if (
@@ -505,7 +544,7 @@ function setupImportModalEvents() {
 
       try {
         await executeSmartImport(htmlVal, jsonVal);
-        // 修正: 入力欄のリセットとモーダル非表示を行わない (連続実行可能にする)
+        // 入力欄のリセットとモーダル非表示を行わない (連続実行可能にする)
         showToast("続けて登録できます");
       } catch (e) {
         alert("登録エラー: " + e.message);
@@ -515,6 +554,8 @@ function setupImportModalEvents() {
 }
 
 function openSmartImportModal() {
+  if (isCloudMode) { alert("クラウドモードでは実行できません"); return; }
+
   // 既存のモーダル要素を使用
   const modal = ui.importModal;
   if (modal) {
@@ -572,7 +613,7 @@ function createDynamicImportModal() {
       const jsonText = modalContent.querySelector("#ai-import-json").value;
       try {
         await executeSmartImport(htmlText, jsonText);
-        // 修正: モーダルを閉じない
+        // モーダルを閉じない
         showToast("続けて登録できます");
       } catch (e) {
         alert("エラー:\n" + e.message);

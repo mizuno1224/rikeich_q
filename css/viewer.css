@@ -140,6 +140,12 @@ body.pointer-active .sim-embed {
   box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
 }
 
+/* シミュレーション内のCanvas操作を有効化（スクロール阻害防止） */
+.sim-embed canvas {
+  touch-action: none;
+  max-width: 100%;
+}
+
 /* --- ポインター用キャンバス --- */
 #pointer-canvas {
   position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -151,6 +157,101 @@ body.pointer-active .sim-embed {
 /* --- MathJax --- */
 mjx-container { font-size: 1.15em !important; }
 
+/* 数式が長い場合に横スクロールさせる (スマホ対策) */
+mjx-container[display="true"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  display: block !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* --- カード内リアクションUI (追加) --- */
+.card {
+  position: relative;
+  margin-bottom: 2em; /* リアクションエリア用の余白 */
+  padding-bottom: 0.5em;
+}
+
+.card-reaction-footer {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px dashed #e2e8f0;
+  display: flex;
+  align-items: flex-start; /* メモ欄が広がってもボタンは上寄せ */
+  justify-content: space-between;
+  gap: 15px; /* 要素間の隙間を確保 */
+  flex-wrap: wrap; /* 幅が狭い場合に折り返す安全策 */
+}
+
+.card-memo-area {
+  flex: 1;
+  min-width: 200px; /* 極端に狭くなるのを防ぐ */
+  /* ↓重要: Flexアイテム内でのコンテンツはみ出し防止 */
+  min-width: 0; 
+}
+
+.card-memo-input {
+  width: 100%;
+  height: 40px;
+  min-height: 36px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 0.85rem;
+  resize: vertical;
+  background: #f8fafc;
+  transition: all 0.2s;
+  box-sizing: border-box; /* パディングを含めて幅計算し、はみ出し防止 */
+}
+.card-memo-input:focus {
+  background: #fff;
+  border-color: var(--col-primary);
+  outline: none;
+  height: 60px; /* フォーカス時に少し広げる */
+}
+
+.card-reaction-buttons {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  margin-left: auto; /* 右寄せを維持 */
+}
+
+.btn-reaction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s;
+  color: #64748b;
+}
+
+.btn-reaction:hover {
+  background: #f1f5f9;
+  transform: translateY(-2px);
+}
+
+.btn-reaction.active {
+  background: #fff1f2; /* 薄い赤 */
+  border-color: var(--col-primary);
+  color: var(--col-primary);
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.2);
+}
+
+.btn-reaction span {
+  font-size: 0.65rem;
+  margin-top: 2px;
+  font-weight: bold;
+}
+
 /* --- レスポンシブ対応 (スマホ・タブレット) --- */
 @media (max-width: 768px) {
   body { background: #fff; }
@@ -159,6 +260,21 @@ mjx-container { font-size: 1.15em !important; }
 
   .explanation-area {
     padding: 20px 15px;
+    width: 100%;
+  }
+
+  /* スマホでは縦並びにして確実に重なりを防ぐ */
+  .card-reaction-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .card-reaction-buttons {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+  .card-memo-area {
     width: 100%;
   }
   
@@ -172,7 +288,8 @@ mjx-container { font-size: 1.15em !important; }
   .sim-controls-panel,
   #pointer-canvas,
   #btn-toggle-pointer,
-  .btn-back-circle {
+  .btn-back-circle,
+  .card-reaction-footer { /* 印刷時はリアクションエリアを隠す */
     display: none !important;
   }
 

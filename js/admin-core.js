@@ -8,11 +8,12 @@ let currentMaterialType = "standard";
 
 let rootDirHandle = null;
 let explanationsDirHandle = null;
+let isCloudMode = false; // クラウドモードフラグ
 
 let activeMaterialIndex = 0;
 let openPaths = new Set();
-let currentProblem = null; // 現在編集中の問題オブジェクト
-let currentVisualEditor = null; // 現在のエディタ要素(textarea)
+let currentProblem = null; 
+let currentVisualEditor = null; 
 
 // Drag & Drop State
 let dragSrcProb = null;
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // DOM要素をキャッシュ
   ui = {
     btnOpen: document.getElementById("btn-open"),
+    btnOpenCloud: document.getElementById("btn-open-cloud"),
     btnSave: document.getElementById("btn-save"),
     btnAddSubject: document.getElementById("btn-add-subject"),
     sidebarTools: document.querySelector(".sidebar-tools"),
@@ -33,12 +35,19 @@ document.addEventListener("DOMContentLoaded", () => {
     tabsArea: document.getElementById("material-tabs"),
     treeRoot: document.getElementById("tree-root"),
     editorMainWrapper: document.getElementById("editor-main-wrapper"),
+    
+    // Tabs & Views
     tabEdit: document.getElementById("tab-edit"),
     tabPreview: document.getElementById("tab-preview"),
-    formContainer: document.getElementById("form-container"),
+    tabAnalyze: document.getElementById("tab-analyze"),
     viewEditor: document.getElementById("view-editor"),
     viewPreview: document.getElementById("view-preview"),
+    viewAnalyze: document.getElementById("view-analyze"),
+    
+    formContainer: document.getElementById("form-container"),
     previewContainer: document.getElementById("preview-container"),
+    analyzeContainer: document.getElementById("analyze-container"),
+    
     toastContainer: document.getElementById("toast-container"),
     emptyState: document.querySelector(".empty-state"),
 
@@ -48,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     btnCloseImport: document.getElementById("btn-close-import"),
     btnExecImport: document.getElementById("btn-exec-import"),
     impHtml: document.getElementById("imp-html"),
-    impJs: document.getElementById("imp-js"), // 念のため残存対応
+    impJs: document.getElementById("imp-js"),
     impJson: document.getElementById("imp-json"),
     importTargetMaterial: document.getElementById("import-target-material"),
 
@@ -66,15 +75,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Event Listeners Initialization ---
 
-  // 1. Project Open
+  // 1. Project Open (Local)
   ui.btnOpen.addEventListener("click", async () => {
     try {
+      isCloudMode = false; // ローカルモード
       rootDirHandle = await window.showDirectoryPicker();
 
       try {
         const dataDir = await rootDirHandle.getDirectoryHandle("data");
-        explanationsDirHandle =
-          await dataDir.getDirectoryHandle("explanations");
+        explanationsDirHandle = await dataDir.getDirectoryHandle("explanations");
       } catch (e) {
         showToast("エラー: data/explanations フォルダが見つかりません", true);
         return;
@@ -95,44 +104,87 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      ui.initialMsg.style.display = "none";
-      ui.mainUi.style.display = "flex";
-      ui.btnSave.disabled = false;
-      ui.btnOpen.textContent = "📂 " + rootDirHandle.name;
-
-      renderTabs();
-
-      // ★修正: 前回開いていたタブ番号を復元
-      const lastIdx = localStorage.getItem("admin_last_material_index");
-      const targetIdx =
-        lastIdx && manifestData[lastIdx] ? parseInt(lastIdx) : 0;
-
-      if (manifestData.length > 0) {
-        await loadMaterial(targetIdx);
-      } else {
-        ui.treeRoot.innerHTML =
-          '<div style="padding:20px; color:#666;">教材がありません。「＋」ボタンで追加してください。</div>';
-      }
+      setupAppReady(rootDirHandle.name);
     } catch (err) {
       console.error(err);
     }
   });
 
+  // Project Open (Cloud)
+  if(ui.btnOpenCloud) {
+    ui.btnOpenCloud.addEventListener("click", async () => {
+      try {
+        isCloudMode = true; // クラウドモード
+        rootDirHandle = null; // ローカルハンドルは無し
+        
+        // サーバー上の manifest.json を取得
+        const res = await fetch("data/manifest.json");
+        if(!res.ok) throw new Error("manifest.json load failed");
+        manifestData = await res.json();
+        
+        showToast("クラウド上のデータを読み込みました (編集不可)");
+        setupAppReady("Cloud Mode (Read Only)");
+        
+        // 保存ボタン等は無効化
+        ui.btnSave.disabled = true;
+        ui.btnAddSubject.disabled = true;
+      } catch(err) {
+        console.error(err);
+        showToast("クラウドデータの読み込みに失敗しました", true);
+      }
+    });
+  }
+
   // 2. Save All
-  ui.btnSave.addEventListener("click", saveAll);
+  ui.btnSave.addEventListener("click", () => {
+    if(isCloudMode) {
+      alert("クラウドモードでは保存できません。編集するにはローカルフォルダを開いてください。");
+      return;
+    }
+    saveAll();
+  });
 
   // 3. Add Subject/Category Button
   ui.btnAddSubject.addEventListener("click", handleAddSubject);
 
-  // 4. Tab Switching (Editor <-> Preview)
+  // 4. Tab Switching
   setupTabSwitching();
 
-  // 5. Sidebar Tools (Sync, AI Import, Collapse)
+  // 5. Sidebar Tools
   setupSidebarTools();
 
   // 6. Import Modal Events
   setupImportModalEvents();
 });
+
+// アプリ起動時の共通処理
+async function setupAppReady(name) {
+  ui.initialMsg.style.display = "none";
+  ui.mainUi.style.display = "flex";
+  
+  if(!isCloudMode) {
+    ui.btnSave.disabled = false;
+    ui.btnOpen.textContent = "📂 " + name;
+    ui.btnOpenCloud.style.display = "none";
+  } else {
+    ui.btnSave.disabled = true;
+    ui.btnOpenCloud.textContent = "☁️ " + name;
+    ui.btnOpen.style.display = "none";
+  }
+
+  renderTabs();
+
+  // 前回開いていたタブ番号を復元
+  const lastIdx = localStorage.getItem("admin_last_material_index");
+  const targetIdx = lastIdx && manifestData[lastIdx] ? parseInt(lastIdx) : 0;
+
+  if (manifestData.length > 0) {
+    await loadMaterial(targetIdx);
+  } else {
+    ui.treeRoot.innerHTML =
+      '<div style="padding:20px; color:#666;">教材がありません。</div>';
+  }
+}
 
 // --- Common Helpers ---
 function showToast(msg, err) {
@@ -142,4 +194,56 @@ function showToast(msg, err) {
   if (err) t.style.background = "#ef4444";
   if (ui.toastContainer) ui.toastContainer.appendChild(t);
   setTimeout(() => t.remove(), 3000);
+}
+
+/**
+ * 集計データを取得する関数
+ * Firestoreが有効な場合は本番データを、無効な場合はダミーデータを返す
+ */
+async function fetchAnalysisData(problemId) {
+  // 1. Firestore接続確認
+  if (window.db && window.firebase) {
+    try {
+      const logsRef = window.db.collection("student_logs");
+      const snapshot = await logsRef.where("contentId", "==", problemId).get();
+      
+      if (snapshot.empty) return [];
+
+      const logs = [];
+      snapshot.forEach(doc => {
+        logs.push(doc.data());
+      });
+      return logs;
+    } catch (e) {
+      console.error("Firestore Error:", e);
+      return [];
+    }
+  } else {
+    // 2. 未接続時はデモ用のダミーデータを生成して返す
+    console.warn("Firestore not connected. Showing demo data.");
+    
+    const demoLogs = [];
+    const users = ["demo_student_A", "demo_student_B", "demo_student_C"];
+    
+    // カード0〜4に対して適当なデータを生成
+    for (let cardIdx = 0; cardIdx < 5; cardIdx++) {
+      users.forEach(u => {
+        // ランダムに反応させる
+        if (Math.random() > 0.4) {
+          const rType = Math.random() > 0.3 ? "good" : "hmm";
+          const memo = Math.random() > 0.8 ? "ここの式変形がわかりません" : "";
+          
+          demoLogs.push({
+            contentId: problemId,
+            cardIndex: cardIdx,
+            userId: u,
+            reaction: rType,
+            memo: memo,
+            timestamp: new Date()
+          });
+        }
+      });
+    }
+    return demoLogs;
+  }
 }

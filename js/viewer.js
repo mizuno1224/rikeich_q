@@ -3,6 +3,10 @@
 // ポインターインスタンスを保持する変数
 let pointerInstance = null;
 
+// 現在の表示中の問題IDまたはパスを保持
+let currentProbId = null;
+let currentPath = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
 
@@ -12,6 +16,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // 従来のパラメータ
   const probId = params.get("id");
   const srcPath = params.get("src");
+
+  // ID保存
+  if (probId) currentProbId = probId;
+  if (directPath) currentPath = directPath;
+
+  // ユーザー識別子の初期化（なければ生成して保存）
+  initUserId();
 
   // --- ポインター制御の初期化 (共通) ---
   const btnPointer = document.getElementById("btn-toggle-pointer");
@@ -54,6 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /**
+ * ユーザーID管理 (LocalStorage)
+ * 教員画面で個別の生徒を識別するために使用
+ */
+function initUserId() {
+  let uid = localStorage.getItem("rikeich_uid");
+  if (!uid) {
+    uid = "user_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("rikeich_uid", uid);
+  }
+  return uid;
+}
+
+function getUserId() {
+  return localStorage.getItem("rikeich_uid") || "unknown";
+}
+
+/**
  * パスから直接HTMLを読み込む (New)
  */
 function loadExplanationByPath(path) {
@@ -75,7 +103,6 @@ function loadExplanationByPath(path) {
       // HTML内の見出しタグからタイトルを抽出してヘッダーに反映
       const heading = textTarget.querySelector("h2, h3");
       if (heading) {
-        // "第1問：..." のような部分のみ抽出するか、テキスト全体を使う
         updateTitle(heading.textContent);
       }
     })
@@ -91,7 +118,6 @@ function loadExplanationByPath(path) {
  * IDからJSONを検索して読み込む (Legacy)
  */
 function loadProblemById(id, srcPath) {
-  // srcパラメータがなければ旧来の problems.json をフォールバックとして使用
   const fetchTarget = srcPath ? srcPath : "problems.json";
 
   fetch(fetchTarget)
@@ -185,7 +211,10 @@ function renderExplanation(container, html) {
   // 3. 埋め込みスクリプトの実行
   executeInlineScripts(container);
 
-  // 4. Observer更新 (目次等の追従用)
+  // 4. リアクション機能の注入（★追加）
+  setupCardReactions(container);
+
+  // 5. Observer更新 (目次等の追従用)
   if (window.updateObserver) setTimeout(window.updateObserver, 100);
 }
 
@@ -195,7 +224,6 @@ function showError(msg) {
     target.innerHTML = `<p style="padding:20px; color:#ef4444;">${msg}</p>`;
 }
 
-// HTML文字列として挿入された script タグを実行可能にするヘルパー
 function executeInlineScripts(element) {
   const scripts = element.querySelectorAll("script");
   scripts.forEach((oldScript) => {
@@ -206,4 +234,140 @@ function executeInlineScripts(element) {
     newScript.textContent = oldScript.textContent;
     oldScript.parentNode.replaceChild(newScript, oldScript);
   });
+}
+
+/**
+ * 各カード(.card)にリアクションボタンとメモ欄を追加し、
+ * LocalStorageおよびクラウド保存のロジックを紐付ける
+ */
+function setupCardReactions(container) {
+  const cards = container.querySelectorAll(".card");
+  if (cards.length === 0) return;
+
+  // ★修正: コンテンツIDの生成ロジック
+  // IDパラメータがない場合(path指定の場合)は、ファイル名(拡張子なし)をIDとして扱う
+  // これにより admin.html 側の集計(ID一致)と整合させる
+  let contentId = currentProbId;
+  if (!contentId && currentPath) {
+     const basename = currentPath.split('/').pop(); // "q_001.html"
+     contentId = basename.replace(/\.[^/.]+$/, ""); // "q_001"
+  }
+  if (!contentId) contentId = 'unknown_content';
+
+  cards.forEach((card, index) => {
+    // 1. UIの生成
+    const footer = document.createElement("div");
+    footer.className = "card-reaction-footer";
+
+    // メモ欄
+    const memoArea = document.createElement("div");
+    memoArea.className = "card-memo-area";
+    const textarea = document.createElement("textarea");
+    textarea.className = "card-memo-input";
+    textarea.placeholder = "疑問点メモ";
+    memoArea.appendChild(textarea);
+
+    // ボタンエリア
+    const btnArea = document.createElement("div");
+    btnArea.className = "card-reaction-buttons";
+
+    const reactionTypes = [
+      { id: "good", icon: "👍", label: "理解" },
+      { id: "hmm",  icon: "🤔", label: "疑問" },
+    ];
+
+    const buttons = {};
+
+    reactionTypes.forEach(type => {
+      const btn = document.createElement("button");
+      btn.className = "btn-reaction";
+      btn.innerHTML = `${type.icon}`; 
+      btn.title = type.label;
+      
+      btn.addEventListener("click", () => {
+        const isActive = btn.classList.contains("active");
+        Object.values(buttons).forEach(b => b.classList.remove("active"));
+        
+        const newValue = isActive ? null : type.id;
+        if (!isActive) {
+          btn.classList.add("active");
+        }
+
+        saveReactionData(contentId, index, "reaction", newValue);
+      });
+
+      buttons[type.id] = btn;
+      btnArea.appendChild(btn);
+    });
+
+    footer.appendChild(memoArea);
+    footer.appendChild(btnArea);
+    card.appendChild(footer);
+
+    // 2. データの復元 (LocalStorage)
+    const savedData = loadReactionData(contentId, index);
+    if (savedData) {
+      if (savedData.memo) textarea.value = savedData.memo;
+      if (savedData.reaction && buttons[savedData.reaction]) {
+        buttons[savedData.reaction].classList.add("active");
+      }
+    }
+
+    // 3. メモの保存イベント
+    textarea.addEventListener("change", (e) => {
+      saveReactionData(contentId, index, "memo", e.target.value);
+    });
+  });
+}
+
+/**
+ * データの保存処理
+ */
+function saveReactionData(contentId, cardIndex, key, value) {
+  const userId = getUserId();
+  const storageKey = `rikeich_data_${contentId}_${cardIndex}`;
+
+  // 1. ローカルデータの読み出しと更新
+  let data = {};
+  try {
+    const json = localStorage.getItem(storageKey);
+    if (json) data = JSON.parse(json);
+  } catch(e) {}
+
+  data[key] = value;
+  data.updatedAt = new Date().toISOString();
+
+  // 2. LocalStorageへ保存
+  localStorage.setItem(storageKey, JSON.stringify(data));
+
+  // 3. クラウド送信 (教員画面用)
+  if (window.db && window.collection && window.doc && window.setDoc) {
+     const docId = `${userId}_${contentId}_${cardIndex}`;
+     // コレクション名: student_logs
+     const docRef = window.doc(window.db, "student_logs", docId);
+     
+     window.setDoc(docRef, {
+       userId: userId,
+       contentId: contentId,
+       cardIndex: cardIndex,
+       reaction: data.reaction || null,
+       memo: data.memo || "",
+       timestamp: new Date()
+     }, { merge: true }).catch(err => console.error("Cloud save failed:", err));
+  } else {
+    // 接続未完了時のシミュレーションログ
+    console.log(`[TeacherView Sync] User:${userId} Content:${contentId} Card:${cardIndex} ${key}=${value}`);
+  }
+}
+
+/**
+ * データの読み込み (LocalStorageのみ)
+ */
+function loadReactionData(contentId, cardIndex) {
+  const storageKey = `rikeich_data_${contentId}_${cardIndex}`;
+  try {
+    return JSON.parse(localStorage.getItem(storageKey));
+  } catch(e) {
+    return null;
+  }
 }

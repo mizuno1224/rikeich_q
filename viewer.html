@@ -1,64 +1,98 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <title>問題解説ビューアー</title>
 
-    <link rel="stylesheet" href="css/base.css" />
-    <link rel="stylesheet" href="css/components.css" />
-    <link rel="stylesheet" href="css/viewer.css" />
-    <link
-      rel="stylesheet"
-      type="text/css"
-      href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physics Viewer</title>
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/viewer.css" />
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-    <script
-      type="text/javascript"
-      charset="UTF-8"
-      src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"
-    ></script>
+  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
 
-    <script
-      id="MathJax-script"
-      async
-      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-    ></script>
-  </head>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-  <body>
-    <div class="viewer-container">
-      <header class="prob-header-top">
-        <div class="header-left">
-          <a href="index.html" class="btn-back-circle" title="一覧へ戻る">❮</a>
-          <h1 id="prob-title-header">Loading...</h1>
-        </div>
-        <div class="header-right">
-          <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
-        </div>
-      </header>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
 
-      <div class="viewer-split-content">
-        <div id="sim-target" class="simulation-area"></div>
+  <script type="text/javascript" charset="UTF-8"
+    src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
 
-        <div id="text-target" class="explanation-area"></div>
-      </div>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"],
+        ],
+        macros: {
+          strong: ["\\textcolor{#3b82f6}{\\boldsymbol{#1}}", 1],
+        },
+      },
+      svg: {
+        fontCache: "global",
+      },
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+<body>
+  <header class="prob-header-top">
+    <div class="header-left">
+      <a href="index.html" class="btn-back-circle">←</a>
+      <h1 id="prob-title-header">読み込み中...</h1>
     </div>
+    <div>
+      <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
+    </div>
+  </header>
 
-    <canvas id="pointer-canvas"></canvas>
+  <div class="viewer-container">
+    <div class="viewer-split-content">
+      <div id="sim-target" class="simulation-area"></div>
 
-    <script src="js/data.js"></script>
-    <script src="js/sim-utils.js"></script>
-    <script src="js/pointer.js"></script>
-    <script src="js/viewer.js"></script>
-  </body>
+      <div id="text-target" class="explanation-area"></div>
+    </div>
+  </div>
+
+  <canvas id="pointer-canvas"></canvas>
+
+  <script src="js/sim-utils.js"></script>
+  <script src="js/pointer.js"></script>
+  <script src="js/viewer.js"></script>
+
+  <script>
+    // ▼▼▼ Firebaseコンソールからコピーした内容をここに貼る ▼▼▼
+    const firebaseConfig = {
+      apiKey: "AIzaSyBObf6A_NDje3mpW1qxsfrNGnikdeDQOsA",
+      authDomain: "rikeich-q.firebaseapp.com",
+      projectId: "rikeich-q",
+      storageBucket: "rikeich-q.firebasestorage.app",
+      messagingSenderId: "779478068459",
+      appId: "1:779478068459:web:6f223b0116b2b2b08122ae"
+    };
+    // ▲▲▲▲▲▲
+
+    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      // js/viewer.js からアクセスできるように window.doc 等を登録
+      window.db = firebase.firestore();
+      window.collection = (db, name) => db.collection(name);
+      window.doc = (db, col, id) => db.collection(col).doc(id);
+      window.setDoc = (docRef, data, opt) => docRef.set(data, opt);
+      console.log("Viewer Firebase initialized!");
+    }
+  </script>
+</body>
+
 </html>
