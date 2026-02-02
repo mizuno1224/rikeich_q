@@ -144,6 +144,12 @@ body.pointer-active .sim-embed {
 .sim-embed canvas {
   touch-action: none;
   max-width: 100%;
+  /* タッチ操作の最適化 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  /* タッチ時のハイライトを無効化 */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* --- ポインター用キャンバス --- */
@@ -254,13 +260,61 @@ mjx-container[display="true"] {
 
 /* --- レスポンシブ対応 (スマホ・タブレット) --- */
 @media (max-width: 768px) {
-  body { background: #fff; }
+  body { 
+    background: #fff; 
+    /* ピンチズームを制御 */
+    touch-action: pan-y pinch-zoom;
+  }
   .viewer-container { min-height: 100vh; }
-  .prob-header-top { width: 100%; }
+  .prob-header-top { 
+    width: 100%;
+    height: 60px;
+    padding: 0 15px;
+  }
+
+  /* ヘッダーのタイトルを縮小 */
+  #prob-title-header {
+    font-size: 1.2rem;
+  }
+
+  /* ボタンのタッチターゲットサイズを確保 */
+  .btn-back-circle,
+  .btn-sm {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+
+  /* レイアウトを縦並びに */
+  .viewer-split-content {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .simulation-area {
+    height: 300px;
+    width: 100%;
+    order: 1;
+  }
 
   .explanation-area {
     padding: 20px 15px;
     width: 100%;
+    order: 2;
+  }
+
+  /* カードのパディングを調整 */
+  .card {
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+  }
+
+  /* シミュレーションエリアの調整 */
+  .sim-embed {
+    min-height: 250px;
+    margin: 20px 0;
+    border-radius: 8px;
   }
 
   /* スマホでは縦並びにして確実に重なりを防ぐ */
@@ -279,6 +333,43 @@ mjx-container[display="true"] {
   }
   
   :root { --card-width: 100%; }
+
+  /* 数式の横スクロールを改善 */
+  mjx-container[display="true"] {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 0;
+  }
+
+  /* タッチ操作の最適化 */
+  .sim-embed canvas {
+    touch-action: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* ボタンのタッチフィードバック改善 */
+  button, .btn-sm, .btn-reaction, .tab-btn {
+    -webkit-tap-highlight-color: rgba(59, 130, 246, 0.2);
+    tap-highlight-color: rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* タブレット対応 (768px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .explanation-area {
+    max-width: 100%;
+    padding: 30px 20px;
+  }
+
+  .card {
+    padding: 30px;
+  }
+
+  .sim-embed {
+    min-height: 350px;
+  }
 }
 
 /* --- 印刷用スタイル (追加・修正版) --- */
@@ -341,5 +432,136 @@ mjx-container[display="true"] {
   .sim-embed > div {
     max-width: 100% !important;
     height: auto !important;
+  }
+}
+
+/* --- 音声コントロールパネル --- */
+.audio-controls-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 320px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.audio-controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--col-primary);
+  color: #fff;
+  font-weight: bold;
+}
+
+.audio-close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.audio-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.audio-controls-body {
+  padding: 16px;
+}
+
+.audio-progress-container {
+  width: 100%;
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+
+.audio-progress {
+  height: 100%;
+  background: var(--col-primary);
+  width: 0%;
+  transition: width 0.3s;
+  border-radius: 2px;
+}
+
+.audio-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.audio-btn {
+  padding: 10px 16px;
+  border: 1px solid var(--col-primary);
+  background: #fff;
+  color: var(--col-primary);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.audio-btn:hover {
+  background: var(--col-primary);
+  color: #fff;
+}
+
+.audio-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.audio-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 8px;
+  background: #fef2f2;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+}
+
+/* 音声再生中のカードハイライト */
+.card.audio-playing {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  transition: background 0.3s, border-left 0.3s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 768px) {
+  .audio-controls-panel {
+    width: calc(100% - 40px);
+    right: 20px;
+    left: 20px;
+    bottom: 20px;
+  }
+  
+  .audio-buttons {
+    flex-wrap: wrap;
+  }
+  
+  .audio-btn {
+    flex: 1;
+    min-width: 80px;
   }
 }

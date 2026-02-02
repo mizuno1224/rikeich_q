@@ -3,12 +3,12 @@
 <div class="card">
   <h3>解法の指針</h3>
   <p>
-    この問題は、横軸が位置 $x$ のグラフ（波形グラフ）です。
+    この問題は，横軸が位置 $x$ のグラフ（波形グラフ）です。
   </p>
   <ul>
-    <li><strong>(1) 波の進行</strong>：時間が経過すると、波全体が進行方向（$x$軸正の向き）にズレていきます。<br>
+    <li><strong>(1) 波の進行</strong>：時間が経過すると，波全体が進行方向（$x$軸正の向き）にズレていきます。<br>
       進む距離は <span class="highlight">$\text{距離} = \text{速さ} \times \text{時間}$</span> で求められます。</li>
-    <li><strong>(2) 波の周期</strong>：波形が元の位置に重なるまでの時間は、波がちょうど1波長分進む時間、すなわち <span class="highlight">周期 $T$</span> に等しいです。
+    <li><strong>(2) 波の周期</strong>：波形が元の位置に重なるまでの時間は，波がちょうど1波長分進む時間，すなわち <span class="highlight">周期 $T$</span> に等しいです。
     </li>
   </ul>
 </div>
@@ -16,12 +16,12 @@
 <div class="card">
   <h3>シミュレーション：波の平行移動</h3>
   <p>
-    時間 $t$ を進めると、波が右へ移動していく様子を確認できます。<br>
-    スライダーを動かして、以下の点に注目してください。
+    時間 $t$ を進めると，波が右へ移動していく様子を確認できます。<br>
+    スライダーを動かして，以下の点に注目してください。
   </p>
   <ul>
-    <li><strong>$t=5.0\,\text{s}$</strong> のとき、波の山や谷がどれだけ右に動いているか？</li>
-    <li><strong>$t=20.0\,\text{s}$</strong> のとき、波形が初期状態（薄いグレーの線）とぴったり重なること。</li>
+    <li><strong>$t=5.0\,\text{s}$</strong> のとき，波の山や谷がどれだけ右に動いているか？</li>
+    <li><strong>$t=20.0\,\text{s}$</strong> のとき，波形が初期状態（薄いグレーの線）とぴったり重なること。</li>
   </ul>
 
   <div id="sim-wave-propagation" class="sim-embed" style="height: 320px; margin-bottom: 60px; overflow: visible;"></div>
@@ -155,21 +155,21 @@
 
   <h4>考え方</h4>
   <p>
-    まず、グラフから波の情報を読み取ります。
+    まず，グラフから波の情報を読み取ります。
   </p>
   <ul>
     <li>山から次の山までの長さ（1周期分の長さ）が <strong>波長 $\lambda$</strong> です。<br>
-      グラフより、<span class="highlight">$\lambda = 2.0 \, \text{m}$</span> です。</li>
-    <li>問題文より、速さ <span class="highlight">$v = 0.10 \, \text{m/s}$</span> です。</li>
+      グラフより，<span class="highlight">$\lambda = 2.0 \, \text{m}$</span> です。</li>
+    <li>問題文より，速さ <span class="highlight">$v = 0.10 \, \text{m/s}$</span> です。</li>
   </ul>
   <p>
-    $t=5.0\,\text{s}$ の間に波が進む距離 $\Delta x$ は、
+    $t=5.0\,\text{s}$ の間に波が進む距離 $\Delta x$ は，
   </p>
   <p>
-    $$ \Delta x = v \times t = 0.10 \times 5.0 = \strong{0.50 \, \text{m}} $$
+    $$ \Delta x = v \times t = 0.10 \times 5.0 = \boldsymbol{0.50 \, \text{m}} $$
   </p>
   <p>
-    つまり、<strong>$t=0$ の波形全体を、右（$x$軸正の向き）に <span class="highlight">$0.50\,\text{m}$ だけ平行移動</span></strong>させればよいことになります。
+    つまり，<strong>$t=0$ の波形全体を，右（$x$軸正の向き）に <span class="highlight">$0.50\,\text{m}$ だけ平行移動</span></strong>させればよいことになります。
   </p>
   <p>
     具体的な点の移動を見てみましょう：
@@ -181,7 +181,7 @@
     <li>$x=1.5$ の谷 ($y=-2.0$) $\rightarrow$ $x=2.0$ に移動</li>
   </ul>
   <p>
-    これらをつなぐと、上記のシミュレーションで $t=5.0$ としたときの青い線のようになります。
+    これらをつなぐと，上記のシミュレーションで $t=5.0$ としたときの青い線のようになります。
   </p>
 
   <div class="box-note">
@@ -195,8 +195,8 @@
 
   <h4>考え方</h4>
   <p>
-    波形が元の形とぴったり重なるのは、波が<strong>ちょうど1波長分 ($\lambda$)</strong> 進んだときです。<br>
-    （さらに時間が経てば2波長、3波長…進んだときも重なりますが、最初は1波長分です）
+    波形が元の形とぴったり重なるのは，波が<strong>ちょうど1波長分 ($\lambda$)</strong> 進んだときです。<br>
+    （さらに時間が経てば2波長，3波長…進んだときも重なりますが，最初は1波長分です）
   </p>
   <p>
     波が1波長分進むのにかかる時間を <span class="highlight">周期 $T$</span> といいます。<br>
@@ -205,8 +205,8 @@
 
   <div class="box-note">
     <strong>答え：</strong><br>
-    $$ T = \frac{\lambda}{v} = \frac{2.0}{0.10} = \strong{20 \, \text{s}} $$
-    よって、求める時刻 $t_0$ は <strong>$20 \, \text{s}$</strong>
+    $$ T = \frac{\lambda}{v} = \frac{2.0}{0.10} = \boldsymbol{20 \, \text{s}} $$
+    よって，求める時刻 $t_{\mathrm{0}}$ は <strong>$20 \, \text{s}$</strong>
   </div>
 </div>
 
@@ -214,7 +214,7 @@
   <span class="box-alert-label">Point</span>
   <h3>解法のポイント</h3>
   <ul>
-    <li>波のグラフ（$y-x$図）の問題では、<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。</li>
+    <li>波のグラフ（$y-x$図）の問題では，<strong>「波形は形を変えずにそのまま平行移動する」</strong>というイメージを持つことが最も重要です。</li>
     <li>波の基本公式 <span class="highlight">$v = \frac{\lambda}{T} = f\lambda$</span> の関係をグラフから読み取れるようにしましょう。</li>
   </ul>
 </div>

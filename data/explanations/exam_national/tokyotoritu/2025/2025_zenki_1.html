@@ -3,21 +3,21 @@
 <div class="card">
   <h3>解法の指針</h3>
   <p>
-    水に浮かんだ物体を押し込んで離すと、ボヨンボヨンと上下に揺れます。この運動は、振幅が小さいときは綺麗な「<span class="highlight">単振動</span>」になりますが、大きく押し込みすぎると「<span class="highlight">非線形な振動</span>」へと変化します。
+    水に浮かんだ物体を押し込んで離すと，ボヨンボヨンと上下に揺れます。この運動は，振幅が小さいときは綺麗な「<span class="highlight">単振動</span>」になりますが，大きく押し込みすぎると「<span class="highlight">非線形な振動</span>」へと変化します。
   </p>
   
   <div class="box-note">
     <strong>用語：線形（Linear）と非線形（Non-linear）</strong>
     <ul>
-      <li><strong>線形（単振動）</strong>：力が変位に比例する（$F \propto x$）状態です。グラフは「直線」になり、重ね合わせの理が成り立ちます。バネの伸び縮みなどがこれにあたります。</li>
-      <li><strong>非線形</strong>：力が変位に比例しない状態です。この問題のCase Cのように、グラフが「折れ曲がる」場合や「曲線」になる場合を指します。計算が複雑になり、単振動の便利な性質（等時性など）が崩れます。</li>
+      <li><strong>線形（単振動）</strong>：力が変位に比例する（$F \propto x$）状態です。グラフは「直線」になり，重ね合わせの理が成り立ちます。バネの伸び縮みなどがこれにあたります。</li>
+      <li><strong>非線形</strong>：力が変位に比例しない状態です。この問題のCase Cのように，グラフが「折れ曲がる」場合や「曲線」になる場合を指します。計算が複雑になり，単振動の便利な性質（等時性など）が崩れます。</li>
     </ul>
   </div>
 
   <ul>
     <li><strong>つり合い（$x=0$）</strong>：重力と浮力が等しい基準点です。</li>
-    <li><strong>単振動（Small Amplitude）</strong>：物体が部分的に水没している範囲では、<span class="highlight">復元力が変位に比例</span>し、等時性を持つ単振動になります。</li>
-    <li><strong>非線形振動（Large Amplitude）</strong>：完全水没すると浮力は一定値で頭打ちになります。この区間では「<span class="highlight">等加速度運動（二次関数）</span>」となり、単振動（三角関数）とは異なる挙動を示します。</li>
+    <li><strong>単振動（Small Amplitude）</strong>：物体が部分的に水没している範囲では，<span class="highlight">復元力が変位に比例</span>し，等時性を持つ単振動になります。</li>
+    <li><strong>非線形振動（Large Amplitude）</strong>：完全水没すると浮力は一定値で頭打ちになります。この区間では「<span class="highlight">等加速度運動（二次関数）</span>」となり，単振動（三角関数）とは異なる挙動を示します。</li>
   </ul>
 </div>
 
@@ -27,34 +27,34 @@
   <h4>(1) 浮力の大きさ</h4>
   <p>
     
-    まず、物体にはたらく力を整理しましょう。<span class="highlight">アルキメデスの原理</span>より、浮力の大きさは「物体が押しのけた流体（水）の重さ」に等しくなります。
+    まず，物体にはたらく力を整理しましょう。<span class="highlight">アルキメデスの原理</span>より，浮力の大きさは「物体が押しのけた流体（水）の重さ」に等しくなります。
   </p>
   <p>
-    図1(a)より、一辺 $L$ の立方体のうち、水面より上に出ている部分が $L/3$ なので、水中に沈んでいる部分の高さは $L - L/3 = \frac{2}{3}L$ です。<br>
-    したがって、水没している体積 $V_{\text{sub}}$ は、底面積 $L^2$ を掛けて、
+    図1(a)より，一辺 $L$ の立方体のうち，水面より上に出ている部分が $L/3$ なので，水中に沈んでいる部分の高さは $L - L/3 = \frac{2}{3}L$ です。<br>
+    したがって，水没している体積 $V_{\text{sub}}$ は，底面積 $L^2$ を掛けて，
     $$ V_{\text{sub}} = L^2 \times \frac{2}{3}L = \frac{2}{3}L^3 $$
   </p>
   <p>
-    水の密度を $\rho$、重力加速度を $g$ とすると、求める浮力 $F_0$ は以下のようになります。
-    $$ F_0 = \rho V_{\text{sub}} g = \boldsymbol{\frac{2}{3}\rho L^3 g} $$
+    水の密度を $\rho$，重力加速度を $g$ とすると，求める浮力 $F_{\mathrm{0}}$ は以下のようになります。
+    $$ F_{\mathrm{0}} = \rho V_{\text{sub}} g = \boldsymbol{\frac{2}{3}\rho L^3 g} $$
   </p>
 
   <h4>(2) 物体の密度</h4>
   <p>
-    物体は静止しているので、鉛直方向の「重力」と「浮力」がつり合っています。<br>
-    物体の密度を $\rho_{\text{obj}}$ とすると、物体の質量は $m = \rho_{\text{obj}}L^3$、重力は $mg = \rho_{\text{obj}}L^3 g$ です。
+    物体は静止しているので，鉛直方向の「重力」と「浮力」がつり合っています。<br>
+    物体の密度を $\rho_{\text{obj}}$ とすると，物体の質量は $m = \rho_{\text{obj}}L^3$，重力は $mg = \rho_{\text{obj}}L^3 g$ です。
   </p>
   <p>
-    つり合いの式 $\text{重力} = \text{浮力}$ より、
+    つり合いの式 $\text{重力} = \text{浮力}$ より，
     $$ \rho_{\text{obj}} L^3 g = \frac{2}{3}\rho L^3 g $$
-    両辺を $L^3 g$ で割ると、
+    両辺を $L^3 g$ で割ると，
     $$ \rho_{\text{obj}} = \boldsymbol{\frac{2}{3}\rho} $$
   </p>
 
   <div class="box-note">
     <strong>豆知識：氷山の一角</strong><br>
-    この「物体の密度 / 水の密度 = 水没する体積の割合」という関係は、立方体に限らず広く成り立ちます。<br>
-    例えば氷の密度は約 $0.92 \text{g/cm}^3$、海水の密度は約 $1.03 \text{g/cm}^3$ です。比率を計算すると $0.92 / 1.03 \approx 0.89$ となり、<strong>氷山の約90%は水面下にある</strong>ことがわかります。
+    この「物体の密度 / 水の密度 = 水没する体積の割合」という関係は，立方体に限らず広く成り立ちます。<br>
+    例えば氷の密度は約 $0.92 \text{g/cm}^3$，海水の密度は約 $1.03 \text{g/cm}^3$ です。比率を計算すると $0.92 / 1.03 \approx 0.89$ となり，<strong>氷山の約90%は水面下にある</strong>ことがわかります。
   </div>
 </div>
 
@@ -64,7 +64,7 @@
   <h4>(1) 合力の導出と力の変化</h4>
   <p>
     つり合いの位置から $x$ だけ変位した（上がった）状態を考えます。<br>
-    以下のシミュレーターで、スライダーを動かして位置 $x$ を変えたとき、「浮力」と「合力」がどう変化するか確認してください。
+    以下のシミュレーターで，スライダーを動かして位置 $x$ を変えたとき，「浮力」と「合力」がどう変化するか確認してください。
   </p>
 
   <div id="sim-force-interactive" class="sim-embed" style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:15px; margin: 15px 0;">
@@ -75,7 +75,7 @@
     </div>
     <canvas id="canvas-force" height="300" style="width:100%; border:1px solid #eee;"></canvas>
     <div style="text-align:center; font-size:0.9em; color:#666; margin-top:5px;">
-      スライダー操作：沈むほど<strong>浮力（青）</strong>が増し、上向きの合力が生まれます。
+      スライダー操作：沈むほど<strong>浮力（青）</strong>が増し，上向きの合力が生まれます。
     </div>
   </div>
 
@@ -164,39 +164,39 @@
 
   <p>
     水中に沈んでいる部分の長さは $h(x) = \frac{2}{3}L - x$ です。
-    浮力 $f$ はこれに比例するので、
+    浮力 $f$ はこれに比例するので，
     $$ f = \rho L^2 \left( \frac{2}{3}L - x \right) g $$
-    合力 $F$（上向き正）は「浮力 - 重力」です。重力 $mg$ はつり合いの浮力（$x=0$ のときの浮力）と等しいので、
+    合力 $F$（上向き正）は「浮力 - 重力」です。重力 $mg$ はつり合いの浮力（$x=0$ のときの浮力）と等しいので，
     $$ F = f - mg = \rho L^2 g \left( \frac{2}{3}L - x \right) - \frac{2}{3}\rho L^3 g $$
     $$ F = \boldsymbol{- \rho L^2 g x} $$
-    このように、合力は変位 $x$ に比例する<span class="highlight">復元力</span>（$F=-Kx$）となり、単振動の方程式が導かれます。
+    このように，合力は変位 $x$ に比例する<span class="highlight">復元力</span>（$F=-Kx$）となり，単振動の方程式が導かれます。
   </p>
   
   <div class="box-note">
     <strong>注意点：復元力の向き</strong><br>
     式にマイナスがついていることに注目しましょう。<br>
-    $x > 0$（上に変位）のときは $F < 0$（下向き）、$x < 0$（下に変位）のときは $F > 0$（上向き）となり、常に<strong>「つり合いの位置に戻そうとする力」</strong>がはたらいています。
+    $x > 0$（上に変位）のときは $F < 0$（下向き），$x < 0$（下に変位）のときは $F > 0$（上向き）となり，常に<strong>「つり合いの位置に戻そうとする力」</strong>がはたらいています。
   </div>
 
   <h4>(2) 最高点の位置</h4>
   <p>
-    $x = -L/4$ で放した場合、これは単振動の範囲内なので、振動の中心 $x=0$ に対して対称な位置まで上がります。
+    $x = -L/4$ で放した場合，これは単振動の範囲内なので，振動の中心 $x=0$ に対して対称な位置まで上がります。
     $$ x = \boldsymbol{\frac{L}{4}} $$
   </p>
   <p>
     <strong>【別解】運動方程式から解く</strong><br>
-    運動方程式 $ma = -Kx$ より、この運動は単振動です。初速0で動き出した位置が振幅の端点となるため、
+    運動方程式 $ma = -Kx$ より，この運動は単振動です。初速0で動き出した位置が振幅の端点となるため，
     変位 $x$ は時間 $t$ の関数として次のように表せます（$t=0$ で $x=-L/4$）。
     $$ x(t) = -\frac{L}{4} \cos(\omega t) $$
-    最高点は $\cos(\omega t) = -1$ となるときなので、
-    $$ x_{\text{max}} = -\frac{L}{4} \times (-1) = \boldsymbol{\frac{L}{4}} $$
+    最高点は $\cos(\omega t) = -1$ となるときなので，
+    $$ x_{\mathrm{max}} = -\frac{L}{4} \times (-1) = \boldsymbol{\frac{L}{4}} $$
   </p>
 
   <h4>(3) 中心通過時の速さ</h4>
   <p>
-    角振動数を $\omega$ とすると、運動方程式 $ma = -Kx$ より $\omega = \sqrt{K/m} = \sqrt{\frac{3g}{2L}}$。<br>
-    最大速さは、
-    $$ v_{\text{max}} = A\omega = \frac{L}{4}\sqrt{\frac{3g}{2L}} = \boldsymbol{\frac{1}{4}\sqrt{\frac{3gL}{2}}} $$
+    角振動数を $\omega$ とすると，運動方程式 $ma = -Kx$ より $\omega = \sqrt{K/m} = \sqrt{\frac{3g}{2L}}$。<br>
+    最大速さは，
+    $$ v_{\mathrm{max}} = A\omega = \frac{L}{4}\sqrt{\frac{3g}{2L}} = \boldsymbol{\frac{1}{4}\sqrt{\frac{3gL}{2}}} $$
   </p>
 </div>
 
@@ -388,7 +388,7 @@
   <h3>問3 力と位置のグラフ</h3>
   <div class="box-note">
     <strong>答え：(イ)</strong><br>
-    グラフは、完全水没区間（左側）で正の定数、単振動区間（中央）で右下がりの直線、空中（右側）で負の定数となります。<br>
+    グラフは，完全水没区間（左側）で正の定数，単振動区間（中央）で右下がりの直線，空中（右側）で負の定数となります。<br>
     上の実験室の右下のグラフ（F-x図）を確認してください。
   </div>
 </div>
@@ -398,79 +398,79 @@
   
   <h4>問4 解法1：運動方程式によるアプローチ</h4>
   <p>
-    ダイナミクス（力と加速度）の視点でも解いてみましょう。完全水没区間では合力が一定なので、<span class="highlight">等加速度運動</span>になります。
+    ダイナミクス（力と加速度）の視点でも解いてみましょう。完全水没区間では合力が一定なので，<span class="highlight">等加速度運動</span>になります。
   </p>
   <ol>
     <li>
       <strong>加速度を求める</strong><br>
-      運動方程式 $ma = F_1$ より、
-      $$ a = \frac{F_1}{m} = \frac{\frac{1}{3}\rho L^3 g}{\frac{2}{3}\rho L^3} = \frac{1}{2}g $$
+      運動方程式 $ma = F_{\mathrm{1}}$ より，
+      $$ a = \frac{F_{\mathrm{1}}}{m} = \frac{\frac{1}{3}\rho L^3 g}{\frac{2}{3}\rho L^3} = \frac{1}{2}g $$
     </li>
     <li>
       <strong>接続点での速度を求める</strong><br>
-      距離 $d$ だけ加速した直後（$x=-L/3$）の速度 $v$ は、$v^2 - 0 = 2ad$ より、
+      距離 $d$ だけ加速した直後（$x=-L/3$）の速度 $v$ は，$v^2 - 0 = 2ad$ より，
       $$ v^2 = 2 \cdot \frac{1}{2}g \cdot d = gd $$
     </li>
     <li>
       <strong>単振動区間の力学的エネルギー保存則</strong><br>
-      単振動の範囲に入る直前（$x=-L/3$）と、最高点（$x=2L/3$）の2か所で力学的エネルギー保存則を立てます。<br>
+      単振動の範囲に入る直前（$x=-L/3$）と，最高点（$x=2L/3$）の2か所で力学的エネルギー保存則を立てます。<br>
       $$ \underbrace{\frac{1}{2}mv^2 + \frac{1}{2}K\left(-\frac{L}{3}\right)^2}_{\text{直前のエネルギー}} = \underbrace{0 + \frac{1}{2}K\left(\frac{2L}{3}\right)^2}_{\text{最高点のエネルギー}} $$
-      これを整理すると、$\frac{1}{2}mv^2 = \frac{1}{6}KL^2$ となり、各値を代入して解くと $d = L/2$ が得られます。
+      これを整理すると，$\frac{1}{2}mv^2 = \frac{1}{6}KL^2$ となり，各値を代入して解くと $d = L/2$ が得られます。
     </li>
   </ol>
 
   <h4>問4 解法2：エネルギー保存則によるアプローチ</h4>
   <p>
-    $x = -L/3 - d$ まで沈めると、最初は「完全水没」の状態からスタートします。<br>
-    始点（$x = -L/3 - d$）から最高点（$x = 2L/3$）まで、合力 $F$ がした仕事の総和は、運動エネルギーの変化（$0 \to 0$）に等しいためゼロになります。
+    $x = -L/3 - d$ まで沈めると，最初は「完全水没」の状態からスタートします。<br>
+    始点（$x = -L/3 - d$）から最高点（$x = 2L/3$）まで，合力 $F$ がした仕事の総和は，運動エネルギーの変化（$0 \to 0$）に等しいためゼロになります。
   </p>
   <ul>
-    <li><strong>完全水没区間</strong>：一定の合力 $F_1 = \text{浮力}-\text{重力} = \frac{1}{3}\rho L^3 g$ が距離 $d$ だけ<span class="highlight">正の仕事</span>をします。<br>
-    $$ W_1 = \frac{1}{3}\rho L^3 g d $$</li>
-    <li><strong>単振動区間</strong>：この区間の運動は、バネ定数 $K=\rho L^2 g$ のバネにつながれた物体の運動と同じです。物体は<strong>「バネの伸びが短い位置（$|x|=L/3$）から、長い位置（$|x|=2L/3$）へ」</strong>と変位するため、バネを伸ばすためにエネルギーが消費されます（負の仕事）。<br>
-    消費された仕事の量は、バネのエネルギー（<span class="highlight">弾性力による位置エネルギー</span>）の増加分と等しくなります。<br>
-    $$ W_2 = -(\text{位置エネルギーの増加}) $$
-    $$ W_2 = -\left( \frac{1}{2}K(2L/3)^2 - \frac{1}{2}K(-L/3)^2 \right) = -\frac{1}{6}K L^2 = -\frac{1}{6}\rho L^4 g $$
+    <li><strong>完全水没区間</strong>：一定の合力 $F_{\mathrm{1}} = \text{浮力}-\text{重力} = \frac{1}{3}\rho L^3 g$ が距離 $d$ だけ<span class="highlight">正の仕事</span>をします。<br>
+    $$ W_{\mathrm{1}} = \frac{1}{3}\rho L^3 g d $$</li>
+    <li><strong>単振動区間</strong>：この区間の運動は，バネ定数 $K=\rho L^2 g$ のバネにつながれた物体の運動と同じです。物体は<strong>「バネの伸びが短い位置（$|x|=L/3$）から，長い位置（$|x|=2L/3$）へ」</strong>と変位するため，バネを伸ばすためにエネルギーが消費されます（負の仕事）。<br>
+    消費された仕事の量は，バネのエネルギー（<span class="highlight">弾性力による位置エネルギー</span>）の増加分と等しくなります。<br>
+    $$ W_{\mathrm{2}} = -(\text{位置エネルギーの増加}) $$
+    $$ W_{\mathrm{2}} = -\left( \frac{1}{2}K(2L/3)^2 - \frac{1}{2}K(-L/3)^2 \right) = -\frac{1}{6}K L^2 = -\frac{1}{6}\rho L^4 g $$
     <div class="box-note-light" style="font-size:0.9em; margin-top:5px;">
       ※ 位置エネルギーの増加量は「(終点のエネルギー) - (始点のエネルギー)」で計算しています。
     </div>
     </li>
   </ul>
   <p>
-    $W_1 + W_2 = 0$ より、
+    $W_{\mathrm{1}} + W_{\mathrm{2}} = 0$ より，
     $$ \frac{1}{3}\rho L^3 g d - \frac{1}{6}\rho L^4 g = 0 \quad \Rightarrow \quad d = \boldsymbol{\frac{L}{2}} $$
   </p>
 
   <h4>問5 周期の比較と解説</h4>
   <p>
     時間の大小関係は以下のようになります。
-    $$ t_{\text{A}} = t_{\text{B}} < t_{\text{C}} $$
-    Case A, Bは通常の単振動（<span class="highlight">等時性</span>）ですが、Case Cは「力が弱い（飽和する）」区間を含むため、引き戻すのに時間がかかります。
+    $$ t_{\mathrm{A}} = t_{\mathrm{B}} < t_{\mathrm{C}} $$
+    Case A, Bは通常の単振動（<span class="highlight">等時性</span>）ですが，Case Cは「力が弱い（飽和する）」区間を含むため，引き戻すのに時間がかかります。
   </p>
   <p>
     <strong>Cの場合（遅くなる理由）</strong><br>
-    もし単振動のままなら、深く沈めるほど復元力は「比例して」どこまでも強くなり、その分猛烈な勢いで加速して戻ってきます。<br>
-    しかしCase C（完全水没）では、ある深さを超えると浮力が「最大値」で頭打ちになり、それ以上強くなりません（<span class="highlight">力が飽和する</span>）。<br>
-    本来ならもっと強い力で引き戻されるはずの区間で、弱い一定の力しか受けないため、加速が鈍くなります。その結果、最高点に戻ってくるまでに余計な時間がかかってしまうのです。
+    もし単振動のままなら，深く沈めるほど復元力は「比例して」どこまでも強くなり，その分猛烈な勢いで加速して戻ってきます。<br>
+    しかしCase C（完全水没）では，ある深さを超えると浮力が「最大値」で頭打ちになり，それ以上強くなりません（<span class="highlight">力が飽和する</span>）。<br>
+    本来ならもっと強い力で引き戻されるはずの区間で，弱い一定の力しか受けないため，加速が鈍くなります。その結果，最高点に戻ってくるまでに余計な時間がかかってしまうのです。
   </p>
 </div>
 
 <div class="card">
   <h3>【深掘り】運動の数式化とグラフの正体</h3>
   <p>
-    なぜグラフが「二次関数」や「三角関数」になるのか、運動方程式から実際に式を導いて確かめましょう。
+    なぜグラフが「二次関数」や「三角関数」になるのか，運動方程式から実際に式を導いて確かめましょう。
   </p>
   
   <h4>(1) 赤エリア：なぜ二次関数になるのか？</h4>
   <p>
     物体が完全に水没している区間（$x < -L/3$）を考えます。<br>
-    ここでは浮力が最大値 $\rho L^3 g$ で一定となるため、合力 $F$ も一定になります。
+    ここでは浮力が最大値 $\rho L^3 g$ で一定となるため，合力 $F$ も一定になります。
     $$ F = \rho L^3 g - mg = \frac{1}{3}\rho L^3 g $$
-    運動方程式 $ma = F$ より、加速度 $a$ も一定です。
+    運動方程式 $ma = F$ より，加速度 $a$ も一定です。
     $$ a = \frac{F}{m} = \frac{\frac{1}{3}\rho L^3 g}{\frac{2}{3}\rho L^3} = \frac{1}{2}g $$
-    <strong>加速度が一定の運動（等加速度運動）</strong>なので、変位 $x$ は時間の<span class="highlight">二次関数</span>になります。
-    $$ x(t) = x_0 + v_0 t + \frac{1}{2}at^2 $$
-    Case Cの場合、初速度 $v_0=0$ なので、まさに放物線（二次関数）を描きます。
+    <strong>加速度が一定の運動（等加速度運動）</strong>なので，変位 $x$ は時間の<span class="highlight">二次関数</span>になります。
+    $$ x(t) = x_{\mathrm{0}} + v_{\mathrm{0}} t + \frac{1}{2}at^2 $$
+    Case Cの場合，初速度 $v_{\mathrm{0}}=0$ なので，まさに放物線（二次関数）を描きます。
   </p>
 
   <h4>(2) 青エリア：なぜ三角関数になるのか？</h4>
@@ -478,24 +478,24 @@
     物体が部分的に水没している区間（$-L/3 \le x \le 2L/3$）を考えます。<br>
     ここでは合力が変位に比例します（問2より）。
     $$ F = -Kx \quad (K = \rho L^2 g) $$
-    運動方程式 $ma = -Kx$ は単振動の微分方程式であり、その解は時間 $t$ の<strong>三角関数（サイン・コサイン）</strong>になります。
+    運動方程式 $ma = -Kx$ は単振動の微分方程式であり，その解は時間 $t$ の<strong>三角関数（サイン・コサイン）</strong>になります。
     $$ x(t) = A \sin(\omega t + \phi) $$
   </p>
   
   <h4>(3) Case C の時間を本気で計算してみる</h4>
   <p>
-    $t_{\text{A}}$ と $t_{\text{C}}$ の時間を実際に計算して、どのくらい違うのか比較してみましょう。
+    $t_{\mathrm{A}}$ と $t_{\mathrm{C}}$ の時間を実際に計算して，どのくらい違うのか比較してみましょう。
   </p>
   <p>
-    <strong>① $t_{\text{A}}$ の計算（単振動の半周期）</strong><br>
-    $$ t_{\text{A}} = \frac{T}{2} = \pi \sqrt{\frac{m}{K}} = \pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{2.56 \sqrt{\frac{L}{g}}} $$
+    <strong>① $t_{\mathrm{A}}$ の計算（単振動の半周期）</strong><br>
+    $$ t_{\mathrm{A}} = \frac{T}{2} = \pi \sqrt{\frac{m}{K}} = \pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{2.56 \sqrt{\frac{L}{g}}} $$
   </p>
   <p>
-    <strong>② $t_{\text{C}}$ の計算（等加速度＋単振動）</strong><br>
-    まず、赤エリアを距離 $d=L/2$ だけ加速度 $g/2$ で進む時間 $t_{\text{const}}$ は、
-    $$ \frac{L}{2} = \frac{1}{2}\left(\frac{g}{2}\right)t_{\text{const}}^2 \quad \Rightarrow \quad t_{\text{const}} = \sqrt{\frac{2L}{g}} \approx \boldsymbol{1.41 \sqrt{\frac{L}{g}}} $$
+    <strong>② $t_{\mathrm{C}}$ の計算（等加速度＋単振動）</strong><br>
+    まず，赤エリアを距離 $d=L/2$ だけ加速度 $g/2$ で進む時間 $t_{\mathrm{const}}$ は，
+    $$ \frac{L}{2} = \frac{1}{2}\left(\frac{g}{2}\right)t_{\mathrm{const}}^2 \quad \Rightarrow \quad t_{\mathrm{const}} = \sqrt{\frac{2L}{g}} \approx \boldsymbol{1.41 \sqrt{\frac{L}{g}}} $$
     
-    次に、青エリアに入ってから最高点までの時間は、以下の図のように考えると、単振動の周期 $T$ の $1/3$ に相当することが分かります。
+    次に，青エリアに入ってから最高点までの時間は，以下の図のように考えると，単振動の周期 $T$ の $1/3$ に相当することが分かります。
     <div style="text-align:center; margin:15px 0;">
       <svg width="450" height="220" viewBox="0 0 450 220" style="background:#fff; border:1px solid #ddd; border-radius:4px;">
         <line x1="100" y1="20" x2="100" y2="200" stroke="#444" stroke-width="1" />
@@ -527,15 +527,15 @@
       </svg>
     </div>
 
-    $$ t_{\text{SHM}} = \frac{T}{3} = \frac{2}{3}\pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{1.71 \sqrt{\frac{L}{g}}} $$
-    合計すると、
-    $$ t_{\text{C}} = t_{\text{const}} + t_{\text{SHM}} \approx (1.41 + 1.71)\sqrt{\frac{L}{g}} = \boldsymbol{3.12 \sqrt{\frac{L}{g}}} $$
+    $$ t_{\mathrm{SHM}} = \frac{T}{3} = \frac{2}{3}\pi \sqrt{\frac{2L}{3g}} \approx \boldsymbol{1.71 \sqrt{\frac{L}{g}}} $$
+    合計すると，
+    $$ t_{\mathrm{C}} = t_{\mathrm{const}} + t_{\mathrm{SHM}} \approx (1.41 + 1.71)\sqrt{\frac{L}{g}} = \boldsymbol{3.12 \sqrt{\frac{L}{g}}} $$
   </p>
   
   <div class="box-note">
     <strong>発展：接続点での滑らかさ</strong><br>
-    $x = -L/3$ の境界で、グラフはカクッと折れ曲がるのではなく、<strong>滑らかに</strong>接続します。<br>
-    これは、境界点において単振動の力 $F = -K(-L/3) = \frac{1}{3}\rho L^3 g$ と、完全水没時の一定力 $F = \frac{1}{3}\rho L^3 g$ が一致するためです。力が一致するということは加速度も急変せず、物体は衝撃を受けずにスムーズに運動が切り替わります。
+    $x = -L/3$ の境界で，グラフはカクッと折れ曲がるのではなく，<strong>滑らかに</strong>接続します。<br>
+    これは，境界点において単振動の力 $F = -K(-L/3) = \frac{1}{3}\rho L^3 g$ と，完全水没時の一定力 $F = \frac{1}{3}\rho L^3 g$ が一致するためです。力が一致するということは加速度も急変せず，物体は衝撃を受けずにスムーズに運動が切り替わります。
   </div>
 </div>
 
@@ -544,7 +544,7 @@
   <h3>問題の本質まとめ</h3>
   <ul>
     <li><strong>浮力の基本</strong>：$F = \rho V g$。変位によって $V$ がどう変わるか（比例か一定か）が運動を決める。</li>
-    <li><strong>グラフの接続</strong>：物理法則が変わる境界点（$x=-L/3$）で、二次関数のグラフと三角関数のグラフが滑らかにつながる。</li>
-    <li><strong>非線形振動</strong>：復元力が比例関係から外れる（飽和する）と、周期の等時性は崩れる。</li>
+    <li><strong>グラフの接続</strong>：物理法則が変わる境界点（$x=-L/3$）で，二次関数のグラフと三角関数のグラフが滑らかにつながる。</li>
+    <li><strong>非線形振動</strong>：復元力が比例関係から外れる（飽和する）と，周期の等時性は崩れる。</li>
   </ul>
 </div>

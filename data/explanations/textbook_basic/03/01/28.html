@@ -3,12 +3,12 @@
 <div class="card">
   <h3>解法の指針</h3>
   <p>
-    この問題は、波の基本的な性質である「波長」「周期」「振動速度」と「波の進行」に関する理解を問うものです。
+    この問題は，波の基本的な性質である「波長」「周期」「振動速度」と「波の進行」に関する理解を問うものです。
     <br>以下の2つの視点が重要です。
   </p>
   <ul>
-    <li><strong>グラフの読み取り</strong>：$y-x$ グラフ（波形）から、波長 $\lambda$ や振幅 $A$ を読み取る。</li>
-    <li><strong>媒質の動きと波の進行</strong>：波形を「わずかに平行移動」させることで、媒質の速度の向きと波の進行方向の関係を導く。</li>
+    <li><strong>グラフの読み取り</strong>：$y-x$ グラフ（波形）から，波長 $\lambda$ や振幅 $A$ を読み取る。</li>
+    <li><strong>媒質の動きと波の進行</strong>：波形を「わずかに平行移動」させることで，媒質の速度の向きと波の進行方向の関係を導く。</li>
   </ul>
 </div>
 
@@ -18,19 +18,19 @@
   <h4>考え方</h4>
   <p>
     まずはグラフから波の基本量を読み取ります。
-    図より、波は $x=0$ から $x=2.0\,\mathrm{m}$ で1つの波形を描いているので、波長は <span class="highlight">$\lambda = 2.0\,\mathrm{m}$</span> です。
-    また、問題文より周期は <span class="highlight">$T = 0.40\,\mathrm{s}$</span> です。
+    図より，波は $x=0$ から $x=2.0\,\mathrm{m}$ で1つの波形を描いているので，波長は <span class="highlight">$\lambda = 2.0\,\mathrm{m}$</span> です。
+    また，問題文より周期は <span class="highlight">$T = 0.40\,\mathrm{s}$</span> です。
   </p>
   <p>
-    波の速さを求めるために、まずは振動数 $f$ を計算します。
+    波の速さを求めるために，まずは振動数 $f$ を計算します。
     $$ f = \frac{1}{T} = \frac{1}{0.40} = 2.5\,\mathrm{Hz} $$
-    波の基本公式 <span class="highlight">$v = f\lambda$</span> より、波の速さの大きさ $v'$ は、
+    波の基本公式 <span class="highlight">$v = f\lambda$</span> より，波の速さの大きさ $v'$ は，
     $$ v' = 2.5\,\mathrm{Hz} \times 2.0\,\mathrm{m} = 5.0\,\mathrm{m/s} $$
   </p>
   <p>
-    次に、波の進行方向（速度の符号）を特定します。<br>
+    次に，波の進行方向（速度の符号）を特定します。<br>
     問題文には「原点の速度の向きは $y$ 軸の正の向き（上向き）」とあります。
-    下のシミュレーションで、波を左右に少し動かして、原点の動きを確認してみましょう。
+    下のシミュレーションで，波を左右に少し動かして，原点の動きを確認してみましょう。
   </p>
 
   <div id="sim-wave-direction" class="sim-embed"></div>
@@ -180,10 +180,10 @@
 
         // Feedback Text
         if (targetOffset > 0.1) {
-            msgDiv.textContent = "波が右へ進むと、原点は「下」へ動く";
+            msgDiv.textContent = "波が右へ進むと，原点は「下」へ動く";
             msgDiv.style.color = "#666";
         } else if (targetOffset < -0.1) {
-            msgDiv.textContent = "波が左へ進むと、原点は「上」へ動く（正解！）";
+            msgDiv.textContent = "波が左へ進むと，原点は「上」へ動く（正解！）";
             msgDiv.style.color = "#d9534f";
         } else {
             msgDiv.textContent = "ボタンを押して波を動かしてみましょう";
@@ -197,8 +197,8 @@
   </script>
 
   <p>
-    シミュレーションで確認できるように、波を<strong>左（負の向き）</strong>にずらしたとき、原点の媒質は上に動きます。
-    よって、波の進む速度は負の向きとなります。
+    シミュレーションで確認できるように，波を<strong>左（負の向き）</strong>にずらしたとき，原点の媒質は上に動きます。
+    よって，波の進む速度は負の向きとなります。
   </p>
 
   <div class="box-note">
@@ -212,13 +212,13 @@
   
   <h4>考え方</h4>
   <p>
-    波形の移動は、時間の経過分だけ平行移動させて考えます。
+    波形の移動は，時間の経過分だけ平行移動させて考えます。
     <br>
     経過時間 $t = 0.70\,\mathrm{s}$ と周期 $T = 0.40\,\mathrm{s}$ の関係を調べます。
     $$ t = 0.70 = 0.40 \times 1 + 0.30 = T + \frac{3}{4}T $$
-    波形は1周期 $T$ ごとに元の形に戻るため、<span class="highlight">残りの $\frac{3}{4}T$（0.30秒）分の移動</span>を考えれば十分です。
+    波形は1周期 $T$ ごとに元の形に戻るため，<span class="highlight">残りの $\frac{3}{4}T$（0.30秒）分の移動</span>を考えれば十分です。
     <br>
-    波は左に速さ $5.0\,\mathrm{m/s}$ で進むので、波形全体を左方向へ移動させます。
+    波は左に速さ $5.0\,\mathrm{m/s}$ で進むので，波形全体を左方向へ移動させます。
   </p>
 
   <div id="sim-wave-shift" class="sim-embed"></div>
@@ -411,7 +411,7 @@
   <div class="box-note">
     <strong>答え：</strong><br>
     上のシミュレーションで「再生」を押して $t=0.70\,\mathrm{s}$ で止まったときの赤線の波形。<br>
-    （原点で $y=-0.25\,\mathrm{m}$ の谷となり、 $x=1.0\,\mathrm{m}$ で $y=0.25\,\mathrm{m}$ の山となる正弦波）
+    （原点で $y=-0.25\,\mathrm{m}$ の谷となり， $x=1.0\,\mathrm{m}$ で $y=0.25\,\mathrm{m}$ の山となる正弦波）
   </div>
 </div>
 
@@ -419,12 +419,12 @@
   <span class="box-alert-label">Point</span>
   <h3>波の進行方向と移動のまとめ</h3>
   <ul>
-    <li><strong>進行方向の判定</strong>：「波を少し進めて、原点の変位がどう変化するか」を確認する。
+    <li><strong>進行方向の判定</strong>：「波を少し進めて，原点の変位がどう変化するか」を確認する。
       <ul>
         <li>波を右にずらす $\rightarrow$ グラフの右側が来る（媒質は下がる）</li>
         <li>波を左にずらす $\rightarrow$ グラフの左側が来る（媒質は上がる）</li>
       </ul>
     </li>
-    <li><strong>時間の経過と波形</strong>：$t$ 秒後の波形は、元の波形を $vt$ だけ平行移動したもの。周期 $T$ を利用して、「余りの時間」分だけずらせばよい。</li>
+    <li><strong>時間の経過と波形</strong>：$t$ 秒後の波形は，元の波形を $vt$ だけ平行移動したもの。周期 $T$ を利用して，「余りの時間」分だけずらせばよい。</li>
   </ul>
 </div>

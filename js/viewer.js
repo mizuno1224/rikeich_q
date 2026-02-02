@@ -7,6 +7,9 @@ let pointerInstance = null;
 let currentProbId = null;
 let currentPath = null;
 
+// 音声プレーヤーインスタンス
+let audioPlayer = null;
+
 document.addEventListener("DOMContentLoaded", () => {
   const params = new URLSearchParams(window.location.search);
 
@@ -62,6 +65,9 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     showError("問題が指定されていません。");
   }
+  
+  // --- 音声機能の初期化（一時的に無効化） ---
+  // initAudioControls();
 });
 
 /**
@@ -369,5 +375,100 @@ function loadReactionData(contentId, cardIndex) {
     return JSON.parse(localStorage.getItem(storageKey));
   } catch(e) {
     return null;
+  }
+}
+
+/**
+ * 音声コントロールの初期化
+ */
+function initAudioControls() {
+  var generateBtn = document.getElementById('audio-generate-btn');
+  var playBtn = document.getElementById('audio-play-btn');
+  var pauseBtn = document.getElementById('audio-pause-btn');
+  var stopBtn = document.getElementById('audio-stop-btn');
+  var closeBtn = document.getElementById('audio-close-btn');
+  var controlsPanel = document.getElementById('audio-controls-panel');
+  var textTarget = document.getElementById('text-target');
+  
+  if (!textTarget) return;
+  
+  // 解説が読み込まれたら音声ボタンを表示
+  var observer = new MutationObserver(function(mutations) {
+    var hasCards = textTarget.querySelectorAll('.card').length > 0;
+    if (generateBtn) {
+      generateBtn.style.display = hasCards ? 'inline-block' : 'none';
+    }
+  });
+  
+  observer.observe(textTarget, { childList: true, subtree: true });
+  
+  // 初期状態を確認
+  var hasCards = textTarget.querySelectorAll('.card').length > 0;
+  if (generateBtn) {
+    generateBtn.style.display = hasCards ? 'inline-block' : 'none';
+  }
+  
+  // 音声生成ボタン
+  if (generateBtn) {
+    generateBtn.addEventListener('click', function() {
+      // 強化されたテキストを取得（補足説明付き）
+      var sections = enhanceExplanationForAudio(textTarget);
+      if (sections.length === 0) {
+        // フォールバック: 通常の抽出を試す
+        sections = extractExplanationText(textTarget);
+        if (sections.length === 0) {
+          alert('読み上げる内容が見つかりませんでした');
+          return;
+        }
+      }
+      
+      // コントロールパネルを表示
+      if (controlsPanel) {
+        controlsPanel.style.display = 'block';
+      }
+      
+      // 音声プレーヤーを初期化
+      audioPlayer = new ExplanationAudioPlayer(textTarget);
+      audioPlayer.play(sections);
+    });
+  }
+  
+  // 再生ボタン
+  if (playBtn) {
+    playBtn.addEventListener('click', function() {
+      if (audioPlayer) {
+        audioPlayer.resume();
+      }
+    });
+  }
+  
+  // 一時停止ボタン
+  if (pauseBtn) {
+    pauseBtn.addEventListener('click', function() {
+      if (audioPlayer) {
+        audioPlayer.pause();
+      }
+    });
+  }
+  
+  // 停止ボタン
+  if (stopBtn) {
+    stopBtn.addEventListener('click', function() {
+      if (audioPlayer) {
+        audioPlayer.stop();
+      }
+    });
+  }
+  
+  // 閉じるボタン
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      if (audioPlayer) {
+        audioPlayer.stop();
+      }
+      if (controlsPanel) {
+        controlsPanel.style.display = 'none';
+      }
+    });
   }
 }

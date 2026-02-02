@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
   <title>Physics Viewer</title>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
@@ -52,8 +52,10 @@
       <a href="index.html" class="btn-back-circle">←</a>
       <h1 id="prob-title-header">読み込み中...</h1>
     </div>
-    <div>
+    <div style="display: flex; gap: 10px; align-items: center;">
       <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
+      <!-- 音声機能は一時的に非表示 -->
+      <!-- <button id="audio-generate-btn" class="btn-sm" style="display: none;" title="補足説明付きで音声解説を再生">🎤 音声解説</button> -->
     </div>
   </header>
 
@@ -67,8 +69,33 @@
 
   <canvas id="pointer-canvas"></canvas>
 
+  <!-- 音声コントロールパネル（一時的に非表示） -->
+  <!--
+  <div id="audio-controls-panel" class="audio-controls-panel" style="display: none;">
+    <div class="audio-controls-header">
+      <span>🎤 音声解説</span>
+      <button id="audio-close-btn" class="audio-close-btn">✕</button>
+    </div>
+    <div class="audio-controls-body">
+      <div class="audio-progress-container">
+        <div id="audio-progress" class="audio-progress"></div>
+      </div>
+      <div class="audio-buttons">
+        <button id="audio-play-btn" class="audio-btn">▶️ 再生</button>
+        <button id="audio-pause-btn" class="audio-btn" style="display: none;">⏸️ 一時停止</button>
+        <button id="audio-stop-btn" class="audio-btn">⏹️ 停止</button>
+      </div>
+      <div id="audio-error" class="audio-error" style="display: none;"></div>
+    </div>
+  </div>
+  -->
+
   <script src="js/sim-utils.js"></script>
   <script src="js/pointer.js"></script>
+  <script src="js/text-extractor.js"></script>
+  <script src="js/audio-enhancer.js"></script>
+  <script src="js/audio-player.js"></script>
+  <script src="js/mobile-touch.js"></script>
   <script src="js/viewer.js"></script>
 
   <script>
