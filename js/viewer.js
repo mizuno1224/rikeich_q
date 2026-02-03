@@ -34,16 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     typeof LaserPointer !== "undefined"
   ) {
     pointerInstance = new LaserPointer("pointer-canvas");
-
-    // スクロールでクリア
-    window.addEventListener("scroll", () => pointerInstance.clear(), {
-      passive: true,
-    });
-    const expl = document.querySelector(".explanation-area");
-    if (expl)
-      expl.addEventListener("scroll", () => pointerInstance.clear(), {
-        passive: true,
-      });
+    // ポインターは解説に張り付くため、スクロールではクリアしない
   }
 
   if (btnPointer) {
@@ -52,20 +43,95 @@ document.addEventListener("DOMContentLoaded", () => {
       btnPointer.classList.toggle("active", isActive);
       btnPointer.innerHTML = isActive ? "🖊️ ポインターON" : "👆 操作モード";
       if (pointerInstance) pointerInstance.clear();
+      toggleRecordingFloatBar(isActive);
+      if (isActive) {
+        history.pushState({ viewer: true }, "", location.href);
+      }
+    });
+  }
+
+  // 解説ページではスワイプ「戻る」を完全廃止（常に同じページに留める）
+  history.pushState({ viewer: true }, "", location.href);
+  window.addEventListener("popstate", () => {
+    history.pushState({ viewer: true }, "", location.href);
+  });
+
+  // 録画用フロートバー：終了・全画面
+  const floatBar = document.getElementById("recording-float-bar");
+  const btnExit = document.getElementById("recording-btn-exit");
+  const btnFullscreen = document.getElementById("recording-btn-fullscreen");
+  if (btnExit) {
+    btnExit.addEventListener("click", () => exitPointerAndRecordingMode());
+  }
+  if (btnFullscreen) {
+    btnFullscreen.addEventListener("click", () => toggleRecordingFullscreen());
+  }
+  const btnClear = document.getElementById("recording-btn-clear");
+  if (btnClear) {
+    btnClear.addEventListener("click", () => {
+      if (pointerInstance) pointerInstance.clear();
+    });
+  }
+  const scrollContainer = document.getElementById("main-content");
+  const scrollStep = 120;
+  const btnScrollUp = document.getElementById("recording-btn-scroll-up");
+  const btnScrollDown = document.getElementById("recording-btn-scroll-down");
+  if (btnScrollUp && scrollContainer) {
+    btnScrollUp.addEventListener("click", () => {
+      scrollContainer.scrollTop = Math.max(0, scrollContainer.scrollTop - scrollStep);
+    });
+  }
+  if (btnScrollDown && scrollContainer) {
+    btnScrollDown.addEventListener("click", () => {
+      scrollContainer.scrollTop = Math.min(
+        scrollContainer.scrollHeight - scrollContainer.clientHeight,
+        scrollContainer.scrollTop + scrollStep
+      );
+    });
+  }
+  const recordingTrigger = document.getElementById("recording-float-trigger");
+  const recordingBar = document.getElementById("recording-float-bar");
+  if (recordingTrigger && recordingBar) {
+    recordingTrigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const expanded = recordingBar.classList.toggle("recording-float-bar--expanded");
+      recordingBar.classList.toggle("recording-float-bar--collapsed", !expanded);
+      recordingTrigger.textContent = expanded ? "×" : "⋯";
+      recordingTrigger.setAttribute("aria-label", expanded ? "メニューを閉じる" : "メニューを表示");
+      recordingTrigger.setAttribute("title", expanded ? "閉じる" : "メニュー");
+    });
+  }
+  document.addEventListener("fullscreenchange", onFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", onFullscreenChange);
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && document.body.classList.contains("pointer-active")) {
+      exitPointerAndRecordingMode();
+    }
+  });
+
+  // --- ブックマークボタン ---
+  const btnBookmark = document.getElementById("btn-bookmark");
+  if (btnBookmark) {
+    btnBookmark.addEventListener("click", () => {
+      if (currentPath) {
+        const title = document.getElementById("prob-title-header")
+          ? document.getElementById("prob-title-header").textContent || ""
+          : currentPath.split("/").pop() || "";
+        toggleBookmark(currentPath, title);
+      }
     });
   }
 
   // --- メイン読み込み処理 ---
   if (directPath) {
-    // パターンA: パス直接指定 (index.htmlからの遷移など)
     loadExplanationByPath(directPath);
   } else if (probId) {
-    // パターンB: ID指定 (従来のJSON検索)
     loadProblemById(probId, srcPath);
   } else {
     showError("問題が指定されていません。");
   }
-  
+
   // --- 音声機能の初期化（一時的に無効化） ---
   // initAudioControls();
 });
@@ -94,11 +160,13 @@ function loadExplanationByPath(path) {
   const textTarget = document.getElementById("text-target");
   if (!textTarget) return;
 
-  // 仮のタイトルを表示（ファイル名）
   const fileName = path.split("/").pop();
   updateTitle(fileName);
+  updateBookmarkButton(path);
 
-  fetch(path)
+  const loader = showLoading("解説を読み込み中...");
+
+  fetchWithRetry(path)
     .then((res) => {
       if (!res.ok) throw new Error("Explanation file not found: " + path);
       return res.text();
@@ -106,18 +174,19 @@ function loadExplanationByPath(path) {
     .then((html) => {
       renderExplanation(textTarget, html);
 
-      // HTML内の見出しタグからタイトルを抽出してヘッダーに反映
       const heading = textTarget.querySelector("h2, h3");
-      if (heading) {
-        updateTitle(heading.textContent);
-      }
+      if (heading) updateTitle(heading.textContent);
+      updateBookmarkButton(path);
     })
     .catch((err) => {
-      console.error(err);
+      ErrorHandler.handle(err, "loadExplanationByPath");
       showError(
-        `解説ファイルの読み込みに失敗しました。<br><span style="font-size:0.8em">${path}</span>`,
+        "解説ファイルの読み込みに失敗しました。<br><span style=\"font-size:0.8em\">" +
+          escapeHtml(path) +
+          "</span>",
       );
-    });
+    })
+    .finally(() => hideLoading(loader));
 }
 
 /**
@@ -125,16 +194,15 @@ function loadExplanationByPath(path) {
  */
 function loadProblemById(id, srcPath) {
   const fetchTarget = srcPath ? srcPath : "problems.json";
+  const loader = showLoading("問題を検索しています...");
 
-  fetch(fetchTarget)
+  fetchWithRetry(fetchTarget)
     .then((res) => {
       if (!res.ok) throw new Error("JSON load failed");
       return res.json();
     })
     .then((data) => {
-      let problemsList = Array.isArray(data) ? data : [data];
-
-      // 階層検索
+      const problemsList = Array.isArray(data) ? data : [data];
       let target = null;
       for (const mat of problemsList) {
         if (!mat.subjects) continue;
@@ -156,13 +224,14 @@ function loadProblemById(id, srcPath) {
       if (target) {
         applyProblemData(target);
       } else {
-        showError(`問題ID "${id}" が見つかりません。`);
+        showError("問題ID \"" + escapeHtml(id) + "\" が見つかりません。");
       }
     })
     .catch((err) => {
-      console.error(err);
+      ErrorHandler.handle(err, "loadProblemById");
       showError("問題データの検索に失敗しました。");
-    });
+    })
+    .finally(() => hideLoading(loader));
 }
 
 /**
@@ -173,21 +242,24 @@ function applyProblemData(target) {
   if (!textTarget) return;
 
   updateTitle(target.title);
+  if (target.explanationPath) updateBookmarkButton(target.explanationPath);
 
-  // 解説ファイルのロード
   if (target.explanationPath) {
-    fetch(target.explanationPath)
+    const loader = showLoading("解説を読み込み中...");
+    fetchWithRetry(target.explanationPath)
       .then((res) => {
         if (!res.ok) throw new Error("Explanation file not found");
         return res.text();
       })
       .then((html) => {
         renderExplanation(textTarget, html);
+        updateBookmarkButton(target.explanationPath);
       })
       .catch((err) => {
-        console.warn(err);
+        ErrorHandler.handle(err, "applyProblemData");
         showError("解説ファイルの読み込みに失敗しました。");
-      });
+      })
+      .finally(() => hideLoading(loader));
   } else {
     showError("解説が登録されていません。");
   }
@@ -201,9 +273,101 @@ function updateTitle(title) {
   if (titleEl) titleEl.textContent = title;
 }
 
+/**
+ * 録画モード用フロートバーの表示／非表示
+ * @param {boolean} show
+ */
+function toggleRecordingFloatBar(show) {
+  const bar = document.getElementById("recording-float-bar");
+  const btnFullscreen = document.getElementById("recording-btn-fullscreen");
+  const trigger = document.getElementById("recording-float-trigger");
+  if (!bar) return;
+  bar.setAttribute("aria-hidden", !show);
+  if (show) {
+    bar.classList.add("recording-float-bar--collapsed");
+    bar.classList.remove("recording-float-bar--expanded");
+    if (trigger) {
+      trigger.textContent = "⋯";
+      trigger.setAttribute("aria-label", "メニューを表示");
+      trigger.setAttribute("title", "メニュー");
+    }
+  }
+  if (btnFullscreen) {
+    btnFullscreen.textContent = isRecordingFullscreen() ? "⛶ 全画面解除" : "⛶ 全画面";
+    btnFullscreen.setAttribute("aria-label", isRecordingFullscreen() ? "全画面解除" : "全画面切替");
+  }
+}
+
+/**
+ * ポインターモード＋録画モードを終了（全画面も解除）
+ */
+function exitPointerAndRecordingMode() {
+  document.body.classList.remove("pointer-active", "recording-fullscreen");
+  const btnPointer = document.getElementById("btn-toggle-pointer");
+  if (btnPointer) {
+    btnPointer.classList.remove("active");
+    btnPointer.innerHTML = "👆 操作モード";
+  }
+  if (pointerInstance) pointerInstance.clear();
+  toggleRecordingFloatBar(false);
+  exitFullscreen();
+}
+
+function isRecordingFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+
+function exitFullscreen() {
+  if (document.exitFullscreen) document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+}
+
+function toggleRecordingFullscreen() {
+  if (isRecordingFullscreen()) {
+    document.body.classList.remove("recording-fullscreen");
+    exitFullscreen();
+    const btn = document.getElementById("recording-btn-fullscreen");
+    if (btn) { btn.textContent = "⛶ 全画面"; btn.setAttribute("aria-label", "全画面切替"); }
+  } else {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (req) {
+      req.call(el).then(() => {
+        document.body.classList.add("recording-fullscreen");
+        const btn = document.getElementById("recording-btn-fullscreen");
+        if (btn) { btn.textContent = "⛶ 全画面解除"; btn.setAttribute("aria-label", "全画面解除"); }
+      }).catch(() => {});
+    }
+  }
+}
+
+function onFullscreenChange() {
+  if (!isRecordingFullscreen()) {
+    document.body.classList.remove("recording-fullscreen");
+    const btn = document.getElementById("recording-btn-fullscreen");
+    if (btn) { btn.textContent = "⛶ 全画面"; btn.setAttribute("aria-label", "全画面切替"); }
+    return;
+  }
+  // ボタン以外で全画面が解除された場合、再度全画面にする（スクロール等で解除されないように）
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    if (document.body.classList.contains("recording-fullscreen")) {
+      const el = document.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) {
+        setTimeout(() => {
+          req.call(el).catch(() => {});
+        }, 50);
+      }
+    }
+  }
+}
+
 function renderExplanation(container, html) {
   // 1. HTML挿入
   container.innerHTML = html;
+  container.querySelectorAll("img").forEach((img) => {
+    if (!img.hasAttribute("loading")) img.setAttribute("loading", "lazy");
+  });
 
   // 2. MathJaxのレンダリング
   if (window.MathJax) {
@@ -222,12 +386,53 @@ function renderExplanation(container, html) {
 
   // 5. Observer更新 (目次等の追従用)
   if (window.updateObserver) setTimeout(window.updateObserver, 100);
+
+  // 6. ポインターキャンバスを解説の高さに合わせてリサイズ（スクロール連動用）
+  if (pointerInstance && typeof pointerInstance.resize === "function") {
+    requestAnimationFrame(() => pointerInstance.resize());
+  }
 }
 
 function showError(msg) {
   const target = document.getElementById("text-target");
-  if (target)
-    target.innerHTML = `<p style="padding:20px; color:#ef4444;">${msg}</p>`;
+  if (target) {
+    const safe = typeof msg === "string" ? escapeHtml(msg).replace(/\n/g, "<br>") : escapeHtml(String(msg));
+    target.innerHTML = `<p style="padding:20px; color:#ef4444;">${safe}</p>`;
+  }
+}
+
+/** ブックマーク: LocalStorage に { path, title }[] で保存 */
+function getBookmarks() {
+  try {
+    const raw = localStorage.getItem("rikeich_bookmarks");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function toggleBookmark(path, title) {
+  const list = getBookmarks();
+  const idx = list.findIndex((b) => b.path === path);
+  if (idx > -1) {
+    list.splice(idx, 1);
+    if (typeof showToast === "function") showToast("ブックマークを解除しました");
+  } else {
+    list.push({ path: path || currentPath, title: title || document.getElementById("prob-title-header")?.textContent || "" });
+    if (typeof showToast === "function") showToast("ブックマークに追加しました");
+  }
+  localStorage.setItem("rikeich_bookmarks", JSON.stringify(list));
+  updateBookmarkButton(path || currentPath);
+}
+
+function updateBookmarkButton(path) {
+  const btn = document.getElementById("btn-bookmark");
+  if (!btn) return;
+  const list = getBookmarks();
+  const isBookmarked = list.some((b) => b.path === path);
+  btn.classList.toggle("bookmarked", isBookmarked);
+  btn.textContent = isBookmarked ? "★ ブックマーク済み" : "☆ ブックマーク";
+  btn.setAttribute("aria-label", isBookmarked ? "ブックマークを解除" : "ブックマークに追加");
 }
 
 function executeInlineScripts(element) {

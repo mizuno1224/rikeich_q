@@ -8,22 +8,49 @@
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
+    <a href="#content-area" class="skip-link">メインコンテンツへスキップ</a>
     <div class="container">
-      <h1>Physics Lab.</h1>
-      <div class="material-tabs" id="tab-container"></div>
-      <div
+      <h1 id="main-heading">Physics Lab.</h1>
+      <nav class="material-tabs" id="tab-container" aria-label="教材メニュー"></nav>
+      <nav
         class="material-tabs"
         id="sub-tab-container"
+        aria-label="サブメニュー"
         style="
           display: none;
           margin-top: -20px;
           margin-bottom: 30px;
           transform: scale(0.95);
         "
-      ></div>
-      <div id="content-area"></div>
+      ></nav>
+      <div class="search-and-bookmarks">
+        <div class="search-container" role="search">
+          <label for="problem-search" class="visually-hidden">問題を検索</label>
+          <input
+            type="search"
+            id="problem-search"
+            class="search-input"
+            placeholder="問題を検索..."
+            aria-label="問題を検索"
+            autocomplete="off"
+          />
+          <button type="button" id="clear-search" class="btn-clear-search" aria-label="検索をクリア">✕</button>
+        </div>
+        <a href="index.html#bookmarks" class="btn-bookmarks-link" id="link-to-bookmarks">⭐ ブックマーク一覧</a>
+      </div>
+      <div id="content-area" role="main"></div>
+      <section id="bookmarks" class="bookmarks-section" aria-label="ブックマーク一覧" hidden>
+        <h2>ブックマークした問題</h2>
+        <div id="bookmarks-list" class="bookmarks-list"></div>
+      </section>
     </div>
 
+    <script src="js/error-handler.js"></script>
     <script src="js/index.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").catch(function () {});
+      }
+    </script>
   </body>
 </html>

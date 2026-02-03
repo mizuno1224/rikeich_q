@@ -2,12 +2,12 @@
 
 document.addEventListener("DOMContentLoaded", () => {
   const tabContainer = document.getElementById("tab-container");
-  // サブタブ用のコンテナを追加
   let subTabContainer = document.getElementById("sub-tab-container");
   if (!subTabContainer) {
-    subTabContainer = document.createElement("div");
+    subTabContainer = document.createElement("nav");
     subTabContainer.id = "sub-tab-container";
     subTabContainer.className = "material-tabs";
+    subTabContainer.setAttribute("aria-label", "サブメニュー");
     subTabContainer.style.cssText =
       "display:none; margin-top:-20px; margin-bottom:30px; transform: scale(0.95);";
     tabContainer.after(subTabContainer);
@@ -15,17 +15,30 @@ document.addEventListener("DOMContentLoaded", () => {
   const contentArea = document.getElementById("content-area");
 
   let manifest = [];
-  // 入試カテゴリの定義
   const EXAM_TYPES = ["exam_year", "exam_univ"];
 
-  fetch("data/manifest.json")
+  const loader = showLoading("教材リストを読み込み中...");
+  fetchWithRetry("data/manifest.json")
     .then((res) => res.json())
     .then((data) => {
       manifest = data;
       initTabs();
-      if (manifest.length > 0) loadMaterial(0);
+      if (manifest.length > 0) {
+        const firstTab = tabContainer.querySelector(".tab-btn:not([data-is-exam])");
+        if (firstTab) {
+          firstTab.classList.add("active");
+          firstTab.setAttribute("aria-current", "page");
+        }
+        loadMaterial(0);
+      }
+      initSearch();
+      initBookmarksSection();
     })
-    .catch((err) => console.error(err));
+    .catch((err) => {
+      ErrorHandler.handle(err, "manifest");
+      contentArea.innerHTML = '<p class="empty-msg">教材リストの読み込みに失敗しました。</p>';
+    })
+    .finally(() => hideLoading(loader));
 
   function initTabs() {
     tabContainer.innerHTML = "";
@@ -52,11 +65,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function createMainTab(name, index) {
     const btn = document.createElement("button");
     btn.className = "tab-btn";
+    btn.type = "button";
     btn.textContent = name;
+    btn.setAttribute("aria-label", name + "を選択");
     btn.onclick = () => {
       resetTabs();
       btn.classList.add("active");
-      subTabContainer.style.display = "none"; // サブタブ隠す
+      btn.setAttribute("aria-current", "page");
+      subTabContainer.style.display = "none";
       loadMaterial(index);
     };
     tabContainer.appendChild(btn);
@@ -65,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showExamTabs(parentBtn) {
     resetTabs();
     parentBtn.classList.add("active");
+    parentBtn.setAttribute("aria-current", "page");
 
     // サブタブの生成
     subTabContainer.innerHTML = "";
@@ -78,14 +95,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const subBtn = document.createElement("button");
       subBtn.className = "tab-btn";
-      subBtn.style.fontSize = "0.95rem"; // 少し小さく
+      subBtn.type = "button";
+      subBtn.style.fontSize = "0.95rem";
       subBtn.textContent = mat.name;
+      subBtn.setAttribute("aria-label", mat.name + "を選択");
       subBtn.onclick = () => {
-        // サブタブのアクティブ切り替え
-        Array.from(subTabContainer.children).forEach((b) =>
-          b.classList.remove("active"),
-        );
+        Array.from(subTabContainer.children).forEach((b) => {
+          b.classList.remove("active");
+          b.removeAttribute("aria-current");
+        });
         subBtn.classList.add("active");
+        subBtn.setAttribute("aria-current", "page");
         loadMaterial(index);
       };
       subTabContainer.appendChild(subBtn);
@@ -99,51 +119,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resetTabs() {
     const tabs = document.querySelectorAll(".tab-btn");
-    tabs.forEach((t) => t.classList.remove("active"));
+    tabs.forEach((t) => {
+      t.classList.remove("active");
+      t.removeAttribute("aria-current");
+    });
   }
 
-  // loadMaterial, renderContent は既存のまま
   function loadMaterial(index) {
-    // (既存のコードと同じ)
     const item = manifest[index];
     const jsonPath = item.path;
-    contentArea.innerHTML =
-      '<div style="text-align:center; padding:40px; color:#666;">読み込み中...</div>';
+    const loadingEl = showLoading("教材を読み込み中...");
+    contentArea.innerHTML = "";
 
-    fetch(jsonPath)
+    fetchWithRetry(jsonPath)
       .then((res) => res.json())
-      .then((materialData) => renderContent(materialData))
+      .then((materialData) => {
+        renderContent(materialData);
+        const searchInput = document.getElementById("problem-search");
+        if (searchInput && searchInput.value.trim()) {
+          filterProblems(searchInput.value.trim());
+        }
+      })
       .catch((err) => {
-        console.error(err);
-        contentArea.innerHTML = `<p style="text-align:center; color:red;">読み込み失敗</p>`;
-      });
+        ErrorHandler.handle(err, "loadMaterial");
+        contentArea.innerHTML = '<p class="empty-msg">教材の読み込みに失敗しました。</p>';
+      })
+      .finally(() => hideLoading(loadingEl));
   }
 
   function renderContent(material) {
+    const esc = (s) => (s == null ? "" : escapeHtml(String(s)));
     let html = `<div class="subject-grid">`;
     if (material.subjects) {
       material.subjects.forEach((subject) => {
-        // 科目(Subject)ごとにカードを作成
-        // Subject内に問題があるかチェック
         const hasProblems =
           subject.fields &&
           subject.fields.some((f) => f.problems && f.problems.length > 0);
 
         if (hasProblems) {
           html += `<div class="subject-card">`;
-          // Subject名を表示 (例: "2025年度" や "東京大学")
-          html += `<h3 class="subject-name">${subject.subjectName}</h3>`;
+          html += `<h3 class="subject-name">${esc(subject.subjectName)}</h3>`;
           html += `<ul class="field-list">`;
 
           subject.fields.forEach((field) => {
             if (field.problems && field.problems.length > 0) {
               html += `<li class="field-item">`;
-              // Field名を表示 (例: "本試験" や "2024年度")
-              html += `<span class="field-name">${field.fieldName}</span>`;
+              html += `<span class="field-name">${esc(field.fieldName)}</span>`;
               html += `<div class="prob-grid">`;
               field.problems.forEach((p) => {
                 const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}`;
-                html += `<a href="${targetUrl}" class="prob-link" target="_blank"><span>${p.title}</span></a>`;
+                const title = esc(p.title);
+                const path = p.explanationPath || "";
+                html += `<a href="${targetUrl}" class="prob-link" target="_blank" data-search-text="${esc(path + " " + p.title)}"><span>${title}</span></a>`;
               });
               html += `</div></li>`;
             }
@@ -155,4 +182,98 @@ document.addEventListener("DOMContentLoaded", () => {
     html += `</div>`;
     contentArea.innerHTML = html;
   }
+
+  function initSearch() {
+    const searchInput = document.getElementById("problem-search");
+    const clearBtn = document.getElementById("clear-search");
+    if (!searchInput) return;
+
+    searchInput.addEventListener("input", (e) => {
+      const query = e.target.value.trim().toLowerCase();
+      filterProblems(query);
+      if (clearBtn) clearBtn.style.visibility = query ? "visible" : "hidden";
+    });
+
+    if (clearBtn) {
+      clearBtn.style.visibility = searchInput.value.trim() ? "visible" : "hidden";
+      clearBtn.addEventListener("click", () => {
+        searchInput.value = "";
+        searchInput.focus();
+        filterProblems("");
+        clearBtn.style.visibility = "hidden";
+      });
+    }
+  }
+
+  function filterProblems(query) {
+    const links = document.querySelectorAll("#content-area .prob-link");
+    const lower = query.toLowerCase();
+
+    links.forEach((link) => {
+      const searchText = (link.getAttribute("data-search-text") || link.textContent || "").toLowerCase();
+      const match = !lower || searchText.includes(lower);
+      link.style.display = match ? "" : "none";
+      link.classList.toggle("prob-link-hidden", !match);
+    });
+
+    document.querySelectorAll("#content-area .field-item").forEach((field) => {
+      const visible = field.querySelectorAll(".prob-link:not([style*='display: none'])").length > 0;
+      field.style.display = visible ? "" : "none";
+    });
+    document.querySelectorAll("#content-area .subject-card").forEach((card) => {
+      const visible = card.querySelectorAll(".field-item:not([style*='display: none'])").length > 0;
+      card.style.display = visible ? "" : "none";
+    });
+  }
+
+  function initBookmarksSection() {
+    const section = document.getElementById("bookmarks");
+    const list = document.getElementById("bookmarks-list");
+    const linkToBookmarks = document.getElementById("link-to-bookmarks");
+    if (!section || !list) return;
+
+    function renderBookmarks() {
+      const bookmarks = getBookmarksList();
+      if (bookmarks.length === 0) {
+        section.hidden = true;
+        if (linkToBookmarks) linkToBookmarks.style.display = "none";
+        return;
+      }
+      if (linkToBookmarks) linkToBookmarks.style.display = "";
+      section.hidden = false;
+      list.innerHTML = bookmarks
+        .map(
+          (b) =>
+            `<a href="viewer.html?path=${encodeURIComponent(b.path)}" class="prob-link" target="_blank">${escapeHtml(b.title)}</a>`
+        )
+        .join("");
+    }
+
+    if (linkToBookmarks) {
+      linkToBookmarks.addEventListener("click", (e) => {
+        if (window.location.hash !== "#bookmarks") return;
+        renderBookmarks();
+      });
+    }
+    if (window.location.hash === "#bookmarks") {
+      renderBookmarks();
+      document.getElementById("bookmarks")?.scrollIntoView({ behavior: "smooth" });
+    }
+    window.addEventListener("hashchange", () => {
+      if (window.location.hash === "#bookmarks") {
+        renderBookmarks();
+        document.getElementById("bookmarks")?.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+    renderBookmarks();
+  }
 });
+
+function getBookmarksList() {
+  const raw = localStorage.getItem("rikeich_bookmarks");
+  let list = [];
+  try {
+    if (raw) list = JSON.parse(raw);
+  } catch (e) {}
+  return Array.isArray(list) ? list : [];
+}

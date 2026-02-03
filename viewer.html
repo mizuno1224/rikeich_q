@@ -47,27 +47,40 @@
 </head>
 
 <body>
-  <header class="prob-header-top">
+  <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+  <header class="prob-header-top" role="banner">
     <div class="header-left">
-      <a href="index.html" class="btn-back-circle">←</a>
+      <a href="index.html" class="btn-back-circle" aria-label="一覧に戻る">←</a>
       <h1 id="prob-title-header">読み込み中...</h1>
     </div>
-    <div style="display: flex; gap: 10px; align-items: center;">
-      <button id="btn-toggle-pointer" class="btn-sm">👆 操作モード</button>
+    <div class="header-actions" role="group" aria-label="操作">
+      <button type="button" id="btn-bookmark" class="btn-sm btn-bookmark" aria-label="ブックマークに追加" title="ブックマークに追加">☆ ブックマーク</button>
+      <button type="button" id="btn-toggle-pointer" class="btn-sm" aria-label="操作モード切替">👆 操作モード</button>
       <!-- 音声機能は一時的に非表示 -->
       <!-- <button id="audio-generate-btn" class="btn-sm" style="display: none;" title="補足説明付きで音声解説を再生">🎤 音声解説</button> -->
     </div>
   </header>
 
-  <div class="viewer-container">
+  <div class="viewer-container" id="main-content">
     <div class="viewer-split-content">
-      <div id="sim-target" class="simulation-area"></div>
+      <div id="sim-target" class="simulation-area" aria-label="シミュレーション領域"></div>
 
-      <div id="text-target" class="explanation-area"></div>
+      <div id="text-target" class="explanation-area" role="article" aria-label="解説"></div>
+      <canvas id="pointer-canvas" class="pointer-canvas-inline" aria-hidden="true"></canvas>
     </div>
   </div>
 
-  <canvas id="pointer-canvas"></canvas>
+  <!-- 録画用フロートは body 直下で overflow の影響を受けないようにする -->
+  <div id="recording-float-bar" class="recording-float-bar recording-float-bar--collapsed" aria-hidden="true">
+    <button type="button" id="recording-float-trigger" class="recording-float-trigger" aria-label="メニューを表示" title="メニュー">⋯</button>
+    <div class="recording-float-content">
+      <button type="button" id="recording-btn-scroll-up" class="recording-float-btn recording-float-btn-scroll" title="上にスクロール" aria-label="上にスクロール">↑</button>
+      <button type="button" id="recording-btn-scroll-down" class="recording-float-btn recording-float-btn-scroll" title="下にスクロール" aria-label="下にスクロール">↓</button>
+      <button type="button" id="recording-btn-clear" class="recording-float-btn" title="ポインターの線をすべて消す" aria-label="ポインターをクリア">🗑 クリア</button>
+      <button type="button" id="recording-btn-fullscreen" class="recording-float-btn" title="ブラウザを全画面" aria-label="全画面切替">⛶ 全画面</button>
+      <button type="button" id="recording-btn-exit" class="recording-float-btn recording-float-btn-exit" title="録画モードを終了" aria-label="録画モードを終了">終了</button>
+    </div>
+  </div>
 
   <!-- 音声コントロールパネル（一時的に非表示） -->
   <!--
@@ -90,6 +103,7 @@
   </div>
   -->
 
+  <script src="js/error-handler.js"></script>
   <script src="js/sim-utils.js"></script>
   <script src="js/pointer.js"></script>
   <script src="js/text-extractor.js"></script>
@@ -97,27 +111,17 @@
   <script src="js/audio-player.js"></script>
   <script src="js/mobile-touch.js"></script>
   <script src="js/viewer.js"></script>
-
+  <script src="config/firebase-config.js"></script>
   <script>
-    // ▼▼▼ Firebaseコンソールからコピーした内容をここに貼る ▼▼▼
-    const firebaseConfig = {
-      apiKey: "AIzaSyBObf6A_NDje3mpW1qxsfrNGnikdeDQOsA",
-      authDomain: "rikeich-q.firebaseapp.com",
-      projectId: "rikeich-q",
-      storageBucket: "rikeich-q.firebasestorage.app",
-      messagingSenderId: "779478068459",
-      appId: "1:779478068459:web:6f223b0116b2b2b08122ae"
-    };
-    // ▲▲▲▲▲▲
-
-    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-      firebase.initializeApp(firebaseConfig);
-      // js/viewer.js からアクセスできるように window.doc 等を登録
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    }
+    if (window.firebaseConfig && window.firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(window.firebaseConfig);
       window.db = firebase.firestore();
       window.collection = (db, name) => db.collection(name);
       window.doc = (db, col, id) => db.collection(col).doc(id);
       window.setDoc = (docRef, data, opt) => docRef.set(data, opt);
-      console.log("Viewer Firebase initialized!");
     }
   </script>
 </body>
