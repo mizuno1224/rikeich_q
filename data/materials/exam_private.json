@@ -19,6 +19,24 @@
           ]
         }
       ]
+    },
+    {
+      "subjectName": "東京理科大学",
+      "folderName": "tokyo_rika",
+      "fields": [
+        {
+          "fieldName": "2025年度",
+          "folderId": "2025",
+          "problems": [
+            {
+              "id": "2025_souzou_1",
+              "title": "創造理工 大問1",
+              "desc": "斜面と円弧を持つ台の上を滑る小物体",
+              "explanationPath": "data/explanations/exam_private/tokyo_rika/2025/2025_souzou_1.html"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

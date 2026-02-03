@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2017年東北大学 前期 大問1：見かけの質量と摩擦</title>
+  <link rel="stylesheet" href="../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+      
+      <h2 class="prob-title-sub">大問1：見かけの質量と摩擦</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>
+          この問題は，<span class="highlight">見かけの質量</span>という概念を通じて，<strong>摩擦が物体の運動に与える影響</strong>を理解する問題です。箱Pの中に箱Qが隠れているため，外から観測するTさんは「箱Pの質量」を正確に測定できません。実際に測定されるのは「見かけの質量」であり，これは箱Pと箱Qの相対運動の状態によって変化します。
+        </p>
+        
+        <ul>
+          <li><strong>問(1)</strong>：箱Pと箱Qが一体となって運動する場合（静止摩擦力が働く）</li>
+          <li><strong>問(2)</strong>：箱Qが滑り始める臨界状態（最大静止摩擦力）</li>
+          <li><strong>問(3)</strong>：箱Qが箱Pの内壁に衝突した後の状態（動摩擦力が働く）</li>
+          <li><strong>問(4)</strong>：実験結果から未知の物理量を逆算する</li>
+        </ul>
+
+        <div class="box-note">
+          <strong>重要概念：見かけの質量</strong><br>
+          見かけの質量 $M_{\text{app}}$ は，$F = M_{\text{app}} a$ の関係から $M_{\text{app}} = F/a$ として定義されます。これは，<span class="highlight">実際の質量とは異なり，物体の内部構造や相対運動によって変化する</span>という点が重要です。この問題では，箱Qの運動状態によって見かけの質量が $M_{\mathrm{0}}$，$M_{\mathrm{1}}$，$M_{\mathrm{2}}$ と変化します。
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問(1) 一体運動と見かけの質量</h3>
+        
+        <h4>(a) 加速度と見かけの質量</h4>
+        <p>
+          $F = F_{\mathrm{0}}$ で押したとき，箱Pと箱Qは一体となって運動します。このとき，箱Qにはたらく力は，<span class="highlight">箱Pから受ける静止摩擦力</span>のみです。
+        </p>
+        
+        <p>
+          <strong>箱Pの運動方程式</strong>：<br>
+          箱Pには，外力 $F_{\mathrm{0}}$ と，箱Qから受ける摩擦力（作用・反作用の法則より，箱Qが受ける摩擦力と逆向きで大きさが等しい）がはたらきます。箱Pと箱Qが一体となって運動するので，加速度は同じ $a_{\mathrm{0}}$ です。
+        </p>
+        
+        <p>
+          箱Pの運動方程式：
+          $$ F_{\mathrm{0}} - f = Ma_{\mathrm{0}} $$
+          ここで，$f$ は箱Qから箱Pにはたらく摩擦力（箱Qが受ける摩擦力の反作用）です。
+        </p>
+        
+        <p>
+          <strong>箱Qの運動方程式</strong>：<br>
+          箱Qには，箱Pから受ける静止摩擦力 $f$ のみがはたらきます（水平方向）。箱Qは箱Pと一体となって運動するので，加速度は $a_{\mathrm{0}}$ です。
+          $$ f = ma_{\mathrm{0}} $$
+        </p>
+        
+        <p>
+          この2式から $f$ を消去すると，
+          $$ F_{\mathrm{0}} - ma_{\mathrm{0}} = Ma_{\mathrm{0}} $$
+          $$ F_{\mathrm{0}} = (M + m)a_{\mathrm{0}} $$
+          したがって，
+          $$ a_{\mathrm{0}} = \frac{F_{\mathrm{0}}}{M + m} $$
+        </p>
+        
+        <p>
+          見かけの質量 $M_{\mathrm{0}}$ は，$F_{\mathrm{0}} = M_{\mathrm{0}} a_{\mathrm{0}}$ より，
+          $$ M_{\mathrm{0}} = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} = \frac{F_{\mathrm{0}}}{\frac{F_{\mathrm{0}}}{M + m}} = M + m $$
+          つまり，<span class="highlight">一体運動する場合，見かけの質量は実際の質量の和 $M + m$ に等しくなります</span>。
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ a_{\mathrm{0}} = \frac{F_{\mathrm{0}}}{M + m} $$
+          $$ M_{\mathrm{0}} = M + m $$
+        </div>
+
+        <h4>(b) 滑らない条件</h4>
+        <p>
+          箱Qが平面K上を滑らないためには，箱Qにはたらく静止摩擦力が<span class="highlight">最大静止摩擦力以下</span>である必要があります。
+        </p>
+        
+        <p>
+          箱Qにはたらく静止摩擦力の大きさは，問(1)(a)より $f = ma_{\mathrm{0}}$ です。<br>
+          最大静止摩擦力は，垂直抗力が $mg$ なので，$f_{\text{max}} = \mu mg$ です。
+        </p>
+        
+        <p>
+          滑らない条件は $f \leq f_{\text{max}}$ なので，
+          $$ ma_{\mathrm{0}} \leq \mu mg $$
+          $$ a_{\mathrm{0}} \leq \mu g $$
+        </p>
+        
+        <p>
+          また，$a_{\mathrm{0}} = \frac{F_{\mathrm{0}}}{M + m}$ を代入すると，
+          $$ \frac{F_{\mathrm{0}}}{M + m} \leq \mu g $$
+          $$ F_{\mathrm{0}} \leq \mu g(M + m) $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ a_{\mathrm{0}} \leq \mu g $$
+          または
+          $$ F_{\mathrm{0}} \leq \mu g(M + m) $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問(2) 滑り始める臨界状態</h3>
+        
+        <h4>(a) 臨界力 $F_{\mathrm{1}}$</h4>
+        <p>
+          箱Qが滑り始めるのは，静止摩擦力が最大静止摩擦力に達したときです。このとき，$F = F_{\mathrm{1}}$ であり，加速度は $a_{\mathrm{0}} = \mu g$ です。
+        </p>
+        
+        <p>
+          問(1)(b)の条件式で等号が成り立つときが臨界状態なので，
+          $$ a_{\mathrm{0}} = \mu g $$
+          このとき，$F_{\mathrm{0}} = F_{\mathrm{1}}$ として，
+          $$ F_{\mathrm{1}} = (M + m) \mu g $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ F_{\mathrm{1}} = \mu g(M + m) $$
+        </div>
+
+        <h4>(b) 滑り始めたときの加速度と見かけの質量</h4>
+        <p>
+          箱Qが滑り始めた後も，$F = F_{\mathrm{1}}$ で押し続けます。このとき，箱Qには<span class="highlight">動摩擦力</span>がはたらきます。
+        </p>
+        
+        <p>
+          <strong>箱Pの運動方程式</strong>：<br>
+          箱Pには，外力 $F_{\mathrm{1}}$ と，箱Qから受ける動摩擦力の反作用がはたらきます。動摩擦力の大きさは $f' = \mu' mg$ です。
+          $$ F_{\mathrm{1}} - \mu' mg = Ma_{\mathrm{1}} $$
+        </p>
+        
+        <p>
+          <strong>箱Qの運動方程式</strong>：<br>
+          箱Qには，箱Pから受ける動摩擦力 $\mu' mg$ がはたらきます。箱Qは箱Pに対して滑っているので，加速度は箱Pとは異なります。箱Qの加速度を $a_{\mathrm{Q}}$ とすると，
+          $$ \mu' mg = ma_{\mathrm{Q}} $$
+          $$ a_{\mathrm{Q}} = \mu' g $$
+        </p>
+        
+        <p>
+          箱Pの加速度 $a_{\mathrm{1}}$ を求めます：
+          $$ F_{\mathrm{1}} - \mu' mg = Ma_{\mathrm{1}} $$
+          $$ \mu g(M + m) - \mu' mg = Ma_{\mathrm{1}} $$
+          $$ \mu gM + \mu gm - \mu' mg = Ma_{\mathrm{1}} $$
+          $$ a_{\mathrm{1}} = \frac{\mu gM + (\mu - \mu')mg}{M} = \mu g + \frac{(\mu - \mu')mg}{M} $$
+        </p>
+        
+        <p>
+          見かけの質量 $M_{\mathrm{1}}$ は，
+          $$ M_{\mathrm{1}} = \frac{F_{\mathrm{1}}}{a_{\mathrm{1}}} = \frac{\mu g(M + m)}{\mu g + \frac{(\mu - \mu')mg}{M}} $$
+          分母を整理すると，
+          $$ M_{\mathrm{1}} = \frac{\mu g(M + m)M}{\mu gM + (\mu - \mu')mg} = \frac{\mu (M + m)M}{\mu M + (\mu - \mu')m} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ a_{\mathrm{1}} = \mu g + \frac{(\mu - \mu')mg}{M} $$
+          $$ M_{\mathrm{1}} = \frac{\mu (M + m)M}{\mu M + (\mu - \mu')m} $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問(3) 衝突後の運動</h3>
+        
+        <h4>(a) 衝突後の加速度と見かけの質量</h4>
+        <p>
+          箱Qが箱Pの内壁に衝突した後，箱Qは箱Pの壁から離れるように運動します。このとき，箱Qにはたらく動摩擦力の向きが変わります（箱Qが箱Pに対して後ろ向きに滑るため）。
+        </p>
+        
+        <p>
+          <strong>箱Pの運動方程式</strong>：<br>
+          箱Pには，外力 $F_{\mathrm{1}}$ と，箱Qから受ける動摩擦力の反作用がはたらきます。箱Qが後ろ向きに滑るので，箱Pには前向きの力が加わります。
+          $$ F_{\mathrm{1}} + \mu' mg = Ma_{\mathrm{2}} $$
+        </p>
+        
+        <p>
+          <strong>箱Qの運動方程式</strong>：<br>
+          箱Qには，箱Pから受ける動摩擦力 $\mu' mg$（後ろ向き）がはたらきます。
+          $$ -\mu' mg = ma_{\mathrm{Q}} $$
+          $$ a_{\mathrm{Q}} = -\mu' g $$
+        </p>
+        
+        <p>
+          箱Pの加速度 $a_{\mathrm{2}}$ を求めます：
+          $$ F_{\mathrm{1}} + \mu' mg = Ma_{\mathrm{2}} $$
+          $$ \mu g(M + m) + \mu' mg = Ma_{\mathrm{2}} $$
+          $$ a_{\mathrm{2}} = \frac{\mu g(M + m) + \mu' mg}{M} = \mu g + \frac{(\mu + \mu')mg}{M} $$
+        </p>
+        
+        <p>
+          見かけの質量 $M_{\mathrm{2}}$ は，
+          $$ M_{\mathrm{2}} = \frac{F_{\mathrm{1}}}{a_{\mathrm{2}}} = \frac{\mu g(M + m)}{\mu g + \frac{(\mu + \mu')mg}{M}} = \frac{\mu (M + m)M}{\mu M + (\mu + \mu')m} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ a_{\mathrm{2}} = \mu g + \frac{(\mu + \mu')mg}{M} $$
+          $$ M_{\mathrm{2}} = \frac{\mu (M + m)M}{\mu M + (\mu + \mu')m} $$
+        </div>
+
+        <h4>(b) 見かけの質量の大小関係</h4>
+        <p>
+          $M_{\mathrm{0}}$，$M_{\mathrm{1}}$，$M_{\mathrm{2}}$ の大小関係を比較します。
+        </p>
+        
+        <p>
+          $$ M_{\mathrm{0}} = M + m $$
+          $$ M_{\mathrm{1}} = \frac{\mu (M + m)M}{\mu M + (\mu - \mu')m} $$
+          $$ M_{\mathrm{2}} = \frac{\mu (M + m)M}{\mu M + (\mu + \mu')m} $$
+        </p>
+        
+        <p>
+          $M_{\mathrm{1}}$ と $M_{\mathrm{2}}$ を比較すると，分母に注目すると，
+          $$ \mu M + (\mu - \mu')m > \mu M + (\mu + \mu')m $$
+          が成り立ちます（$0 < \mu' < \mu$ より $(\mu - \mu')m > (\mu + \mu')m$ は成り立たないが，実際には $(\mu - \mu') < (\mu + \mu')$ なので，$M_{\mathrm{1}}$ の分母の方が小さい）。
+        </p>
+        
+        <p>
+          実際には，$M_{\mathrm{1}}$ と $M_{\mathrm{2}}$ の分母を比較すると：
+          $$ \mu M + (\mu - \mu')m < \mu M + (\mu + \mu')m $$
+          したがって，$M_{\mathrm{1}} > M_{\mathrm{2}}$ です。
+        </p>
+        
+        <p>
+          また，$M_{\mathrm{0}} = M + m$ と $M_{\mathrm{1}}$ を比較すると，
+          $$ M_{\mathrm{1}} = \frac{\mu (M + m)M}{\mu M + (\mu - \mu')m} = \frac{\mu M(M + m)}{\mu M + (\mu - \mu')m} $$
+          分母は $\mu M + (\mu - \mu')m = \mu M + \mu m - \mu' m = \mu(M + m) - \mu' m < \mu(M + m)$ なので，
+          $$ M_{\mathrm{1}} > \frac{\mu M(M + m)}{\mu(M + m)} = M $$
+          しかし，$M_{\mathrm{0}} = M + m$ と比較する必要があります。
+        </p>
+        
+        <p>
+          より正確には，$M_{\mathrm{1}}$ の分子と分母を比較すると：
+          $$ M_{\mathrm{1}} = \frac{\mu (M + m)M}{\mu M + (\mu - \mu')m} $$
+          分母を整理：$\mu M + (\mu - \mu')m = \mu(M + m) - \mu' m$
+          したがって，
+          $$ M_{\mathrm{1}} = \frac{\mu M(M + m)}{\mu(M + m) - \mu' m} = \frac{M(M + m)}{(M + m) - \frac{\mu'}{\mu}m} $$
+          これは $M + m$ より大きいので，$M_{\mathrm{1}} > M_{\mathrm{0}}$ です。
+        </p>
+        
+        <p>
+          同様に，$M_{\mathrm{2}}$ について：
+          $$ M_{\mathrm{2}} = \frac{\mu (M + m)M}{\mu M + (\mu + \mu')m} = \frac{M(M + m)}{(M + m) + \frac{\mu'}{\mu}m} $$
+          これは $M + m$ より小さいので，$M_{\mathrm{2}} < M_{\mathrm{0}}$ です。
+        </p>
+        
+        <p>
+          したがって，$M_{\mathrm{1}} > M_{\mathrm{0}} > M_{\mathrm{2}}$ が成り立ちます。
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ M_{\mathrm{1}} > M_{\mathrm{0}} > M_{\mathrm{2}} $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問(4) 実験結果からの逆算</h3>
+        
+        <p>
+          問(1)～(3)の結果から，測定値 $a_{\mathrm{0}}$，$a_{\mathrm{1}}$，$a_{\mathrm{2}}$，$F_{\mathrm{0}}$，$F_{\mathrm{1}}$，$g$ を用いて，$M$，$m$，$\mu$，$\mu'$ を表します。
+        </p>
+        
+        <h4>質量 $M$ と $m$ の導出</h4>
+        <p>
+          問(1)(a)より，$M_{\mathrm{0}} = M + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}}$ なので，
+          $$ M + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} \quad \text{…(1)} $$
+        </p>
+        
+        <p>
+          問(2)(a)より，$F_{\mathrm{1}} = \mu g(M + m)$ なので，
+          $$ \mu = \frac{F_{\mathrm{1}}}{g(M + m)} = \frac{F_{\mathrm{1}} a_{\mathrm{0}}}{g F_{\mathrm{0}}} \quad \text{…(2)} $$
+        </p>
+        
+        <p>
+          問(2)(b)より，$a_{\mathrm{1}} = \mu g + \frac{(\mu - \mu')mg}{M}$ なので，
+          $$ a_{\mathrm{1}} - \mu g = \frac{(\mu - \mu')mg}{M} $$
+          $$ M(a_{\mathrm{1}} - \mu g) = (\mu - \mu')mg $$
+        </p>
+        
+        <p>
+          問(3)(a)より，$a_{\mathrm{2}} = \mu g + \frac{(\mu + \mu')mg}{M}$ なので，
+          $$ a_{\mathrm{2}} - \mu g = \frac{(\mu + \mu')mg}{M} $$
+          $$ M(a_{\mathrm{2}} - \mu g) = (\mu + \mu')mg $$
+        </p>
+        
+        <p>
+          この2式を連立させると，
+          $$ \frac{a_{\mathrm{1}} - \mu g}{a_{\mathrm{2}} - \mu g} = \frac{\mu - \mu'}{\mu + \mu'} $$
+          これを $\mu'$ について解くと，
+          $$ (a_{\mathrm{1}} - \mu g)(\mu + \mu') = (a_{\mathrm{2}} - \mu g)(\mu - \mu') $$
+          $$ (a_{\mathrm{1}} - \mu g)\mu + (a_{\mathrm{1}} - \mu g)\mu' = (a_{\mathrm{2}} - \mu g)\mu - (a_{\mathrm{2}} - \mu g)\mu' $$
+          $$ (a_{\mathrm{1}} - \mu g)\mu' + (a_{\mathrm{2}} - \mu g)\mu' = (a_{\mathrm{2}} - \mu g)\mu - (a_{\mathrm{1}} - \mu g)\mu $$
+          $$ \mu'[(a_{\mathrm{1}} - \mu g) + (a_{\mathrm{2}} - \mu g)] = \mu[(a_{\mathrm{2}} - \mu g) - (a_{\mathrm{1}} - \mu g)] $$
+          $$ \mu'(a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g) = \mu(a_{\mathrm{2}} - a_{\mathrm{1}}) $$
+          $$ \mu' = \frac{\mu(a_{\mathrm{2}} - a_{\mathrm{1}})}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+        </p>
+        
+        <p>
+          また，$M(a_{\mathrm{1}} - \mu g) = (\mu - \mu')mg$ と (1) 式 $M + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}}$ から $m$ を求めます。
+        </p>
+        
+        <p>
+          $M(a_{\mathrm{1}} - \mu g) = (\mu - \mu')mg$ より，
+          $$ M = \frac{(\mu - \mu')mg}{a_{\mathrm{1}} - \mu g} $$
+          (1) 式に代入すると，
+          $$ \frac{(\mu - \mu')mg}{a_{\mathrm{1}} - \mu g} + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} $$
+          $$ m\left(\frac{(\mu - \mu')g}{a_{\mathrm{1}} - \mu g} + 1\right) = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} $$
+          $$ m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}\left(\frac{(\mu - \mu')g}{a_{\mathrm{1}} - \mu g} + 1\right)} = \frac{F_{\mathrm{0}}(a_{\mathrm{1}} - \mu g)}{a_{\mathrm{0}}[(\mu - \mu')g + (a_{\mathrm{1}} - \mu g)]} = \frac{F_{\mathrm{0}}(a_{\mathrm{1}} - \mu g)}{a_{\mathrm{0}}[\mu g - \mu' g + a_{\mathrm{1}} - \mu g]} = \frac{F_{\mathrm{0}}(a_{\mathrm{1}} - \mu g)}{a_{\mathrm{0}}(a_{\mathrm{1}} - \mu' g)} $$
+        </p>
+        
+        <p>
+          より簡潔な方法として，$a_{\mathrm{1}}$ と $a_{\mathrm{2}}$ の式から直接導出します。
+        </p>
+        
+        <p>
+          $a_{\mathrm{1}} = \mu g + \frac{(\mu - \mu')mg}{M}$ と $a_{\mathrm{2}} = \mu g + \frac{(\mu + \mu')mg}{M}$ の差を取ると，
+          $$ a_{\mathrm{2}} - a_{\mathrm{1}} = \frac{2\mu' mg}{M} $$
+          $$ M = \frac{2\mu' mg}{a_{\mathrm{2}} - a_{\mathrm{1}}} $$
+        </p>
+        
+        <p>
+          また，和を取ると，
+          $$ a_{\mathrm{1}} + a_{\mathrm{2}} = 2\mu g + \frac{2\mu mg}{M} $$
+          $$ a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g = \frac{2\mu mg}{M} $$
+          $$ M = \frac{2\mu mg}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+        </p>
+        
+        <p>
+          この2式から $\mu'$ を消去すると，
+          $$ \frac{2\mu' mg}{a_{\mathrm{2}} - a_{\mathrm{1}}} = \frac{2\mu mg}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+          $$ \frac{\mu'}{a_{\mathrm{2}} - a_{\mathrm{1}}} = \frac{\mu}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+          $$ \mu' = \frac{\mu(a_{\mathrm{2}} - a_{\mathrm{1}})}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+        </p>
+        
+        <p>
+          $M$ と $m$ を求めるために，$a_{\mathrm{1}}$ と $a_{\mathrm{2}}$ の式を再考します。
+        </p>
+        
+        <p>
+          $a_{\mathrm{2}} - a_{\mathrm{1}} = \frac{2\mu' mg}{M}$ より，
+          $$ M = \frac{2\mu' mg}{a_{\mathrm{2}} - a_{\mathrm{1}}} $$
+        </p>
+        
+        <p>
+          $M + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}}$ と組み合わせると，
+          $$ m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - M = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - \frac{2\mu' mg}{a_{\mathrm{2}} - a_{\mathrm{1}}} $$
+          これを $m$ について解くと複雑になるので，別のアプローチを取ります。
+        </p>
+        
+        <p>
+          $a_{\mathrm{1}} + a_{\mathrm{2}} = 2\mu g + \frac{2\mu mg}{M}$ より，
+          $$ M = \frac{2\mu mg}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+        </p>
+        
+        <p>
+          $M + m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}}$ より，
+          $$ m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - \frac{2\mu mg}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} $$
+          $$ m + \frac{2\mu mg}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} $$
+          $$ m\left(1 + \frac{2\mu g}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g}\right) = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} $$
+          $$ m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} \cdot \frac{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g}{a_{\mathrm{1}} + a_{\mathrm{2}}} $$
+        </p>
+        
+        <p>
+          したがって，
+          $$ M = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} \cdot \frac{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g}{a_{\mathrm{1}} + a_{\mathrm{2}}} = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} \cdot \frac{2\mu g}{a_{\mathrm{1}} + a_{\mathrm{2}}} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$ \mu = \frac{F_{\mathrm{1}} a_{\mathrm{0}}}{g F_{\mathrm{0}}} $$
+          $$ \mu' = \frac{\mu(a_{\mathrm{2}} - a_{\mathrm{1}})}{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g} = \frac{F_{\mathrm{1}} a_{\mathrm{0}}(a_{\mathrm{2}} - a_{\mathrm{1}})}{g F_{\mathrm{0}}(a_{\mathrm{1}} + a_{\mathrm{2}}) - 2F_{\mathrm{1}} a_{\mathrm{0}}} $$
+          $$ m = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} \cdot \frac{a_{\mathrm{1}} + a_{\mathrm{2}} - 2\mu g}{a_{\mathrm{1}} + a_{\mathrm{2}}} = \frac{F_{\mathrm{0}}(a_{\mathrm{1}} + a_{\mathrm{2}}) - 2F_{\mathrm{1}} a_{\mathrm{0}}/g}{a_{\mathrm{0}}(a_{\mathrm{1}} + a_{\mathrm{2}})} $$
+          $$ M = \frac{F_{\mathrm{0}}}{a_{\mathrm{0}}} - m = \frac{2F_{\mathrm{1}} a_{\mathrm{0}}}{g a_{\mathrm{0}}(a_{\mathrm{1}} + a_{\mathrm{2}})} = \frac{2F_{\mathrm{1}}}{g(a_{\mathrm{1}} + a_{\mathrm{2}})} $$
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解法のポイントまとめ</h3>
+        <ul>
+          <li><strong>見かけの質量の概念</strong>：内部構造が分からない場合，$M_{\text{app}} = F/a$ として測定される質量は「見かけの質量」であり，実際の質量とは異なる場合がある。</li>
+          <li><strong>静止摩擦力と動摩擦力</strong>：物体が滑らないときは静止摩擦力（最大値は $\mu mg$），滑るときは動摩擦力（$\mu' mg$）がはたらく。</li>
+          <li><strong>相対運動の影響</strong>：箱Qの運動状態（一体運動，滑り，衝突後の滑り）によって，箱Pの見かけの質量が変化する。</li>
+          <li><strong>運動方程式の立て方</strong>：箱Pと箱Qそれぞれに運動方程式を立て，作用・反作用の法則を考慮して連立させる。</li>
+          <li><strong>実験からの逆算</strong>：測定値から未知の物理量を導出する際は，複数の関係式を組み合わせて連立方程式を解く。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -60,6 +60,94 @@ firebase use default
 
 ## 2. 日々の更新フロー
 
+### ⚡ Gitを真とする習慣（最重要ルール）
+
+**基本原則: リモート（GitHub等）の内容が常に正（真）であり、ローカルはそれに合わせる**
+
+この原則により、複数台のPCで作業しても常に最新の状態を保てます。
+
+#### 📋 必須の作業習慣
+
+**1. 作業開始時: 必ずPull（リモートから取得）**
+```bash
+git pull origin main
+```
+- 作業を始める前に**必ず**実行
+- 他のPCでの変更をローカルに取り込む
+- エラーが出た場合は後述の「競合・エラー対応」を参照
+
+**2. 作業終了時: 必ずPush（リモートに送信）**
+```bash
+# 変更をコミット
+git add .
+git commit -m "変更内容の説明"
+
+# リモートに送信
+git push origin main
+```
+- 作業が終わったら**必ず**実行
+- これをしないと他のPCに変更が反映されない
+- Pushできない場合は、先にPullしてから再度Push
+
+#### 🔄 標準的な作業フロー
+
+```
+1. git pull origin main  ← 作業開始（リモートから最新を取得）
+2. コンテンツ編集
+3. git add .
+4. git commit -m "変更内容"
+5. git push origin main  ← 作業終了（リモートに送信）
+```
+
+#### ⚠️ 競合・エラーが発生した場合
+
+**エラー: "Your local changes would be overwritten by merge"**
+
+ローカルの変更がリモートと競合しています。以下の2つの選択肢があります：
+
+**選択肢A: ローカルの変更を破棄してリモートを優先（推奨）**
+
+リモートの内容が正しい場合、ローカルの変更を破棄します。
+
+```bash
+# 1. リモートの最新情報を取得
+git fetch origin
+
+# 2. ローカルの変更を破棄してリモートの状態にリセット
+git reset --hard origin/main
+```
+
+**選択肢B: ローカルの変更を保持してマージ**
+
+ローカルの変更も重要で残したい場合。
+
+```bash
+# 1. ローカルの変更を一時保存（stash）
+git stash
+
+# 2. リモートから最新を取得
+git pull origin main
+
+# 3. 保存した変更を適用
+git stash pop
+
+# 4. 競合があれば手動で解決後、コミット
+git add .
+git commit -m "競合を解決"
+git push origin main
+```
+
+**推奨:** 通常は選択肢A（リモート優先）を推奨します。リモートが常に真であるため、ローカルの変更は破棄してリモートに合わせる方が安全です。
+
+#### 📌 覚えておくべき原則
+
+1. **リモート（GitHub等）が常に正（真）**
+2. **作業開始前は必ずPull**
+3. **作業終了時は必ずPush**
+4. **競合時はリモートを優先（`git reset --hard origin/main`）**
+
+---
+
 ### 🔄 標準ワークフロー
 
 ```
@@ -199,25 +287,48 @@ firebase deploy
 ```
 hint: Updates were rejected because the remote contains work that you do not have locally.
 ```
+または
+```
+error: Your local changes to the following files would be overwritten by merge:
+```
 
-**原因:** 別のPCで先に更新が行われています。
+**原因:** 別のPCで先に更新が行われています。リモート（GitHub等）に新しい変更があるため、ローカルの変更と競合しています。
 
-**対応手順:**
-1. `git pull origin main` を実行して、他PCの変更を取り込みます
-2. 自動でマージされればOK
-3. 競合（conflict）が発生した場合は、ファイルを修正してから再度コミット
-4. 再度 `git push origin main` を行います
+**対応手順（推奨: リモート優先）:**
 
-**競合が発生した場合:**
+**原則: リモートが常に真であるため、ローカルの変更を破棄してリモートに合わせる**
+
 ```bash
-# 競合ファイルを確認
-git status
+# 1. リモートの最新情報を取得
+git fetch origin
 
-# 競合を解決後
+# 2. ローカルの変更を破棄してリモートの状態にリセット
+git reset --hard origin/main
+```
+
+これで、ローカルはリモートと完全に一致します。必要に応じて、リモートの最新状態で作業を再開してください。
+
+**代替方法: ローカルの変更も保持したい場合（上級者向け）**
+
+ローカルの変更も重要で残したい場合のみ、以下の手順を実行します。
+
+```bash
+# 1. ローカルの変更を一時保存（stash）
+git stash
+
+# 2. リモートから最新を取得
+git pull origin main
+
+# 3. 保存した変更を適用
+git stash pop
+
+# 4. 競合があれば手動で解決後、コミット
 git add .
 git commit -m "競合を解決"
 git push origin main
 ```
+
+**注意:** 通常は最初の方法（リモート優先）を推奨します。リモートが常に真であるため、ローカルの変更は破棄してリモートに合わせる方が安全で確実です。
 
 ### Q2. 管理画面（admin.html）でファイルが保存できない
 
@@ -296,6 +407,10 @@ git add data/explanations/textbook_basic/01/01/test.html
 
 # 直前のコミットメッセージを変更
 git commit --amend -m "新しいメッセージ"
+
+# 【重要】リモート優先: ローカルの変更を破棄してリモートに合わせる
+git fetch origin
+git reset --hard origin/main
 ```
 
 ### Firebaseコマンド

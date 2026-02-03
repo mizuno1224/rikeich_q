@@ -18,6 +18,24 @@
           ]
         }
       ]
+    },
+    {
+      "subjectName": "東北大学",
+      "folderName": "tohoku",
+      "fields": [
+        {
+          "fieldName": "2017年度",
+          "folderId": "2017",
+          "problems": [
+            {
+              "id": "2017_zenki_1",
+              "title": "前期 大問1",
+              "desc": "見かけの質量と摩擦",
+              "explanationPath": "data/explanations/exam_national/tohoku/2017/2017_zenki_1.html"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
