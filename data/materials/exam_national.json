@@ -2,6 +2,24 @@
   "materialName": "国公立入試",
   "subjects": [
     {
+      "subjectName": "九州大学",
+      "folderName": "kyushu",
+      "fields": [
+        {
+          "fieldName": "2018年度",
+          "folderId": "2018",
+          "problems": [
+            {
+              "id": "2018_zenki_1",
+              "title": "前期 大問1",
+              "desc": "台上の振り子の運動（運動量保存・エネルギー保存）",
+              "explanationPath": "data/explanations/exam_national/kyushu/2018/2018_zenki_1.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "subjectName": "東京都立",
       "folderName": "tokyotoritu",
       "fields": [
@@ -32,6 +50,24 @@
               "title": "前期 大問1",
               "desc": "見かけの質量と摩擦",
               "explanationPath": "data/explanations/exam_national/tohoku/2017/2017_zenki_1.html"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "千葉大学",
+      "folderName": "chiba",
+      "fields": [
+        {
+          "fieldName": "2021年度",
+          "folderId": "2021",
+          "problems": [
+            {
+              "id": "2021_zenki_1",
+              "title": "前期 大問1",
+              "desc": "ばねと台の運動",
+              "explanationPath": "data/explanations/exam_national/chiba/2021/2021_zenki_1.html"
             }
           ]
         }

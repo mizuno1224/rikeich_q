@@ -186,6 +186,7 @@ body.recording-fullscreen .recording-float-bar {
   width: 100%;
   touch-action: pan-y pinch-zoom;
   -webkit-overflow-scrolling: touch;
+  contain: layout style paint;
 }
 .viewer-container .explanation-area,
 .viewer-container .viewer-split-content {
@@ -291,10 +292,12 @@ body.recording-fullscreen .recording-float-bar {
   margin: 0 auto;
   background: #fff;
   border-radius: 0;
+  contain: layout style;
   box-shadow: none;
   overflow: visible;
   padding: 40px 20px 100px 20px; /* 下に余白 */
   scroll-snap-type: none;
+  will-change: scroll-position;
 }
 
 /* --- 埋め込みシミュレーション (Inline Simulation) --- */
@@ -356,6 +359,8 @@ mjx-container[display="true"] {
   position: relative;
   margin-bottom: 2em; /* リアクションエリア用の余白 */
   padding-bottom: 0.5em;
+  contain: layout style;
+  content-visibility: auto;
 }
 
 .card-reaction-footer {

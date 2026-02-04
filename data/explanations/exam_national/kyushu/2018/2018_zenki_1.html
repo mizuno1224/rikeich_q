@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2018年九州大学 前期 大問1：台上の振り子の運動</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+  <style>
+    .tab-container { margin: 20px 0; width: 100%; box-sizing: border-box; }
+    .tab-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+    .tab-btn { padding: 10px 16px; border: 2px solid #cbd5e1; background: #f8f9fa; cursor: pointer; border-radius: 6px; font-size: 14px; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; box-sizing: border-box; }
+    .tab-btn:hover { background: #e9ecef; }
+    .tab-btn.active { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    .tab-content { display: none; width: 100%; box-sizing: border-box; overflow-x: auto; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @media (max-width: 768px) {
+      .tab-btn { padding: 8px 12px; font-size: 13px; }
+    }
+    @media print {
+      .tab-buttons { display: none; }
+      .tab-content { display: block !important; page-break-inside: avoid; }
+      .tab-content:not(:last-child) { margin-bottom: 40px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+      
+      <h2 class="prob-title-sub">大問1：台上の振り子の運動（運動量保存・エネルギー保存）</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>
+          この問題は，<span class="highlight">滑らかな床の上に置かれた台と，その台に取り付けられた振り子</span>という系を扱います。台が固定されている場合と自由に動ける場合で，物理現象が大きく異なります。
+        </p>
+        
+        <h4>問題の核心</h4>
+        <ul>
+          <li><strong>問(1)</strong>：台が固定されている場合 → 単純なエネルギー保存と円運動の問題</li>
+          <li><strong>問(2)</strong>：台上の観測者から見た振り子運動 → 慣性系と非慣性系の切り替え</li>
+          <li><strong>問(3)</strong>：台が自由に動く場合 → <span class="highlight">水平方向の運動量保存</span>と<span class="highlight">力学的エネルギー保存</span>の連立</li>
+          <li><strong>問(4)〜(6)</strong>：撃力を与えた後の運動 → 運動量保存とエネルギー保存の適用</li>
+        </ul>
+
+        <div class="box-note">
+          <strong>キーポイント</strong><br>
+          外力（床からの摩擦力）が水平方向に働かないため，<span class="highlight">系全体の水平方向の運動量は保存</span>されます。これが本問を解く最大の鍵です。
+        </div>
+      </div>
+
+      <!-- タブ構造 -->
+      <div class="tab-container">
+        <div class="tab-buttons">
+          <button class="tab-btn active" data-tab="q1">(1) 台固定</button>
+          <button class="tab-btn" data-tab="q2">(2) 加速→等速</button>
+          <button class="tab-btn" data-tab="q3">(3) θ=60°</button>
+          <button class="tab-btn" data-tab="q456">(4)-(6) 撃力</button>
+        </div>
+
+        <!-- タブ1: (1) 台が固定 -->
+        <div id="tab-q1" class="tab-content active">
+          <div class="card">
+            <h3>(1) 台が固定された場合の単振り子</h3>
+            
+            <h4>問題設定</h4>
+            <p>
+              台が動かない（固定されている）場合を考えます。糸が鉛直方向から左に角度 $\theta$ 傾いたところで小球を静止させてから静かに放します。
+            </p>
+
+            <h4>小球の速度の導出</h4>
+            <p>
+              台が固定されているため，これは<span class="highlight">単純な単振り子の問題</span>です。
+              <strong>力学的エネルギー保存則</strong>を適用します。
+            </p>
+            
+            <p>
+              最下点を基準とした高さは $h = l(1 - \cos\theta)$ です。<br>
+              初期状態（静止）と最下点での力学的エネルギー保存：
+            </p>
+            
+            $$mgl(1 - \cos\theta) + 0 = 0 + \frac{1}{2}mv^2$$
+            
+            <p>整理すると：</p>
+            
+            $$v = \sqrt{2gl(1-\cos\theta)}$$
+
+            <h4>糸の張力の導出</h4>
+            <p>
+              最下点では，小球は<span class="highlight">円運動</span>をしています。向心方向（鉛直上向き）の運動方程式を立てます：
+            </p>
+            
+            $$T - mg = \frac{mv^2}{l}$$
+            
+            <p>$v^2 = 2gl(1-\cos\theta)$ を代入すると：</p>
+            
+            $$T = mg + \frac{m \cdot 2gl(1-\cos\theta)}{l} = mg + 2mg(1-\cos\theta)$$
+            
+            $$T = mg(3 - 2\cos\theta)$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              小球の速度：$$v = \sqrt{2gl(1 - \cos\theta)}$$
+              糸の張力：$$T = mg(3 - 2\cos\theta)$$
+            </div>
+
+            <h4>別解：半角公式を用いた表現</h4>
+            <p>
+              三角関数の公式 $1 - \cos\theta = 2\sin^2\dfrac{\theta}{2}$ を用いると：
+            </p>
+            $$v = \sqrt{2gl \cdot 2\sin^2\frac{\theta}{2}} = 2\sqrt{gl}\sin\frac{\theta}{2}$$
+            <p>この形は，$\theta$ が小さいとき $v \approx \sqrt{gl}\cdot\theta$ となり，微小振動の結果と整合します。</p>
+          </div>
+        </div>
+
+        <!-- タブ2: (2) 加速→等速 -->
+        <div id="tab-q2" class="tab-content">
+          <div class="card">
+            <h3>(2) 台上の観測者から見た振り子運動</h3>
+            
+            <h4>問題設定</h4>
+            <p>
+              小球を最下点に静止させた状態から，ゆっくり台を右向きに加速度 $a$ で加速します。その後瞬時に加速をやめて等速運動させると，台上で小球は振り子運動をします。<span class="highlight">台に静止した観測者から見た</span>とき，運動中の小球の速度の最大値を求めます。
+            </p>
+
+            <h4>解法のポイント</h4>
+            <p>
+              「ゆっくり加速」とは，小球が<span class="highlight">準静的に</span>（振動せずに）釣り合いを保ちながら傾いていくことを意味します。このとき，台に対して小球は静止しています。
+            </p>
+
+            <h4>ステップ1：加速中の小球の釣り合い角度</h4>
+            <p>
+              台と一緒に加速度 $a$ で動く観測者（非慣性系）から見ると，小球には見かけの力（慣性力）$ma$ が左向きに働きます。
+            </p>
+            <p>
+              小球が角度 $\phi$ で釣り合うとき（水平方向と鉛直方向）：
+            </p>
+            $$T\sin\phi = ma \quad \cdots (1)$$
+            $$T\cos\phi = mg \quad \cdots (2)$$
+            
+            <p>(1)÷(2)より：</p>
+            $$\tan\phi = \frac{a}{g}$$
+
+            <h4>ステップ2：等速運動に切り替わった瞬間</h4>
+            <p>
+              加速をやめて等速運動に切り替わると，慣性力が消えます。小球は角度 $\phi$ の位置から振り子運動を始めます。
+            </p>
+            <p>
+              台に対して静止した観測者から見ると，台は慣性系になるので，通常の単振り子と同じです。最下点で速度が最大になります。
+            </p>
+
+            <h4>ステップ3：エネルギー保存</h4>
+            <p>
+              高さの差は $h = l(1 - \cos\phi)$ です。エネルギー保存より：
+            </p>
+            $$mgl(1 - \cos\phi) = \frac{1}{2}mv_{\max}^2$$
+            $$v_{\max} = \sqrt{2gl(1 - \cos\phi)}$$
+
+            <h4>ステップ4：$\cos\phi$ を $a, g$ で表す</h4>
+            <p>
+              $\tan\phi = a/g$ より，$\cos\phi = \frac{g}{\sqrt{a^2 + g^2}}$ です。
+            </p>
+            $$1 - \cos\phi = 1 - \frac{g}{\sqrt{a^2 + g^2}} = \frac{\sqrt{a^2 + g^2} - g}{\sqrt{a^2 + g^2}}$$
+
+            <p>したがって：</p>
+            $$v_{\max} = \sqrt{2gl \cdot \frac{\sqrt{a^2 + g^2} - g}{\sqrt{a^2 + g^2}}}$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              $$v_{\max} = \sqrt{2gl\left(1 - \frac{g}{\sqrt{a^2 + g^2}}\right)}$$
+            </div>
+
+            <h4>別解：有理化による簡略化</h4>
+            <p>
+              分子分母に $\sqrt{a^2+g^2}+g$ を掛けて有理化すると：
+            </p>
+            $$1 - \frac{g}{\sqrt{a^2+g^2}} = \frac{a^2}{\sqrt{a^2+g^2}(\sqrt{a^2+g^2}+g)}$$
+            
+            <p>よって：</p>
+            $$v_{\max} = a\sqrt{\frac{2l}{\sqrt{a^2+g^2}+g}}$$
+
+            <h4>別解：見かけの重力を使う方法</h4>
+            <p>
+              加速中の台上では，見かけの重力 $g' = \sqrt{a^2 + g^2}$ が $\phi$ 方向に働くと考えることができます。等速運動に切り替わった後は $g$ に戻りますが，$\phi$ の位置から放したことと同じなので：
+            </p>
+            $$v_{\max} = \sqrt{2gl(1 - \cos\phi)}$$
+            <p>ここで $\cos\phi = g/g' = g/\sqrt{a^2+g^2}$ を代入すれば同じ結果が得られます。</p>
+          </div>
+        </div>
+
+        <!-- タブ3: (3) θ=60° -->
+        <div id="tab-q3" class="tab-content">
+          <div class="card">
+            <h3>(3) 台が自由に動く場合（θ = 60°）</h3>
+            
+            <h4>問題設定</h4>
+            <p>
+              静止した台の上で，糸が鉛直方向から左に角度 $\theta = 60°$ 傾いたところで小球を静止させてから静かに放します。<span class="highlight">床に静止した観測者から見た</span>とき，小球が最下点に達したときの小球の速度と台の速度，および糸の張力を求めます。
+            </p>
+
+            <h4>解法の核心：2つの保存則</h4>
+            <p>
+              床は滑らかなので，系に対して水平方向の外力は働きません。よって：
+            </p>
+            <ol>
+              <li><strong>水平方向の運動量保存</strong>：$mv_{\text{球,x}} + MV = 0$（初期運動量は0）</li>
+              <li><strong>力学的エネルギー保存</strong>：位置エネルギーの減少 = 運動エネルギーの増加</li>
+            </ol>
+
+            <h4>ステップ1：最下点での速度の関係</h4>
+            <p>
+              最下点では糸は鉛直なので，小球は<span class="highlight">台に対して水平方向にのみ</span>運動します。床から見た小球の水平速度を $v$（右向き正），台の速度を $V$ とします。
+            </p>
+            
+            <p>運動量保存則より：</p>
+            $$mv + MV = 0$$
+            $$V = -\frac{m}{M}v \quad \cdots (1)$$
+            
+            <p>（台は小球と逆向きに動く）</p>
+
+            <h4>ステップ2：エネルギー保存</h4>
+            <p>
+              小球の高さの減少は $h = l(1 - \cos 60°) = l(1 - 1/2) = l/2$ です。
+            </p>
+            
+            $$mg \cdot \frac{l}{2} = \frac{1}{2}mv^2 + \frac{1}{2}MV^2$$
+            
+            <p>(1)を代入：</p>
+            $$\frac{mgl}{2} = \frac{1}{2}mv^2 + \frac{1}{2}M\left(\frac{m}{M}v\right)^2 = \frac{1}{2}mv^2 + \frac{m^2v^2}{2M}$$
+            $$\frac{mgl}{2} = \frac{1}{2}mv^2\left(1 + \frac{m}{M}\right) = \frac{1}{2}mv^2 \cdot \frac{M+m}{M}$$
+            
+            <p>整理すると：</p>
+            $$v^2 = \frac{Mgl}{M+m}$$
+            $$v = \sqrt{\frac{Mgl}{M+m}}$$
+
+            <h4>ステップ3：台の速度</h4>
+            <p>(1)より：</p>
+            $$V = -\frac{m}{M}\sqrt{\frac{Mgl}{M+m}} = -\sqrt{\frac{m^2gl}{M(M+m)}}$$
+            
+            <p>大きさで表すと：</p>
+            $$|V| = m\sqrt{\frac{gl}{M(M+m)}}$$
+
+            <h4>解法2：重心に注目した解法（推奨）</h4>
+            <p>
+              <span class="highlight">系全体の重心は水平方向に動きません</span>。この性質を使うと見通しよく解けます。
+            </p>
+            
+            <p>
+              初期状態で重心の位置を原点とします。台の位置を $X$，小球の位置を $x$ とすると：
+            </p>
+            $$MX + mx = 0 \quad \text{（重心が原点に固定）}$$
+            
+            <p>
+              初期状態：台は原点付近，小球は左に $l\sin 60° = \dfrac{\sqrt{3}}{2}l$ だけずれています。
+            </p>
+            
+            <p>
+              最下点：小球は台の真下にいるので，$x = X$（小球と台の水平位置が一致）。重心条件より：
+            </p>
+            $$MX + mX = 0 \quad \Rightarrow \quad X = 0$$
+            
+            <p>
+              <strong>つまり最下点では台も小球も重心位置（原点）にいます</strong>。
+            </p>
+            
+            <p>
+              重心条件 $MX + mx = 0$ を時間微分すると：
+            </p>
+            $$M\dot{X} + m\dot{x} = 0 \quad \Rightarrow \quad MV + mv = 0$$
+            <p>これは運動量保存則そのものです！</p>
+
+            <h4>ステップ4：糸の張力</h4>
+            <p>
+              最下点では，小球は<span class="highlight">台に対して</span>円運動をしています。台から見た小球の相対速度を求めます。
+            </p>
+            $$v_{\text{rel}} = v - V = v + \frac{m}{M}v = v \cdot \frac{M+m}{M} = \sqrt{\frac{Mgl}{M+m}} \cdot \frac{M+m}{M} = \sqrt{\frac{(M+m)gl}{M}}$$
+
+            <p>
+              最下点で台に働く水平方向の力は0（糸は鉛直）なので，台の加速度は0です。よって床から見た向心加速度は：
+            </p>
+            $$a_c = \frac{v_{\text{rel}}^2}{l} = \frac{(M+m)g}{M}$$
+            
+            <p>小球の鉛直方向の運動方程式：</p>
+            $$T - mg = ma_c = m \cdot \frac{(M+m)g}{M} = \frac{m(M+m)g}{M}$$
+            $$T = mg + \frac{m(M+m)g}{M} = mg\left(1 + \frac{M+m}{M}\right) = mg \cdot \frac{2M+m}{M}$$
+            $$T = \frac{(2M+m)mg}{M}$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              小球の速度（右向き）：$$v = \sqrt{\frac{Mgl}{M+m}}$$
+              台の速度（左向き）：$$V = -m\sqrt{\frac{gl}{M(M+m)}} \quad \text{（大きさ：} m\sqrt{\frac{gl}{M(M+m)}}\text{）}$$
+              糸の張力：$$T = \frac{(2M+m)mg}{M}$$
+            </div>
+
+            <h4>補足：重心の運動</h4>
+            <p>
+              系全体の重心は水平方向に静止しています（初期運動量が0のため）。シミュレーションで緑の点線が動かないことを確認してください。これは運動量保存の視覚的表現です。
+            </p>
+          </div>
+        </div>
+
+        <!-- タブ4: (4)-(6) 撃力 -->
+        <div id="tab-q456" class="tab-content">
+          <div class="card">
+            <h3>(4) 撃力を与えた場合：糸が水平になったときの台の速度</h3>
+            
+            <h4>問題設定</h4>
+            <p>
+              静止した台の上で小球を最下点で静止させた後，撃力により台に水平右方向の初速度 $V_0$ を瞬時に与えます。小球が糸が水平になる高さまで達したとき，台の速度を求めます。
+            </p>
+
+            <h4>撃力直後の初期条件</h4>
+            <ul>
+              <li>台の速度：$V_0$（右向き）</li>
+              <li>小球の速度：$0$（撃力は台のみに作用）</li>
+              <li>初期運動量：$p_0 = MV_0$</li>
+            </ul>
+
+            <h4>解法1：拘束条件を使う方法</h4>
+            <p>
+              糸が水平になったとき，台の速度を $V$，小球の速度を $(v_x, v_y)$ とします。
+            </p>
+            
+            <p><strong>運動量保存</strong>：</p>
+            $$MV + mv_x = MV_0 \quad \cdots (1)$$
+
+            <p><strong>拘束条件</strong>：糸が伸びないので，<span class="highlight">糸方向の相対速度成分は0</span>です。</p>
+            <p>
+              糸が水平のとき，糸方向は水平方向なので：
+            </p>
+            $$v_x - V = 0 \quad \Rightarrow \quad v_x = V \quad \cdots (2)$$
+            
+            <p>(2)を(1)に代入：</p>
+            $$(M + m)V = MV_0$$
+            $$V = \frac{MV_0}{M+m}$$
+
+            <h4>解法2：重心に注目した解法</h4>
+            <p>
+              撃力直後の運動量は $MV_0$ なので，重心の速度は：
+            </p>
+            $$v_G = \frac{MV_0}{M+m}$$
+            
+            <p>
+              糸が水平のとき，小球と台の水平速度が等しい（$v_x = V$）ということは，<span class="highlight">両者が重心と同じ速度で動いている</span>ことを意味します。
+            </p>
+            <p>
+              したがって，直ちに：
+            </p>
+            $$V = v_G = \frac{MV_0}{M+m}$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              $$V = \frac{MV_0}{M+m}$$
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>(5) 糸が水平になったときの小球の速度の大きさ</h3>
+            
+            <h4>エネルギー保存則の適用</h4>
+            <p>
+              初期状態（撃力直後）と糸が水平になった状態でエネルギー保存を適用します。
+            </p>
+
+            <h4>初期状態（最下点，撃力直後）</h4>
+            <ul>
+              <li>台の速度：$V_0$</li>
+              <li>小球の速度：$0$</li>
+              <li>小球の高さ：$0$（基準）</li>
+            </ul>
+            $$E_{\text{初}} = \frac{1}{2}MV_0^2$$
+
+            <h4>糸が水平になったとき</h4>
+            <ul>
+              <li>台の速度：$V = \frac{MV_0}{M+m}$（(4)の結果）</li>
+              <li>小球の水平速度：$v_x = V = \frac{MV_0}{M+m}$</li>
+              <li>小球の鉛直速度：$v_y$（未知）</li>
+              <li>小球の高さ：$l$</li>
+            </ul>
+            $$E_{\text{終}} = \frac{1}{2}MV^2 + \frac{1}{2}m(v_x^2 + v_y^2) + mgl$$
+            
+            <p>$v_x = V$ なので：</p>
+            $$E_{\text{終}} = \frac{1}{2}(M+m)V^2 + \frac{1}{2}mv_y^2 + mgl$$
+
+            <h4>エネルギー保存</h4>
+            $$\frac{1}{2}MV_0^2 = \frac{1}{2}(M+m)V^2 + \frac{1}{2}mv_y^2 + mgl$$
+            $$\frac{1}{2}MV_0^2 = \frac{1}{2}(M+m)\left(\frac{MV_0}{M+m}\right)^2 + \frac{1}{2}mv_y^2 + mgl$$
+            $$\frac{1}{2}MV_0^2 = \frac{M^2V_0^2}{2(M+m)} + \frac{1}{2}mv_y^2 + mgl$$
+
+            <p>整理すると：</p>
+            $$\frac{1}{2}mv_y^2 = \frac{1}{2}MV_0^2 - \frac{M^2V_0^2}{2(M+m)} - mgl = \frac{MV_0^2(M+m) - M^2V_0^2}{2(M+m)} - mgl$$
+            $$= \frac{MmV_0^2}{2(M+m)} - mgl$$
+            $$v_y^2 = \frac{MV_0^2}{M+m} - 2gl$$
+
+            <h4>小球の速度の大きさ</h4>
+            $$|\vec{v}|^2 = v_x^2 + v_y^2 = \left(\frac{MV_0}{M+m}\right)^2 + \frac{MV_0^2}{M+m} - 2gl$$
+            $$= \frac{M^2V_0^2 + MV_0^2(M+m)}{(M+m)^2} - 2gl = \frac{MV_0^2(2M+m)}{(M+m)^2} - 2gl$$
+
+            <p>したがって：</p>
+            $$|\vec{v}| = \sqrt{\frac{M(2M+m)V_0^2}{(M+m)^2} - 2gl}$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              $$|\vec{v}| = \sqrt{\frac{M(2M+m)V_0^2}{(M+m)^2} - 2gl}$$
+            </div>
+
+            <h4>別解：重心系での計算（計算が楽）</h4>
+            <p>
+              重心系で考えると計算が簡単になります。重心速度は $V_{\text{com}} = \frac{MV_0}{M+m}$ です。
+            </p>
+            <p>
+              <strong>重心系での初期状態</strong>：
+            </p>
+            <ul>
+              <li>台の速度：$V_0 - V_{\text{com}} = V_0 - \frac{MV_0}{M+m} = \frac{mV_0}{M+m}$（右向き）</li>
+              <li>小球の速度：$0 - V_{\text{com}} = -\frac{MV_0}{M+m}$（左向き）</li>
+            </ul>
+            <p>
+              重心系での初期運動エネルギー：
+            </p>
+            $$E_{\text{com,初}} = \frac{1}{2}M\left(\frac{mV_0}{M+m}\right)^2 + \frac{1}{2}m\left(\frac{MV_0}{M+m}\right)^2 = \frac{MmV_0^2}{2(M+m)}$$
+            
+            <p>
+              <strong>重心系での糸が水平になったとき</strong>：
+            </p>
+            <ul>
+              <li>台の速度：$V - V_{\text{com}} = 0$（重心系では台は静止）</li>
+              <li>小球の水平速度：$v_x - V_{\text{com}} = 0$（重心系では小球の水平速度も0）</li>
+              <li>小球の鉛直速度：$v_y$（重心系でも同じ）</li>
+            </ul>
+            <p>
+              重心系での運動エネルギー：
+            </p>
+            $$E_{\text{com,終}} = \frac{1}{2}mv_y^2$$
+            
+            <p>
+              重心系では位置エネルギーは変わらないので（重心は等速運動），エネルギー保存より：
+            </p>
+            $$\frac{MmV_0^2}{2(M+m)} = \frac{1}{2}mv_y^2$$
+            $$v_y^2 = \frac{MV_0^2}{M+m}$$
+            
+            <p>
+              床から見た小球の速度：
+            </p>
+            $$|\vec{v}|^2 = v_x^2 + v_y^2 = \left(\frac{MV_0}{M+m}\right)^2 + \frac{MV_0^2}{M+m} = \frac{MV_0^2}{(M+m)^2}(M + M + m) - 2gl$$
+            $$= \frac{M(2M+m)V_0^2}{(M+m)^2} - 2gl$$
+            
+            <p>
+              ただし，位置エネルギーの変化 $mgl$ を考慮する必要があります。重心系でのエネルギー保存を正確に適用すると：
+            </p>
+            $$\frac{MmV_0^2}{2(M+m)} = \frac{1}{2}mv_y^2 + mgl$$
+            $$v_y^2 = \frac{MV_0^2}{M+m} - 2gl$$
+            
+            <p>
+              これより同じ結果が得られます。重心系を使うと，水平方向の運動が自動的に分離され，計算が簡潔になります。
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>(6) 初速度 $V_0$ の最小値</h3>
+            
+            <h4>糸が水平に達する条件</h4>
+            <p>
+              小球が糸が水平になる高さに達するためには，その高さで<span class="highlight">鉛直速度成分が実数</span>でなければなりません。(5)の結果より：
+            </p>
+            $$v_y^2 = \frac{MV_0^2}{M+m} - 2gl \geq 0$$
+
+            <h4>最小条件</h4>
+            <p>
+              ちょうど糸が水平になる高さに達する（その瞬間に $v_y = 0$）のは：
+            </p>
+            $$\frac{MV_0^2}{M+m} = 2gl$$
+            $$V_0^2 = \frac{2gl(M+m)}{M}$$
+            $$V_0 = \sqrt{\frac{2gl(M+m)}{M}}$$
+
+            <div class="box-note">
+              <strong>答え：</strong><br>
+              $$V_{0,\min} = \sqrt{\frac{2gl(M+m)}{M}} = \sqrt{2gl\left(1 + \frac{m}{M}\right)}$$
+            </div>
+
+            <h4>物理的解釈</h4>
+            <p>
+              この結果は直感的にも理解できます：
+            </p>
+            <ul>
+              <li>$M \gg m$（台が非常に重い）のとき：$V_{0,\min} \approx \sqrt{2gl}$（台が動かない場合と同じ）</li>
+              <li>$M = m$（台と小球が同じ質量）のとき：$V_{0,\min} = 2\sqrt{gl}$（台が動くため余分なエネルギーが必要）</li>
+              <li>$M < m$（台が軽い）のとき：さらに大きな初速度が必要</li>
+            </ul>
+
+            <h4>別解1：エネルギーの観点から直接導出</h4>
+            <p>
+              糸がちょうど水平に達する条件は，その瞬間に小球の鉛直速度が0になることです。このとき小球と台の水平速度は等しく $V$ です。
+            </p>
+            
+            <p><strong>エネルギー保存</strong>：</p>
+            $$\frac{1}{2}MV_0^2 = \frac{1}{2}(M+m)V^2 + mgl$$
+            
+            <p><strong>運動量保存</strong>（$v_x = V$ を使用）：</p>
+            $$MV_0 = (M+m)V \quad \Rightarrow \quad V = \frac{MV_0}{M+m}$$
+            
+            <p>代入：</p>
+            $$\frac{1}{2}MV_0^2 = \frac{1}{2}(M+m)\left(\frac{MV_0}{M+m}\right)^2 + mgl$$
+            $$\frac{1}{2}MV_0^2 = \frac{M^2V_0^2}{2(M+m)} + mgl$$
+            $$\frac{MV_0^2(M+m) - M^2V_0^2}{2(M+m)} = mgl$$
+            $$\frac{MmV_0^2}{2(M+m)} = mgl$$
+            $$V_0^2 = \frac{2gl(M+m)}{M}$$
+            
+            <p>これは運動量保存とエネルギー保存から直接得られる結果です。</p>
+
+            <h4>別解2：重心系での計算（計算が楽）</h4>
+            <p>
+              重心系で考えると計算が非常に簡単になります。重心速度は $V_{\text{com}} = \frac{MV_0}{M+m}$ です。
+            </p>
+            <p>
+              <strong>重心系での初期状態</strong>：
+            </p>
+            <ul>
+              <li>台の速度：$\frac{mV_0}{M+m}$（右向き）</li>
+              <li>小球の速度：$-\frac{MV_0}{M+m}$（左向き）</li>
+            </ul>
+            <p>
+              重心系での初期運動エネルギー：
+            </p>
+            $$E_{\text{com,初}} = \frac{1}{2}M\left(\frac{mV_0}{M+m}\right)^2 + \frac{1}{2}m\left(\frac{MV_0}{M+m}\right)^2 = \frac{MmV_0^2}{2(M+m)}$$
+            
+            <p>
+              <strong>重心系での糸が水平になったとき</strong>：
+            </p>
+            <ul>
+              <li>台の速度：$0$（重心系では台は静止）</li>
+              <li>小球の水平速度：$0$（重心系では小球の水平速度も0）</li>
+              <li>小球の鉛直速度：$0$（ちょうど水平に達する条件）</li>
+            </ul>
+            <p>
+              重心系での運動エネルギー：$0$
+            </p>
+            
+            <p>
+              重心系では位置エネルギーは変わらないので（重心は等速運動），エネルギー保存より：
+            </p>
+            $$\frac{MmV_0^2}{2(M+m)} = mgl$$
+            $$V_0^2 = \frac{2gl(M+m)}{M}$$
+            
+            <p>
+              重心系を使うと，水平方向の運動が自動的に分離され，計算が非常に簡潔になります。特に(5)と(6)の両方で重心系を使うと，一貫性があり理解しやすくなります。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解法のポイントまとめ</h3>
+        <ul>
+          <li><strong>水平方向の運動量保存</strong>：床が滑らかなとき，系の水平方向の運動量は保存される。これが本問を解く最大の鍵です。</li>
+          <li><strong>重心の運動に注目</strong>：外力がなければ重心は静止（または等速運動）。台と小球の位置関係を見通しよく把握できる。</li>
+          <li><strong>拘束条件の活用</strong>：糸が伸びないことから，糸方向の相対速度成分は0。特に糸が水平のとき $v_x = V$。</li>
+          <li><strong>非慣性系での見かけの力</strong>：加速する台上では慣性力を考慮。見かけの重力の方向が傾く。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+  <script>
+// タブ切り替え
+(function(){
+  var tabs = document.querySelectorAll('.tab-btn');
+  var contents = document.querySelectorAll('.tab-content');
+  tabs.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var targetId = 'tab-' + this.getAttribute('data-tab');
+      tabs.forEach(function(b) { b.classList.remove('active'); });
+      contents.forEach(function(c) { c.classList.remove('active'); });
+      this.classList.add('active');
+      var target = document.getElementById(targetId);
+      if (target) target.classList.add('active');
+    });
+  });
+})();
+  </script>
+</body>
+</html>

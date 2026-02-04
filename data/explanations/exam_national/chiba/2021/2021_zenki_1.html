@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2021年千葉大学 前期 大問1：ばねと台の運動</title>
+  <link rel="stylesheet" href="../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+      
+      <h2 class="prob-title-sub">大問1：ばねと台の運動（運動量保存と重心運動）</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>
+          この問題は，<span class="highlight">L字型の台に固定されたばね</span>と小球の運動を扱います。台の固定条件によって運動が大きく変わり，特に<strong>重心運動と相対運動の分離</strong>が重要な解法となります。
+        </p>
+        
+        <ul>
+          <li><strong>図1（問1-3）</strong>：ストッパーA, Bで台が固定 → 小球のみが単振動</li>
+          <li><strong>図2（問4-7）</strong>：ストッパーなし、台も自由 → 重心系での解析が有効</li>
+          <li><strong>図3（問8-11）</strong>：ストッパーAのみ → 途中で運動の条件が変化</li>
+        </ul>
+
+        <div class="box-note">
+          <strong>問題設定の確認</strong><br>
+          ・水平な床の上に質量 $M$ のL字型の台が置かれている<br>
+          ・ばね定数 $k$ の軽いばねが<span class="highlight">台の左端に固定</span>され，右端に質量 $m$ の小球が取り付けられている<br>
+          ・床と台，台と小球の間に摩擦はない<br>
+          ・台と小球は床面上の $x$ 軸に沿って動き，速度は $x$ 軸の向き（右向き）を正とする
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>図1：台が固定されている場合（問1-3）</h3>
+        
+        <p>
+          ストッパーA, Bで台が固定されているため，<span class="highlight">小球のみが運動</span>します。ばねが自然長から $d$ だけ縮んだ位置から小球を静かにはなすと，小球は単振動を行います。
+        </p>
+
+        <div id="sim-chiba-2021-fig1" class="sim-embed"></div>
+        <script>
+          (function() {
+            var el = document.getElementById('sim-chiba-2021-fig1');
+            if (!el) return;
+
+            var sketch = function(p) {
+              var M = 2.0, m = 1.0, k = 10.0, d = 0.4;
+              var x_ball = 0, v_ball = 0, t = 0, dt = 0.016;
+              var isPlaying = true;
+              var scale = 80;
+              var naturalLen = 1.2;
+              
+              p.setup = function() {
+                p.createCanvas(el.clientWidth, 380).parent(el);
+                resetSim();
+              };
+              
+              function resetSim() {
+                x_ball = naturalLen - d;
+                v_ball = 0;
+                t = 0;
+              }
+
+              function drawSpring(x1, y1, x2, y2, coils, amp) {
+                var len = p.dist(x1, y1, x2, y2);
+                if (len < 25) return;
+                
+                p.push();
+                p.translate(x1, y1);
+                p.rotate(p.atan2(y2 - y1, x2 - x1));
+                
+                p.stroke(70, 70, 75);
+                p.strokeWeight(2.5);
+                p.noFill();
+                
+                var endLen = 8;
+                p.line(0, 0, endLen, 0);
+                p.line(len - endLen, 0, len, 0);
+                
+                var coilLen = len - 2 * endLen;
+                if (coilLen > 0) {
+                  p.beginShape();
+                  p.vertex(endLen, 0);
+                  for (var i = 0; i < coils * 2; i++) {
+                    var xPos = endLen + coilLen * (i + 0.5) / (coils * 2);
+                    var yPos = (i % 2 === 0) ? amp : -amp;
+                    p.vertex(xPos, yPos);
+                  }
+                  p.vertex(len - endLen, 0);
+                  p.endShape();
+                }
+                p.pop();
+              }
+
+              function drawLShapedPlatform(x, y, w, h, wallH, label) {
+                // L字型の台：底面 + 左側の壁
+                p.fill(160, 165, 180);
+                p.stroke(100, 105, 115);
+                p.strokeWeight(2);
+                
+                // 底面
+                p.beginShape();
+                p.vertex(x, y);
+                p.vertex(x + w, y);
+                p.vertex(x + w, y + h);
+                p.vertex(x, y + h);
+                p.endShape(p.CLOSE);
+                
+                // 左側の壁（L字の縦部分）
+                p.fill(140, 145, 160);
+                p.beginShape();
+                p.vertex(x, y - wallH);
+                p.vertex(x + 18, y - wallH);
+                p.vertex(x + 18, y);
+                p.vertex(x, y);
+                p.endShape(p.CLOSE);
+                
+                // 上面のレール（小球が滑る溝）
+                p.fill(190, 195, 205);
+                p.noStroke();
+                p.rect(x + 18, y - 6, w - 25, 6, 1);
+                
+                // ラベル
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(18);
+                p.text(label, x + w / 2, y + h / 2);
+              }
+
+              function drawBall(x, y, r, label) {
+                p.fill(100, 120, 160, 80);
+                p.noStroke();
+                p.ellipse(x + 3, y + 4, r * 2.1);
+                
+                var c1 = p.color(80, 140, 220);
+                var c2 = p.color(40, 90, 160);
+                for (var i = r; i > 0; i -= 2) {
+                  p.fill(p.lerpColor(c1, c2, 1 - i / r));
+                  p.noStroke();
+                  p.ellipse(x - (r - i) * 0.1, y - (r - i) * 0.1, i * 2);
+                }
+                
+                p.fill(255, 255, 255, 180);
+                p.ellipse(x - r * 0.35, y - r * 0.35, r * 0.45);
+                
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.text(label, x, y + 1);
+              }
+
+              function drawStopper(x, y, h, label) {
+                p.fill(85, 85, 95);
+                p.stroke(55, 55, 65);
+                p.strokeWeight(2);
+                p.rect(x - 10, y - h, 20, h);
+                
+                p.stroke(65, 65, 75);
+                p.strokeWeight(1.5);
+                for (var i = 5; i < h - 5; i += 7) {
+                  p.line(x - 8, y - h + i, x + 8, y - h + i + 10);
+                }
+                
+                p.fill(40);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(11);
+                p.text(label, x, y - h - 8);
+              }
+
+              p.draw = function() {
+                p.background(250, 251, 253);
+                
+                if (isPlaying) {
+                  t += dt;
+                  var omega = p.sqrt(k / m);
+                  x_ball = naturalLen - d * p.cos(omega * t);
+                  v_ball = d * omega * p.sin(omega * t);
+                }
+                
+                var floorY = p.height - 70;
+                var platformW = 220, platformH = 35, wallH = 55;
+                var platformX = (p.width - platformW) / 2;
+                var platformY = floorY - platformH;
+                
+                var ballR = 20;
+                var ballY = platformY - ballR + 3;
+                
+                var stopperA_x = platformX - 25;
+                var stopperB_x = platformX + platformW + 25;
+                
+                var springAttachX = platformX + 18;
+                var ballScreenX = platformX + 18 + x_ball * scale;
+                
+                // 床
+                p.fill(210, 212, 218);
+                p.noStroke();
+                p.rect(0, floorY, p.width, 70);
+                p.stroke(170, 172, 178);
+                p.strokeWeight(2);
+                p.line(0, floorY, p.width, floorY);
+                
+                // x軸
+                p.stroke(60);
+                p.strokeWeight(1.5);
+                var axisY = floorY + 35;
+                p.line(p.width - 100, axisY, p.width - 25, axisY);
+                p.fill(60);
+                p.noStroke();
+                p.triangle(p.width - 25, axisY, p.width - 35, axisY - 5, p.width - 35, axisY + 5);
+                p.textSize(16);
+                p.text('x', p.width - 15, axisY);
+                
+                // ストッパー
+                drawStopper(stopperA_x, floorY, platformH + wallH + 15, 'ストッパーA');
+                drawStopper(stopperB_x, floorY, platformH + wallH + 15, 'ストッパーB');
+                
+                // L字型の台
+                drawLShapedPlatform(platformX, platformY, platformW, platformH, wallH, 'M');
+                
+                // ばね（台の左壁に固定）
+                drawSpring(springAttachX, ballY, ballScreenX - ballR, ballY, 14, 9);
+                
+                // ばね定数k
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(15);
+                p.text('k', (springAttachX + ballScreenX - ballR) / 2, ballY - 18);
+                
+                // 小球
+                drawBall(ballScreenX, ballY, ballR, 'm');
+                
+                // 自然長位置
+                var naturalPosX = platformX + 18 + naturalLen * scale;
+                p.stroke(100, 160, 220, 150);
+                p.strokeWeight(1.5);
+                p.drawingContext.setLineDash([5, 5]);
+                p.line(naturalPosX, platformY - wallH - 20, naturalPosX, floorY);
+                p.drawingContext.setLineDash([]);
+                p.fill(100, 160, 220);
+                p.textSize(11);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text('自然長', naturalPosX, platformY - wallH - 22);
+                
+                // 情報パネル
+                p.fill(255, 255, 255, 240);
+                p.stroke(200, 202, 208);
+                p.strokeWeight(1);
+                p.rect(12, 12, 190, 100, 8);
+                
+                p.fill(40);
+                p.noStroke();
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(13);
+                var springExt = x_ball - naturalLen;
+                p.text('時間 t = ' + t.toFixed(2) + ' s', 24, 24);
+                p.text('位置 x = ' + x_ball.toFixed(3) + ' m', 24, 46);
+                p.text('速度 v = ' + v_ball.toFixed(3) + ' m/s', 24, 68);
+                p.text('ばねの伸び = ' + springExt.toFixed(3) + ' m', 24, 90);
+              };
+
+              p.windowResized = function() { p.resizeCanvas(el.clientWidth, 380); };
+              
+              window.simChiba2021Fig1 = {
+                play: function() { isPlaying = true; },
+                pause: function() { isPlaying = false; },
+                reset: resetSim
+              };
+            };
+
+            var p5inst = new p5(sketch);
+            if (!window.p5Instances) window.p5Instances = [];
+            window.p5Instances.push(p5inst);
+            
+            SimUtils.createControls(el, {
+              onPlay: function() { if (window.simChiba2021Fig1) window.simChiba2021Fig1.play(); },
+              onPause: function() { if (window.simChiba2021Fig1) window.simChiba2021Fig1.pause(); },
+              onReset: function() { if (window.simChiba2021Fig1) window.simChiba2021Fig1.reset(); }
+            });
+          })();
+        </script>
+
+        <h4>問1：$v_0$ を求める</h4>
+        <p>
+          台が固定されているため，小球は角振動数 $\omega = \sqrt{k/m}$ の単振動を行います。
+        </p>
+        
+        <p><strong>【解法1】エネルギー保存則</strong></p>
+        <p>
+          初期位置（ばねが $d$ だけ縮んだ位置）と自然長位置でのエネルギーを比較します。
+          $$ \frac{1}{2}kd^2 + 0 = 0 + \frac{1}{2}mv_0^2 $$
+          $$ \therefore\ v_0 = d\sqrt{\frac{k}{m}} $$
+        </p>
+
+        <p><strong>【解法2（別解）】単振動の速度公式</strong></p>
+        <p>
+          単振動 $x(t) = -d\cos(\omega t)$（自然長を原点とする）の速度は
+          $$ v(t) = d\omega\sin(\omega t) $$
+          自然長位置（$x = 0$）を通過するのは $\omega t = \pi/2$ のとき。このとき
+          $$ v_0 = d\omega = d\sqrt{\frac{k}{m}} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ v_0 = d\sqrt{\frac{k}{m}} $$
+        </div>
+
+        <h4>問2：自然長に戻るまでの時間</h4>
+        <p><strong>【解法】</strong></p>
+        <p>
+          単振動の周期は $T = 2\pi\sqrt{m/k}$ です。<br>
+          振幅の端（縮み $d$ の位置）から平衡点（自然長）までは周期の $1/4$ なので，
+          $$ t = \frac{T}{4} = \frac{\pi}{2}\sqrt{\frac{m}{k}} $$
+        </p>
+
+        <p><strong>【補足】位相で考える</strong></p>
+        <p>
+          $x(t) = -d\cos(\omega t)$ において，$x = 0$ となるのは $\omega t = \pi/2$ のとき。
+          $$ t = \frac{\pi}{2\omega} = \frac{\pi}{2}\sqrt{\frac{m}{k}} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ t = \frac{\pi}{2}\sqrt{\frac{m}{k}} $$
+        </div>
+
+        <h4>問3：ばねが最も伸びたときの小球の速度</h4>
+        <p>
+          単振動において，振幅の端点では速度は $\boldsymbol{0}$ です。<br>
+          エネルギー保存則からも，ばねの弾性エネルギーが最大のとき運動エネルギーは $0$ となります。
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong> $0$
+        </div>
+      </div>
+
+      <!-- 重心の考え方の詳細解説 -->
+      <div class="card">
+        <h3>【重要】重心運動と相対運動の分離</h3>
+        
+        <p>
+          図2と図3を解く前に，<span class="highlight">重心運動と相対運動の分離</span>という強力な解法を理解しておきましょう。
+        </p>
+
+        <h4>重心の定義と性質</h4>
+        <p>
+          質量 $M$ の台と質量 $m$ の小球からなる系の<strong>重心位置</strong> $x_G$ は，
+          $$ x_G = \frac{Mx_M + mx_m}{M + m} $$
+          ここで $x_M$ は台の位置，$x_m$ は小球の位置です。
+        </p>
+
+        <p>
+          <strong>重心の運動方程式</strong>は，
+          $$ (M + m)\frac{d^2 x_G}{dt^2} = F_{\text{外力}} $$
+          となります。ばねの力は<span class="highlight">内力</span>（系の内部で作用・反作用の関係にある力）なので，重心の運動には影響しません。
+        </p>
+
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>
+            <strong>外力がはたらかない系では，重心は等速直線運動（または静止）する。</strong><br>
+            図2では初期に台も小球も静止しているので，重心は永久に静止したままです。
+          </p>
+        </div>
+
+        <h4>相対運動の解析</h4>
+        <p>
+          小球の台に対する<strong>相対位置</strong>を $\xi = x_m - x_M$ とおくと，これは<span class="highlight">換算質量</span>
+          $$ \mu = \frac{mM}{m + M} $$
+          を用いた単振動として記述できます。相対運動の運動方程式は，
+          $$ \mu\frac{d^2\xi}{dt^2} = -k(\xi - \ell_0) $$
+          ここで $\ell_0$ は自然長です。角振動数は
+          $$ \omega' = \sqrt{\frac{k}{\mu}} = \sqrt{\frac{k(M + m)}{mM}} $$
+        </p>
+
+        <h4>各物体の運動の導出</h4>
+        <p>
+          重心位置 $x_G$ と相対位置 $\xi$ が分かれば，各物体の位置は，
+          $$ x_M = x_G - \frac{m}{M + m}\xi, \quad x_m = x_G + \frac{M}{M + m}\xi $$
+          速度も同様に，
+          $$ v_M = v_G - \frac{m}{M + m}\dot{\xi}, \quad v_m = v_G + \frac{M}{M + m}\dot{\xi} $$
+        </p>
+
+        <div class="box-note">
+          <strong>まとめ：重心系の利点</strong><br>
+          ・重心の運動は外力のみで決まる（内力は無関係）<br>
+          ・相対運動は換算質量を用いた単振動になる<br>
+          ・運動量保存則は「重心速度一定」と等価<br>
+          ・エネルギーは「重心の運動エネルギー」＋「相対運動のエネルギー」に分離可能
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>図2：台も自由に動ける場合（問4-7）</h3>
+        
+        <p>
+          ストッパーA, Bの両方を取りはずし，台も床の上を動けるようにします。<span class="highlight">外力がはたらかない</span>ため，系の運動量は保存され，重心は静止したままです。
+        </p>
+
+        <div id="sim-chiba-2021-fig2" class="sim-embed"></div>
+        <script>
+          (function() {
+            var el = document.getElementById('sim-chiba-2021-fig2');
+            if (!el) return;
+
+            var sketch = function(p) {
+              var M = 2.0, m = 1.0, k = 10.0, d = 0.4;
+              var x_rel = 0, v_rel = 0;
+              var x_platform = 0, v_platform = 0;
+              var x_ball = 0, v_ball = 0;
+              var t = 0, dt = 0.016;
+              var isPlaying = true;
+              var scale = 80;
+              var naturalLen = 1.2;
+              
+              p.setup = function() {
+                p.createCanvas(el.clientWidth, 400).parent(el);
+                resetSim();
+              };
+              
+              function resetSim() {
+                x_rel = naturalLen - d;
+                v_rel = 0;
+                x_platform = 0;
+                v_platform = 0;
+                x_ball = 0;
+                v_ball = 0;
+                t = 0;
+              }
+
+              function drawSpring(x1, y1, x2, y2, coils, amp) {
+                var len = p.dist(x1, y1, x2, y2);
+                if (len < 25) return;
+                
+                p.push();
+                p.translate(x1, y1);
+                p.rotate(p.atan2(y2 - y1, x2 - x1));
+                
+                p.stroke(70, 70, 75);
+                p.strokeWeight(2.5);
+                p.noFill();
+                
+                var endLen = 8;
+                p.line(0, 0, endLen, 0);
+                p.line(len - endLen, 0, len, 0);
+                
+                var coilLen = len - 2 * endLen;
+                if (coilLen > 0) {
+                  p.beginShape();
+                  p.vertex(endLen, 0);
+                  for (var i = 0; i < coils * 2; i++) {
+                    var xPos = endLen + coilLen * (i + 0.5) / (coils * 2);
+                    var yPos = (i % 2 === 0) ? amp : -amp;
+                    p.vertex(xPos, yPos);
+                  }
+                  p.vertex(len - endLen, 0);
+                  p.endShape();
+                }
+                p.pop();
+              }
+
+              function drawLShapedPlatform(x, y, w, h, wallH, label) {
+                p.fill(160, 165, 180);
+                p.stroke(100, 105, 115);
+                p.strokeWeight(2);
+                
+                p.beginShape();
+                p.vertex(x, y);
+                p.vertex(x + w, y);
+                p.vertex(x + w, y + h);
+                p.vertex(x, y + h);
+                p.endShape(p.CLOSE);
+                
+                p.fill(140, 145, 160);
+                p.beginShape();
+                p.vertex(x, y - wallH);
+                p.vertex(x + 18, y - wallH);
+                p.vertex(x + 18, y);
+                p.vertex(x, y);
+                p.endShape(p.CLOSE);
+                
+                p.fill(190, 195, 205);
+                p.noStroke();
+                p.rect(x + 18, y - 6, w - 25, 6, 1);
+                
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(18);
+                p.text(label, x + w / 2, y + h / 2);
+              }
+
+              function drawBall(x, y, r, label) {
+                p.fill(100, 120, 160, 80);
+                p.noStroke();
+                p.ellipse(x + 3, y + 4, r * 2.1);
+                
+                var c1 = p.color(80, 140, 220);
+                var c2 = p.color(40, 90, 160);
+                for (var i = r; i > 0; i -= 2) {
+                  p.fill(p.lerpColor(c1, c2, 1 - i / r));
+                  p.noStroke();
+                  p.ellipse(x - (r - i) * 0.1, y - (r - i) * 0.1, i * 2);
+                }
+                
+                p.fill(255, 255, 255, 180);
+                p.ellipse(x - r * 0.35, y - r * 0.35, r * 0.45);
+                
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.text(label, x, y + 1);
+              }
+
+              p.draw = function() {
+                p.background(250, 251, 253);
+                
+                if (isPlaying) {
+                  t += dt;
+                  
+                  // 換算質量と角振動数
+                  var mu = (m * M) / (m + M);
+                  var omega = p.sqrt(k / mu);
+                  
+                  // 相対運動（ばねの長さ = x_rel）
+                  // 初期：x_rel = naturalLen - d（縮んでいる）
+                  var xi0 = naturalLen - d;
+                  x_rel = naturalLen + (xi0 - naturalLen) * p.cos(omega * t);
+                  v_rel = -(xi0 - naturalLen) * omega * p.sin(omega * t);
+                  
+                  // 重心は静止（初期位置を0とする）
+                  // 各物体の位置（重心からの距離）
+                  var delta_xi = x_rel - naturalLen; // 自然長からのずれ
+                  
+                  // 運動量保存から：M*v_M + m*v_m = 0
+                  // 相対速度：v_rel = v_m - v_M
+                  v_platform = -(m / (M + m)) * v_rel;
+                  v_ball = (M / (M + m)) * v_rel;
+                  
+                  // 位置（重心静止条件から）
+                  x_platform = -(m / (M + m)) * (x_rel - naturalLen);
+                  x_ball = (M / (M + m)) * (x_rel - naturalLen);
+                }
+                
+                var floorY = p.height - 70;
+                var platformW = 220, platformH = 35, wallH = 55;
+                var platformX_init = (p.width - platformW) / 2;
+                var platformX = platformX_init + x_platform * scale;
+                var platformY = floorY - platformH;
+                
+                var ballR = 20;
+                var ballY = platformY - ballR + 3;
+                
+                var springAttachX = platformX + 18;
+                var ballScreenX = platformX + 18 + x_rel * scale;
+                
+                // 床
+                p.fill(210, 212, 218);
+                p.noStroke();
+                p.rect(0, floorY, p.width, 70);
+                p.stroke(170, 172, 178);
+                p.strokeWeight(2);
+                p.line(0, floorY, p.width, floorY);
+                
+                // x軸
+                p.stroke(60);
+                p.strokeWeight(1.5);
+                var axisY = floorY + 35;
+                p.line(p.width - 100, axisY, p.width - 25, axisY);
+                p.fill(60);
+                p.noStroke();
+                p.triangle(p.width - 25, axisY, p.width - 35, axisY - 5, p.width - 35, axisY + 5);
+                p.textSize(16);
+                p.text('x', p.width - 15, axisY);
+                
+                // L字型の台
+                drawLShapedPlatform(platformX, platformY, platformW, platformH, wallH, 'M');
+                
+                // ばね
+                drawSpring(springAttachX, ballY, ballScreenX - ballR, ballY, 14, 9);
+                
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(15);
+                p.text('k', (springAttachX + ballScreenX - ballR) / 2, ballY - 18);
+                
+                // 小球
+                drawBall(ballScreenX, ballY, ballR, 'm');
+                
+                // 重心位置（常に固定）
+                var cmScreenX = platformX_init + platformW / 2 + 18;
+                p.stroke(220, 100, 100, 180);
+                p.strokeWeight(2);
+                p.drawingContext.setLineDash([4, 4]);
+                p.line(cmScreenX, platformY - wallH - 30, cmScreenX, floorY);
+                p.drawingContext.setLineDash([]);
+                p.fill(220, 100, 100);
+                p.noStroke();
+                p.textSize(12);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text('重心G（静止）', cmScreenX, platformY - wallH - 32);
+                
+                // 重心マーカー
+                p.fill(220, 100, 100);
+                p.noStroke();
+                p.ellipse(cmScreenX, platformY - 15, 8, 8);
+                
+                // 情報パネル
+                p.fill(255, 255, 255, 240);
+                p.stroke(200, 202, 208);
+                p.strokeWeight(1);
+                p.rect(12, 12, 230, 145, 8);
+                
+                p.fill(40);
+                p.noStroke();
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(13);
+                var springExt = x_rel - naturalLen;
+                p.text('時間 t = ' + t.toFixed(2) + ' s', 24, 24);
+                p.text('ばねの伸び = ' + springExt.toFixed(3) + ' m', 24, 44);
+                p.fill(220, 100, 100);
+                p.text('台の速度 V = ' + v_platform.toFixed(3) + ' m/s', 24, 68);
+                p.fill(80, 140, 220);
+                p.text('小球の速度 v = ' + v_ball.toFixed(3) + ' m/s', 24, 88);
+                p.fill(40);
+                p.text('運動量 = ' + (M * v_platform + m * v_ball).toFixed(6), 24, 112);
+                p.text('相対速度 = ' + v_rel.toFixed(3) + ' m/s', 24, 132);
+              };
+
+              p.windowResized = function() { p.resizeCanvas(el.clientWidth, 400); };
+              
+              window.simChiba2021Fig2 = {
+                play: function() { isPlaying = true; },
+                pause: function() { isPlaying = false; },
+                reset: resetSim
+              };
+            };
+
+            var p5inst = new p5(sketch);
+            if (!window.p5Instances) window.p5Instances = [];
+            window.p5Instances.push(p5inst);
+            
+            SimUtils.createControls(el, {
+              onPlay: function() { if (window.simChiba2021Fig2) window.simChiba2021Fig2.play(); },
+              onPause: function() { if (window.simChiba2021Fig2) window.simChiba2021Fig2.pause(); },
+              onReset: function() { if (window.simChiba2021Fig2) window.simChiba2021Fig2.reset(); }
+            });
+          })();
+        </script>
+
+        <h4>問4：$V_1/v_1$ を求める</h4>
+        
+        <p><strong>【解法1】運動量保存則</strong></p>
+        <p>
+          初期状態で台も小球も静止しているので，運動量は常に $0$ です。
+          $$ MV_1 + mv_1 = 0 $$
+          $$ \therefore\ \frac{V_1}{v_1} = -\frac{m}{M} $$
+          符号を考慮して，速度の大きさの比は $\displaystyle\frac{m}{M}$（向きは逆）。
+        </p>
+
+        <p><strong>【解法2（別解）】重心系で考える</strong></p>
+        <p>
+          重心は静止しているので，$v_G = 0$。相対速度を $\dot{\xi}$ とすると，
+          $$ V_1 = -\frac{m}{M + m}\dot{\xi}, \quad v_1 = \frac{M}{M + m}\dot{\xi} $$
+          したがって，
+          $$ \frac{V_1}{v_1} = -\frac{m}{M} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ \frac{V_1}{v_1} = \frac{m}{M} $$
+          （符号を含めると $-m/M$，つまり台と小球は逆向きに動く）
+        </div>
+
+        <h4>問5：$v_1$ を求める</h4>
+        
+        <p><strong>【解法1】エネルギー保存則と運動量保存則の連立</strong></p>
+        <p>
+          エネルギー保存則：
+          $$ \frac{1}{2}kd^2 = \frac{1}{2}MV_1^2 + \frac{1}{2}mv_1^2 $$
+          運動量保存則 $V_1 = -\frac{m}{M}v_1$ を代入：
+          $$ \frac{1}{2}kd^2 = \frac{1}{2}M \cdot \frac{m^2}{M^2}v_1^2 + \frac{1}{2}mv_1^2 = \frac{1}{2}mv_1^2\left(\frac{m}{M} + 1\right) = \frac{m(M + m)}{2M}v_1^2 $$
+          $$ \therefore\ v_1 = d\sqrt{\frac{kM}{m(M + m)}} $$
+        </p>
+
+        <p><strong>【解法2（別解）】換算質量を用いた相対運動のエネルギー</strong></p>
+        <p>
+          重心が静止しているので，系の全運動エネルギーは相対運動のエネルギーに等しい：
+          $$ K = \frac{1}{2}\mu\dot{\xi}^2 = \frac{1}{2} \cdot \frac{mM}{m + M} \cdot \dot{\xi}^2 $$
+          エネルギー保存則：
+          $$ \frac{1}{2}kd^2 = \frac{1}{2}\mu\dot{\xi}_1^2 $$
+          $$ \dot{\xi}_1 = d\sqrt{\frac{k}{\mu}} = d\sqrt{\frac{k(M + m)}{mM}} $$
+          これは相対速度なので，
+          $$ v_1 = \frac{M}{M + m}\dot{\xi}_1 = \frac{M}{M + m} \cdot d\sqrt{\frac{k(M + m)}{mM}} = d\sqrt{\frac{kM}{m(M + m)}} $$
+        </p>
+
+        <div class="box-alert">
+          <span class="box-alert-label">補足</span>
+          <p>
+            <strong>図1との比較</strong>：図1では $v_0 = d\sqrt{k/m}$ でしたが，図2では
+            $$ v_1 = d\sqrt{\frac{kM}{m(M + m)}} = v_0 \cdot \sqrt{\frac{M}{M + m}} < v_0 $$
+            台も動くため，小球の最大速度は小さくなります。これは<span class="highlight">エネルギーが台にも分配される</span>ためです。
+          </p>
+        </div>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ v_1 = d\sqrt{\frac{kM}{m(M + m)}} $$
+        </div>
+
+        <h4>問6：ばねが最も伸びたときの小球の速度</h4>
+        
+        <p><strong>【解法】</strong></p>
+        <p>
+          ばねが最も伸びたとき，<span class="highlight">相対速度が $0$</span> になります（伸びの変化が止まる瞬間）。<br>
+          相対速度 $\dot{\xi} = v_m - v_M = 0$ より，$v_m = v_M$。<br>
+          運動量保存則 $Mv_M + mv_m = 0$ と合わせると，
+          $$ (M + m)v_m = 0 \quad \therefore\ v_m = 0 $$
+        </p>
+
+        <p><strong>【別解】重心系で考える</strong></p>
+        <p>
+          重心速度 $v_G = 0$（静止）のとき，相対速度 $\dot{\xi} = 0$ ならば
+          $$ v_m = v_G + \frac{M}{M + m} \cdot 0 = 0 $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong> $0$
+        </div>
+
+        <h4>問7：ばねの伸びの最大値</h4>
+        
+        <p><strong>【解法1】エネルギー保存則</strong></p>
+        <p>
+          ばねが最も伸びたとき，台と小球は速度 $0$（問6より）なので，運動エネルギーは $0$。
+          $$ \frac{1}{2}kd^2 = \frac{1}{2}kX_{\max}^2 $$
+          $$ \therefore\ X_{\max} = d $$
+        </p>
+
+        <p><strong>【解法2（別解）】相対運動の振幅</strong></p>
+        <p>
+          相対運動は自然長を中心とした単振動で，初期のずれが $-d$（縮み）なので振幅は $d$。<br>
+          したがって最大伸びも $d$。
+        </p>
+
+        <div class="box-alert">
+          <span class="box-alert-label">補足</span>
+          <p>
+            <strong>重心系での解釈</strong>：相対運動のエネルギーは
+            $$ E_{\text{rel}} = \frac{1}{2}\mu\dot{\xi}^2 + \frac{1}{2}k(\xi - \ell_0)^2 = \frac{1}{2}kd^2 $$
+            で一定です。$\dot{\xi} = 0$ のとき $(\xi - \ell_0)^2 = d^2$，つまり伸びまたは縮みの最大値は $d$ です。
+          </p>
+        </div>
+
+        <div class="box-note">
+          <strong>答え：</strong> $d$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>図3：ストッパーAのみの場合（問8-11）</h3>
+        
+        <p>
+          ストッパーAのみが取り付けられており，台は<span class="highlight">右方向のみ</span>動けます。<br>
+          ばねが縮んでいる間は，ばねが台を左に押すのでストッパーが反力を出し，台は静止。<br>
+          ばねが自然長より伸びると，ばねが台を右に引くので台が動き始めます。
+        </p>
+
+        <div id="sim-chiba-2021-fig3" class="sim-embed"></div>
+        <script>
+          (function() {
+            var el = document.getElementById('sim-chiba-2021-fig3');
+            if (!el) return;
+
+            var sketch = function(p) {
+              var M = 2.0, m = 1.0, k = 10.0, d = 0.4;
+              var x_ball = 0, v_ball = 0;
+              var x_platform = 0, v_platform = 0;
+              var platformMoving = false;
+              var t = 0, dt = 0.016;
+              var isPlaying = true;
+              var scale = 80;
+              var naturalLen = 1.2;
+              var v2_value = 0; // ばねが自然長になったときの小球の速度を記録
+              
+              p.setup = function() {
+                p.createCanvas(el.clientWidth, 400).parent(el);
+                resetSim();
+              };
+              
+              function resetSim() {
+                x_ball = naturalLen - d;
+                v_ball = 0;
+                x_platform = 0;
+                v_platform = 0;
+                platformMoving = false;
+                t = 0;
+                v2_value = d * p.sqrt(k / m);
+              }
+
+              function drawSpring(x1, y1, x2, y2, coils, amp) {
+                var len = p.dist(x1, y1, x2, y2);
+                if (len < 25) return;
+                
+                p.push();
+                p.translate(x1, y1);
+                p.rotate(p.atan2(y2 - y1, x2 - x1));
+                
+                p.stroke(70, 70, 75);
+                p.strokeWeight(2.5);
+                p.noFill();
+                
+                var endLen = 8;
+                p.line(0, 0, endLen, 0);
+                p.line(len - endLen, 0, len, 0);
+                
+                var coilLen = len - 2 * endLen;
+                if (coilLen > 0) {
+                  p.beginShape();
+                  p.vertex(endLen, 0);
+                  for (var i = 0; i < coils * 2; i++) {
+                    var xPos = endLen + coilLen * (i + 0.5) / (coils * 2);
+                    var yPos = (i % 2 === 0) ? amp : -amp;
+                    p.vertex(xPos, yPos);
+                  }
+                  p.vertex(len - endLen, 0);
+                  p.endShape();
+                }
+                p.pop();
+              }
+
+              function drawLShapedPlatform(x, y, w, h, wallH, label) {
+                p.fill(160, 165, 180);
+                p.stroke(100, 105, 115);
+                p.strokeWeight(2);
+                
+                p.beginShape();
+                p.vertex(x, y);
+                p.vertex(x + w, y);
+                p.vertex(x + w, y + h);
+                p.vertex(x, y + h);
+                p.endShape(p.CLOSE);
+                
+                p.fill(140, 145, 160);
+                p.beginShape();
+                p.vertex(x, y - wallH);
+                p.vertex(x + 18, y - wallH);
+                p.vertex(x + 18, y);
+                p.vertex(x, y);
+                p.endShape(p.CLOSE);
+                
+                p.fill(190, 195, 205);
+                p.noStroke();
+                p.rect(x + 18, y - 6, w - 25, 6, 1);
+                
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(18);
+                p.text(label, x + w / 2, y + h / 2);
+              }
+
+              function drawBall(x, y, r, label) {
+                p.fill(100, 120, 160, 80);
+                p.noStroke();
+                p.ellipse(x + 3, y + 4, r * 2.1);
+                
+                var c1 = p.color(80, 140, 220);
+                var c2 = p.color(40, 90, 160);
+                for (var i = r; i > 0; i -= 2) {
+                  p.fill(p.lerpColor(c1, c2, 1 - i / r));
+                  p.noStroke();
+                  p.ellipse(x - (r - i) * 0.1, y - (r - i) * 0.1, i * 2);
+                }
+                
+                p.fill(255, 255, 255, 180);
+                p.ellipse(x - r * 0.35, y - r * 0.35, r * 0.45);
+                
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.textSize(14);
+                p.text(label, x, y + 1);
+              }
+
+              function drawStopper(x, y, h, label) {
+                p.fill(85, 85, 95);
+                p.stroke(55, 55, 65);
+                p.strokeWeight(2);
+                p.rect(x - 10, y - h, 20, h);
+                
+                p.stroke(65, 65, 75);
+                p.strokeWeight(1.5);
+                for (var i = 5; i < h - 5; i += 7) {
+                  p.line(x - 8, y - h + i, x + 8, y - h + i + 10);
+                }
+                
+                p.fill(40);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(11);
+                p.text(label, x, y - h - 8);
+              }
+
+              p.draw = function() {
+                p.background(250, 251, 253);
+                
+                if (isPlaying) {
+                  t += dt;
+                  
+                  // ばねの伸び（自然長からの）
+                  var springExt = x_ball - x_platform - naturalLen;
+                  
+                  if (!platformMoving) {
+                    // フェーズ1：台が固定（ばねが縮んでいる間）
+                    var omega = p.sqrt(k / m);
+                    x_ball = naturalLen - d * p.cos(omega * t);
+                    v_ball = d * omega * p.sin(omega * t);
+                    x_platform = 0;
+                    v_platform = 0;
+                    
+                    // ばねが自然長を超えたら台が動き始める
+                    if (x_ball > naturalLen) {
+                      platformMoving = true;
+                      // このときの小球の速度を記録
+                      v2_value = v_ball;
+                    }
+                  } else {
+                    // フェーズ2：台も動く
+                    // 数値積分
+                    springExt = x_ball - x_platform - naturalLen;
+                    var F_spring = -k * springExt;
+                    
+                    var a_ball = F_spring / m;
+                    var a_platform = -F_spring / M;
+                    
+                    // 台は右方向のみ動ける
+                    if (x_platform <= 0 && a_platform < 0) {
+                      a_platform = 0;
+                      if (v_platform < 0) v_platform = 0;
+                    }
+                    
+                    v_ball += a_ball * dt;
+                    x_ball += v_ball * dt;
+                    
+                    v_platform += a_platform * dt;
+                    if (x_platform <= 0 && v_platform < 0) v_platform = 0;
+                    x_platform += v_platform * dt;
+                    if (x_platform < 0) x_platform = 0;
+                  }
+                }
+                
+                var floorY = p.height - 70;
+                var platformW = 220, platformH = 35, wallH = 55;
+                var stopperA_x = 80;
+                var platformX = stopperA_x + 25 + x_platform * scale;
+                var platformY = floorY - platformH;
+                
+                var ballR = 20;
+                var ballY = platformY - ballR + 3;
+                
+                var springAttachX = platformX + 18;
+                var ballScreenX = stopperA_x + 25 + 18 + x_ball * scale;
+                
+                // 床
+                p.fill(210, 212, 218);
+                p.noStroke();
+                p.rect(0, floorY, p.width, 70);
+                p.stroke(170, 172, 178);
+                p.strokeWeight(2);
+                p.line(0, floorY, p.width, floorY);
+                
+                // x軸
+                p.stroke(60);
+                p.strokeWeight(1.5);
+                var axisY = floorY + 35;
+                p.line(p.width - 100, axisY, p.width - 25, axisY);
+                p.fill(60);
+                p.noStroke();
+                p.triangle(p.width - 25, axisY, p.width - 35, axisY - 5, p.width - 35, axisY + 5);
+                p.textSize(16);
+                p.text('x', p.width - 15, axisY);
+                
+                // ストッパーA
+                drawStopper(stopperA_x, floorY, platformH + wallH + 15, 'ストッパーA');
+                
+                // L字型の台
+                drawLShapedPlatform(platformX, platformY, platformW, platformH, wallH, 'M');
+                
+                // ばね
+                drawSpring(springAttachX, ballY, ballScreenX - ballR, ballY, 14, 9);
+                
+                p.fill(50);
+                p.noStroke();
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.textSize(15);
+                p.text('k', (springAttachX + ballScreenX - ballR) / 2, ballY - 18);
+                
+                // 小球
+                drawBall(ballScreenX, ballY, ballR, 'm');
+                
+                // 自然長位置
+                var naturalPosX = stopperA_x + 25 + 18 + naturalLen * scale;
+                p.stroke(100, 160, 220, 150);
+                p.strokeWeight(1.5);
+                p.drawingContext.setLineDash([5, 5]);
+                p.line(naturalPosX, platformY - wallH - 20, naturalPosX, floorY);
+                p.drawingContext.setLineDash([]);
+                p.fill(100, 160, 220);
+                p.textSize(11);
+                p.textAlign(p.CENTER, p.BOTTOM);
+                p.text('自然長', naturalPosX, platformY - wallH - 22);
+                
+                // 状態表示
+                var stateText = platformMoving ? 'フェーズ2：台も運動' : 'フェーズ1：台固定';
+                var stateColor = platformMoving ? p.color(200, 80, 80) : p.color(80, 150, 80);
+                
+                // 情報パネル
+                p.fill(255, 255, 255, 240);
+                p.stroke(200, 202, 208);
+                p.strokeWeight(1);
+                p.rect(12, 12, 230, 165, 8);
+                
+                p.fill(40);
+                p.noStroke();
+                p.textAlign(p.LEFT, p.TOP);
+                p.textSize(13);
+                var springExt = x_ball - x_platform - naturalLen;
+                p.text('時間 t = ' + t.toFixed(2) + ' s', 24, 24);
+                p.text('ばねの伸び = ' + springExt.toFixed(3) + ' m', 24, 44);
+                p.fill(80, 140, 220);
+                p.text('小球の速度 v = ' + v_ball.toFixed(3) + ' m/s', 24, 68);
+                p.fill(180, 100, 100);
+                p.text('台の速度 V = ' + v_platform.toFixed(3) + ' m/s', 24, 88);
+                p.fill(40);
+                p.text('運動量 = ' + (M * v_platform + m * v_ball).toFixed(4), 24, 112);
+                p.fill(stateColor);
+                p.textSize(14);
+                p.text(stateText, 24, 138);
+              };
+
+              p.windowResized = function() { p.resizeCanvas(el.clientWidth, 400); };
+              
+              window.simChiba2021Fig3 = {
+                play: function() { isPlaying = true; },
+                pause: function() { isPlaying = false; },
+                reset: resetSim
+              };
+            };
+
+            var p5inst = new p5(sketch);
+            if (!window.p5Instances) window.p5Instances = [];
+            window.p5Instances.push(p5inst);
+            
+            SimUtils.createControls(el, {
+              onPlay: function() { if (window.simChiba2021Fig3) window.simChiba2021Fig3.play(); },
+              onPause: function() { if (window.simChiba2021Fig3) window.simChiba2021Fig3.pause(); },
+              onReset: function() { if (window.simChiba2021Fig3) window.simChiba2021Fig3.reset(); }
+            });
+          })();
+        </script>
+
+        <h4>問8：$v_2$ を求める</h4>
+        
+        <p><strong>【解法】</strong></p>
+        <p>
+          ばねが縮んでいる間（フェーズ1）は，台がストッパーに固定されているため，図1と同じ状況です。<br>
+          ばねが自然長になったときの小球の速度は，問1と同じ計算から，
+          $$ v_2 = d\sqrt{\frac{k}{m}} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ v_2 = d\sqrt{\frac{k}{m}} $$
+        </div>
+
+        <h4>問9：台が動き始めるまでの時間</h4>
+        
+        <p><strong>【解法】</strong></p>
+        <p>
+          台が動き始めるのは，ばねが自然長より伸び始める瞬間です。<br>
+          これは問2と同じで，小球が自然長位置に達する時間：
+          $$ t = \frac{\pi}{2}\sqrt{\frac{m}{k}} $$
+        </p>
+
+        <p><strong>【補足】なぜこの瞬間に台が動き始めるか</strong></p>
+        <p>
+          ばねが縮んでいる間（$\xi < \ell_0$）：ばねは台を左に押す → ストッパーが反力 → 台は静止<br>
+          ばねが自然長より伸びる（$\xi > \ell_0$）：ばねは台を右に引く → ストッパーは反力を出せない → 台が動く
+        </p>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ t = \frac{\pi}{2}\sqrt{\frac{m}{k}} $$
+        </div>
+
+        <h4>問10：$v_3/v_2$ を求める</h4>
+        
+        <p><strong>【解法1】運動量保存則とエネルギー保存則</strong></p>
+        <p>
+          フェーズ2（台が動き始めた後）では，外力がなくなるので運動量保存則が成り立ちます。<br>
+          フェーズ2の開始時点：小球の速度 $v_2$，台の速度 $0$，運動量 $= mv_2$
+        </p>
+        <p>
+          ばねが最も伸びたとき，相対速度が $0$ なので台と小球は同じ速度 $v_3$ になります。
+          $$ mv_2 = (M + m)v_3 $$
+          $$ \therefore\ \frac{v_3}{v_2} = \frac{m}{M + m} $$
+        </p>
+
+        <p><strong>【解法2（別解）】重心系で考える</strong></p>
+        <p>
+          フェーズ2開始時の重心速度は，
+          $$ v_G = \frac{M \cdot 0 + m \cdot v_2}{M + m} = \frac{mv_2}{M + m} $$
+          ばねが最も伸びたとき相対速度 $0$ なので，全物体は重心速度で動きます：
+          $$ v_3 = v_G = \frac{mv_2}{M + m} $$
+          $$ \therefore\ \frac{v_3}{v_2} = \frac{m}{M + m} $$
+        </p>
+
+        <div class="box-alert">
+          <span class="box-alert-label">補足</span>
+          <p>
+            <strong>図2との違い</strong>：図2では最大伸び時の速度は $0$ でしたが，図3では $v_3 \neq 0$ です。<br>
+            これは図3のフェーズ2開始時に系の運動量が $mv_2 \neq 0$ だからです。重心が動いているため，相対速度が $0$ になっても各物体は重心速度で動き続けます。
+          </p>
+        </div>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ \frac{v_3}{v_2} = \frac{m}{M + m} $$
+        </div>
+
+        <h4>問11：ばねの伸びの最大値</h4>
+        
+        <p><strong>【解法1】エネルギー保存則</strong></p>
+        <p>
+          フェーズ2の開始時と最大伸び時でエネルギー保存則を適用：<br>
+          （開始時）運動エネルギー $\frac{1}{2}mv_2^2$，弾性エネルギー $0$<br>
+          （最大伸び時）運動エネルギー $\frac{1}{2}(M+m)v_3^2$，弾性エネルギー $\frac{1}{2}kX_{\max}^2$
+        </p>
+        <p>
+          $$ \frac{1}{2}mv_2^2 = \frac{1}{2}(M + m)v_3^2 + \frac{1}{2}kX_{\max}^2 $$
+          $v_3 = \frac{m}{M+m}v_2$ を代入：
+          $$ \frac{1}{2}mv_2^2 = \frac{1}{2}(M + m) \cdot \frac{m^2}{(M+m)^2}v_2^2 + \frac{1}{2}kX_{\max}^2 $$
+          $$ \frac{1}{2}mv_2^2 = \frac{m^2v_2^2}{2(M+m)} + \frac{1}{2}kX_{\max}^2 $$
+          $$ kX_{\max}^2 = mv_2^2 - \frac{m^2v_2^2}{M+m} = mv_2^2 \cdot \frac{M}{M+m} $$
+          $v_2^2 = kd^2/m$ を代入：
+          $$ kX_{\max}^2 = m \cdot \frac{kd^2}{m} \cdot \frac{M}{M+m} = \frac{kd^2 M}{M+m} $$
+          $$ \therefore\ X_{\max} = d\sqrt{\frac{M}{M + m}} $$
+        </p>
+
+        <p><strong>【解法2（別解）】重心系でのエネルギー分離</strong></p>
+        <p>
+          フェーズ2では，全エネルギーは「重心の運動エネルギー」＋「相対運動のエネルギー」に分離できます。
+          $$ E = \frac{1}{2}(M + m)v_G^2 + \frac{1}{2}\mu\dot{\xi}^2 + \frac{1}{2}k(\xi - \ell_0)^2 $$
+          重心の運動エネルギー $\frac{1}{2}(M+m)v_G^2 = \frac{m^2v_2^2}{2(M+m)}$ は一定。<br>
+          相対運動のエネルギー：
+          $$ E_{\text{rel}} = \frac{1}{2}mv_2^2 - \frac{m^2v_2^2}{2(M+m)} = \frac{mMv_2^2}{2(M+m)} $$
+          最大伸び時は $\dot{\xi} = 0$ なので，
+          $$ \frac{1}{2}kX_{\max}^2 = \frac{mMv_2^2}{2(M+m)} = \frac{mM}{2(M+m)} \cdot \frac{kd^2}{m} = \frac{kd^2 M}{2(M+m)} $$
+          $$ \therefore\ X_{\max} = d\sqrt{\frac{M}{M + m}} $$
+        </p>
+
+        <div class="box-alert">
+          <span class="box-alert-label">補足</span>
+          <p>
+            <strong>最大伸びの比較</strong><br>
+            ・図1, 図2：$X_{\max} = d$（重心静止）<br>
+            ・図3：$X_{\max} = d\sqrt{\frac{M}{M+m}} < d$（重心が動いている）<br><br>
+            図3では重心の運動エネルギーにエネルギーが取られるため，相対運動に使えるエネルギーが減り，最大伸びが小さくなります。
+          </p>
+        </div>
+
+        <div class="box-note">
+          <strong>答え：</strong>
+          $$ X_{\max} = d\sqrt{\frac{M}{M + m}} $$
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解法のポイントまとめ</h3>
+        <ul>
+          <li><strong>運動量保存則</strong>：外力がない系では $\sum m_i v_i = \text{一定}$。これは「重心が等速直線運動する」ことと等価。</li>
+          <li><strong>重心運動と相対運動の分離</strong>：
+            <ul>
+              <li>重心の運動は外力のみで決まる（内力は無関係）</li>
+              <li>相対運動は換算質量 $\mu = mM/(m+M)$ を用いた単振動</li>
+              <li>エネルギーは「重心の運動エネルギー」＋「相対運動のエネルギー」に分離可能</li>
+            </ul>
+          </li>
+          <li><strong>図3の特殊性</strong>：運動の途中で条件が変化する。フェーズ1とフェーズ2の境界で運動量・エネルギーの引き継ぎを正確に行う。</li>
+          <li><strong>最大伸び時の条件</strong>：相対速度 $= 0$ → 全物体が重心速度で動く</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

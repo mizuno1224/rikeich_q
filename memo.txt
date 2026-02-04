@@ -324,7 +324,7 @@ git stash pop
 
 # 4. 競合があれば手動で解決後、コミット
 git add .
-git commit -m "競合を解決"
+git commit -m "修正"
 git push origin main
 ```
 

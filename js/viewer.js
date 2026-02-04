@@ -363,33 +363,173 @@ function onFullscreenChange() {
 }
 
 function renderExplanation(container, html) {
-  // 1. HTML挿入
+  // 1. HTML挿入（直接innerHTMLで高速化、DocumentFragmentは不要）
   container.innerHTML = html;
-  container.querySelectorAll("img").forEach((img) => {
-    if (!img.hasAttribute("loading")) img.setAttribute("loading", "lazy");
-  });
-
-  // 2. MathJaxのレンダリング
-  if (window.MathJax) {
-    if (MathJax.typesetPromise) {
-      MathJax.typesetPromise([container]).catch((e) => console.log(e));
-    } else if (MathJax.Hub) {
-      MathJax.Hub.Queue(["Typeset", MathJax.Hub, container]);
+  
+  // 画像の遅延読み込み（requestIdleCallbackで遅延）
+  var scheduleImg = window.requestIdleCallback || function(cb) {
+    return setTimeout(cb, 50);
+  };
+  scheduleImg(function() {
+    var images = container.querySelectorAll("img");
+    for (var i = 0; i < images.length; i++) {
+      if (!images[i].hasAttribute("loading")) {
+        images[i].setAttribute("loading", "lazy");
+      }
     }
+  }, { timeout: 200 });
+
+  // 2. MathJaxのチャンク処理（MathJax読み込み完了後に処理）
+  var mathChunks = [];
+  var cards = container.querySelectorAll('.card');
+  for (var i = 0; i < cards.length; i++) {
+    mathChunks.push(cards[i]);
+  }
+  
+  var processMath = function(card) {
+    if (!window.MathJax) return;
+    if (MathJax.typesetPromise) {
+      MathJax.typesetPromise([card]).catch(function(e) {
+        console.log(e);
+      });
+    } else if (MathJax.Hub) {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub, card]);
+    }
+  };
+  
+  var mathObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var card = entry.target;
+        mathObserver.unobserve(card);
+        
+        // MathJaxが読み込まれるまで待機
+        var checkAndProcess = function() {
+          if (window.MathJax && (MathJax.typesetPromise || MathJax.Hub)) {
+            var schedule = window.requestIdleCallback || function(cb) {
+              return setTimeout(cb, 200);
+            };
+            schedule(function() {
+              processMath(card);
+            }, { timeout: 500 });
+          } else {
+            setTimeout(checkAndProcess, 100);
+          }
+        };
+        checkAndProcess();
+      }
+    });
+  }, { rootMargin: "100px" });
+  
+  // MathJax読み込み完了時のコールバック
+  window.onMathJaxLoaded = function() {
+    // 最初に見える範囲のみ処理（大幅に遅延）
+    var schedule = window.requestIdleCallback || function(cb) {
+      return setTimeout(cb, 500);
+    };
+    schedule(function() {
+      if (mathChunks[0]) {
+        processMath(mathChunks[0]);
+      }
+    }, { timeout: 1000 });
+  };
+  
+  // 残りはObserverで監視
+  for (var i = 1; i < mathChunks.length; i++) {
+    mathObserver.observe(mathChunks[i]);
+  }
+  
+  // MathJaxが既に読み込まれている場合
+  if (window.MathJax && (MathJax.typesetPromise || MathJax.Hub)) {
+    window.onMathJaxLoaded();
   }
 
-  // 3. 埋め込みスクリプトの実行
-  executeInlineScripts(container);
+  // 3. 埋め込みスクリプトの実行（大幅に遅延、見える範囲のみ）
+  var scriptObserver = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        var scripts = entry.target.querySelectorAll("script:not([data-executed])");
+        var schedule = window.requestIdleCallback || function(cb) {
+          return setTimeout(cb, 200);
+        };
+        schedule(function() {
+          for (var i = 0; i < scripts.length; i++) {
+            var oldScript = scripts[i];
+            oldScript.setAttribute("data-executed", "true");
+            var newScript = document.createElement("script");
+            var attrs = oldScript.attributes;
+            for (var j = 0; j < attrs.length; j++) {
+              if (attrs[j].name !== "data-executed") {
+                newScript.setAttribute(attrs[j].name, attrs[j].value);
+              }
+            }
+            newScript.textContent = oldScript.textContent;
+            oldScript.parentNode.replaceChild(newScript, oldScript);
+          }
+        }, { timeout: 500 });
+        scriptObserver.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: "200px" });
+  
+  // 最初に見える範囲のスクリプトも遅延実行
+  var scheduleFirst = window.requestIdleCallback || function(cb) {
+    return setTimeout(cb, 300);
+  };
+  scheduleFirst(function() {
+    var visibleScripts = container.querySelectorAll("script:not([data-lazy-init]):not([data-executed])");
+    for (var i = 0; i < visibleScripts.length; i++) {
+      var oldScript = visibleScripts[i];
+      oldScript.setAttribute("data-executed", "true");
+      var newScript = document.createElement("script");
+      var attrs = oldScript.attributes;
+      for (var j = 0; j < attrs.length; j++) {
+        if (attrs[j].name !== "data-executed") {
+          newScript.setAttribute(attrs[j].name, attrs[j].value);
+        }
+      }
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    }
+  }, { timeout: 500 });
+  
+  // 遅延初期化が必要なスクリプトはObserverで監視
+  var lazyScripts = container.querySelectorAll("[data-lazy-init]");
+  for (var i = 0; i < lazyScripts.length; i++) {
+    scriptObserver.observe(lazyScripts[i]);
+  }
 
-  // 4. リアクション機能の注入（★追加）
-  setupCardReactions(container);
+  // 4. リアクション機能の注入（大幅に遅延実行、スクロール時のみ）
+  var reactionsScheduled = false;
+  var scheduleReactions = function() {
+    if (reactionsScheduled) return;
+    reactionsScheduled = true;
+    var schedule = window.requestIdleCallback || function(cb) {
+      return setTimeout(cb, 1000);
+    };
+    schedule(function() {
+      setupCardReactions(container);
+    }, { timeout: 2000 });
+  };
+  
+  // スクロール時または一定時間後に実行
+  var scrollHandler = function() {
+    scheduleReactions();
+    window.removeEventListener('scroll', scrollHandler);
+  };
+  window.addEventListener('scroll', scrollHandler, { once: true, passive: true });
+  setTimeout(scheduleReactions, 3000);
 
   // 5. Observer更新 (目次等の追従用)
-  if (window.updateObserver) setTimeout(window.updateObserver, 100);
+  if (window.updateObserver) {
+    setTimeout(window.updateObserver, 100);
+  }
 
   // 6. ポインターキャンバスを解説の高さに合わせてリサイズ（スクロール連動用）
   if (pointerInstance && typeof pointerInstance.resize === "function") {
-    requestAnimationFrame(() => pointerInstance.resize());
+    requestAnimationFrame(function() {
+      pointerInstance.resize();
+    });
   }
 }
 
@@ -435,17 +575,7 @@ function updateBookmarkButton(path) {
   btn.setAttribute("aria-label", isBookmarked ? "ブックマークを解除" : "ブックマークに追加");
 }
 
-function executeInlineScripts(element) {
-  const scripts = element.querySelectorAll("script");
-  scripts.forEach((oldScript) => {
-    const newScript = document.createElement("script");
-    Array.from(oldScript.attributes).forEach((attr) =>
-      newScript.setAttribute(attr.name, attr.value),
-    );
-    newScript.textContent = oldScript.textContent;
-    oldScript.parentNode.replaceChild(newScript, oldScript);
-  });
-}
+// executeInlineScriptsはrenderExplanation内で直接処理するため削除
 
 /**
  * 各カード(.card)にリアクションボタンとメモ欄を追加し、

@@ -24,7 +24,8 @@
     src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
 
   <script>
-    window.MathJax = {
+    // MathJaxの設定は遅延読み込み時に設定
+    window.MathJaxConfig = {
       tex: {
         inlineMath: [
           ["$", "$"],
@@ -42,8 +43,32 @@
         fontCache: "global",
       },
     };
+    
+    // MathJaxの遅延読み込み
+    function loadMathJax() {
+      if (window.MathJax) return;
+      window.MathJax = window.MathJaxConfig;
+      var script = document.createElement('script');
+      script.id = 'MathJax-script';
+      script.async = true;
+      script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.onload = function() {
+        if (window.onMathJaxLoaded) window.onMathJaxLoaded();
+      };
+      document.head.appendChild(script);
+    }
+    
+    // スクロール時または一定時間後にMathJaxを読み込み
+    var mathJaxLoaded = false;
+    function tryLoadMathJax() {
+      if (mathJaxLoaded) return;
+      mathJaxLoaded = true;
+      setTimeout(loadMathJax, 500);
+    }
+    
+    window.addEventListener('scroll', tryLoadMathJax, { once: true, passive: true });
+    setTimeout(tryLoadMathJax, 2000);
   </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 
 <body>

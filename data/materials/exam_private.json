@@ -25,6 +25,18 @@
       "folderName": "tokyo_rika",
       "fields": [
         {
+          "fieldName": "2023年度",
+          "folderId": "2023",
+          "problems": [
+            {
+              "id": "2023_kou_1",
+              "title": "工学部 大問1",
+              "desc": "台車と小物体の運動",
+              "explanationPath": "data/explanations/exam_private/tokyo_rika/2023/2023_kou_1.html"
+            }
+          ]
+        },
+        {
           "fieldName": "2025年度",
           "folderId": "2025",
           "problems": [
