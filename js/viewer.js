@@ -123,6 +123,65 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // --- QRコード表示（ブックマークの左・押すと拡大表示） ---
+  const qrTrigger = document.getElementById("qr-trigger");
+  const qrModal = document.getElementById("qr-modal");
+  const qrModalBackdrop = qrModal && qrModal.querySelector(".qr-modal-backdrop");
+  const qrModalClose = qrModal && qrModal.querySelector(".qr-modal-close");
+  const qrModalWrap = document.getElementById("qr-modal-canvas-wrap");
+  const qrModalUrl = document.getElementById("qr-modal-url");
+
+  function openQRModal() {
+    if (!qrModal || !qrModalWrap) return;
+    const url = window.location.href;
+    qrModalWrap.innerHTML = "";
+    let shown = false;
+    if (typeof QRCode !== "undefined") {
+      try {
+        new QRCode(qrModalWrap, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+        });
+        shown = qrModalWrap.querySelector("canvas") || qrModalWrap.querySelector("table");
+      } catch (e) {}
+    }
+    if (!shown) {
+      const img = document.createElement("img");
+      img.alt = "QRコード";
+      img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
+      img.width = 200;
+      img.height = 200;
+      qrModalWrap.appendChild(img);
+    }
+    if (qrModalUrl) qrModalUrl.textContent = url;
+    qrModal.classList.add("is-open");
+    qrModal.setAttribute("aria-hidden", "false");
+  }
+
+  function closeQRModal() {
+    if (!qrModal) return;
+    qrModal.classList.remove("is-open");
+    qrModal.setAttribute("aria-hidden", "true");
+  }
+
+  if (qrTrigger) {
+    qrTrigger.addEventListener("click", openQRModal);
+  }
+  if (qrModalBackdrop) {
+    qrModalBackdrop.addEventListener("click", closeQRModal);
+  }
+  if (qrModalClose) {
+    qrModalClose.addEventListener("click", closeQRModal);
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && qrModal && qrModal.classList.contains("is-open")) {
+      closeQRModal();
+    }
+  });
+
   // --- メイン読み込み処理 ---
   if (directPath) {
     loadExplanationByPath(directPath);

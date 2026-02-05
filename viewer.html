@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
   <title>Physics Viewer</title>
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
@@ -22,6 +22,7 @@
 
   <script type="text/javascript" charset="UTF-8"
     src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
     // MathJaxの設定は遅延読み込み時に設定
@@ -79,6 +80,7 @@
       <h1 id="prob-title-header">読み込み中...</h1>
     </div>
     <div class="header-actions" role="group" aria-label="操作">
+      <button type="button" id="qr-trigger" class="btn-sm qr-trigger" aria-label="このページのQRコードを表示" title="QRコードでアクセス">▣ QR</button>
       <button type="button" id="btn-bookmark" class="btn-sm btn-bookmark" aria-label="ブックマークに追加" title="ブックマークに追加">☆ ブックマーク</button>
       <button type="button" id="btn-toggle-pointer" class="btn-sm" aria-label="操作モード切替">👆 操作モード</button>
       <!-- 音声機能は一時的に非表示 -->
@@ -92,6 +94,17 @@
 
       <div id="text-target" class="explanation-area" role="article" aria-label="解説"></div>
       <canvas id="pointer-canvas" class="pointer-canvas-inline" aria-hidden="true"></canvas>
+    </div>
+  </div>
+
+  <!-- QRコード拡大表示モーダル -->
+  <div id="qr-modal" class="qr-modal" role="dialog" aria-modal="true" aria-label="QRコード" aria-hidden="true">
+    <div class="qr-modal-backdrop"></div>
+    <div class="qr-modal-content">
+      <button type="button" class="qr-modal-close" aria-label="閉じる">×</button>
+      <p class="qr-modal-title">このページへアクセスするQRコード</p>
+      <div id="qr-modal-canvas-wrap" class="qr-modal-canvas-wrap"></div>
+      <p class="qr-modal-url" id="qr-modal-url"></p>
     </div>
   </div>
 
