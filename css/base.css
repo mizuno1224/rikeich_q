@@ -169,3 +169,45 @@ input:focus-visible {
 .skip-link:focus {
   top: 12px;
 }
+
+/* --- サイトフッター（全ページ共通） --- */
+.site-footer {
+  margin-top: auto;
+  padding: 20px 16px;
+  background: var(--card-bg);
+  border-top: 1px solid var(--card-border);
+  text-align: center;
+}
+.site-footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  font-size: 0.9rem;
+  color: var(--col-text-sub);
+}
+.site-footer-inner a {
+  color: var(--col-primary);
+  font-weight: 500;
+}
+.site-footer-inner a:hover {
+  text-decoration: underline;
+}
+.site-footer-sep {
+  margin: 0 10px;
+  color: var(--card-border);
+}
+
+/* --- 広告枠（中身があるときのみ表示。AdSense 等を注入すると表示される） --- */
+.ad-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 90px;
+  background: #f1f5f9;
+  border-radius: 12px;
+  margin: 16px 0;
+}
+.ad-slot:empty {
+  display: none;
+}
+.ad-slot--top { margin-top: 24px; }
+.ad-slot--sidebar { margin: 16px 0; }

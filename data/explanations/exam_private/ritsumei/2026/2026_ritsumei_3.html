@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年立命館大学 大問3：糸でつながれた小球とおもり</title>
+  <link rel="stylesheet" href="../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問3：糸でつながれた小球とおもりの運動</h2>
+
+      <div class="card">
+        <h3>解法の全体像</h3>
+        <p>
+          水平板上を等速円運動する小球と，下に吊り下げられたおもりが<strong>一本の糸でつながれた系</strong>を扱う問題です。
+          糸の伸び・質量を無視し，<span class="highlight">円運動の条件</span>と<span class="highlight">おもり側の運動方程式</span>を組み合わせることで，
+          系全体の運動を記述します。
+        </p>
+        <ul>
+          <li><strong>[1]</strong> 円運動している小球の力学とエネルギー変化から，<span class="highlight">保存される量</span>（\(r^2\omega\) が一定）を導く。</li>
+          <li><strong>[2]</strong> おもりのつり合いと，微小変位後の運動を考え，<span class="highlight">単振動としての近似</span>を行う。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>[1] 円運動している小球の解析</h3>
+        <h4>(あ)〜(イ)：円運動とエネルギー</h4>
+        <p>
+          状態Aでは，小球は半径 \(r\)，角速度 \(\omega\) で等速円運動しています。
+          したがって速さは
+          \[
+            v = r\omega
+          \]
+          となり，運動エネルギーは
+          \[
+            K = \frac12 m v^2 = \frac12 m r^2\omega^2
+          \]
+          です。
+        </p>
+        <p>
+          小球に働く向心力は糸の張力 \(T\) であり，
+          \[
+            T = mr\omega^2
+          \]
+          と書けます。
+        </p>
+        <p>
+          おもりをわずかに下げて小球の半径が \(r-\Delta r\)，角速度が \(\omega+\Delta\omega\) になった後の運動エネルギーは
+          \[
+            K' = \frac12 m(r-\Delta r)^2(\omega+\Delta\omega)^2
+          \]
+          となります。
+        </p>
+        <p>
+          微小量 \(\Delta r,\,\Delta\omega\) について 2次以上の項を無視すると，
+          \[
+            \Delta E = K' - K
+            \simeq m r^2\omega^2\!\left(\frac{\Delta\omega}{\omega} - 2\frac{\Delta r}{r}\right)
+          \]
+          を得ます。
+        </p>
+        <p>
+          一方，この過程で糸の張力はほぼ一定で \(T\simeq mr\omega^2\) とみなせるので，
+          おもりが \(\Delta r\) だけ移動する間に糸が小球にした仕事は
+          \[
+            W \simeq T\Delta r \simeq mr\omega^2\,\Delta r
+          \]
+          です。エネルギー保存より \(\Delta E = W\) となるので，
+          \[
+            \frac{\Delta\omega}{\omega} - 2\frac{\Delta r}{r} = 0
+          \]
+          すなわち
+          \[
+            r^2\omega = \text{一定}
+          \]
+          が成り立つことがわかります。これが後半で重要な関係式になります。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>[2] おもり側の運動と単振動</h3>
+        <h4>つり合い位置と微小振動</h4>
+        <p>
+          円運動の中心を原点 \(O\)，鉛直下向きを \(x\) 軸の正方向とします。
+          つり合い状態Aではおもりの座標が \(x=L\) で静止しており，
+          おもりにはたらく力は重力 \(Mg\) と糸の張力 \(T\) だけです。
+        </p>
+        <p>
+          小球側の円運動条件 \(T = mr\omega^2\) と，
+          おもり側のつり合い条件
+          \[
+            Ma = 0 = -T + Mg
+          \]
+          から
+          \[
+            Mg = mr\omega^2
+          \]
+          が得られます。よってつり合い位置での円軌道の半径は
+          \[
+            r = \frac{M g}{m \omega^2}
+          \]
+          です。
+        </p>
+        <p>
+          ここからおもりを下向きにわずか \(\Delta r\) だけずらして手を離すと，
+          糸の長さ一定より円運動の半径は \(r-\Delta r\)，角速度は \(\omega+\Delta\omega\) となります。
+          前半で示した
+          \[
+            \frac{\Delta\omega}{\omega} - 2\frac{\Delta r}{r} = 0
+          \]
+          を用いると，\(\Delta\omega = 2\omega\,\Delta r/r\) が成り，
+          これを遠心力
+          \[
+            F_{\text{c}} = m(r-\Delta r)(\omega+\Delta\omega)^2
+          \]
+          に代入して一次まで近似すると，
+          \[
+            F_{\text{c}} \simeq Mrg + 3m\omega^2\Delta r
+          \]
+          となります。
+        </p>
+        <p>
+          おもりに働く鉛直下向きの合力は
+          \[
+            F = Mg - F_{\text{c}}
+            \simeq -3m\omega^2\Delta r
+          \]
+          であり，系全体の質量は \(M+m\) なので
+          \[
+            (M+m)a = F
+            = -3m\omega^2\Delta r
+          \]
+          すなわち
+          \[
+            a = -\frac{3m\omega^2}{M+m}\,\Delta r
+          \]
+          となります。
+        </p>
+        <p>
+          これは単振動の加速度 \(a=-\Omega^2\Delta r\) の形と同じであり，
+          \[
+            \Omega = \sqrt{\frac{3m}{M+m}}\,\omega
+          \]
+          とおけるので，振動の周期は
+          \[
+            T = \frac{2\pi}{\Omega}
+              = \frac{2\pi}{\omega}\sqrt{\frac{M+m}{3m}}
+          \]
+          です。
+        </p>
+        <p>
+          変位の基準をつり合い位置 \(x=L\) にとると，
+          初期状態では \(x=L+d\)，速度0なので振幅 \(d\) の単振動です。
+          単振動では，<strong>変位が0を通過するときに速さが最大</strong>となるので，
+          おもりの位置が
+          \[
+            x = L
+          \]
+          を通過するときに速さは最大となり，
+          その最大速さは
+          \[
+            v_{\max}
+              = \Omega d
+              = \omega d\sqrt{\frac{3m}{M+m}}
+          \]
+          となります。
+        </p>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>この問題で押さえたいポイント</h3>
+        <ul>
+          <li><strong>円運動の条件 \(T = mr\omega^2\)</strong> と，おもり側のつり合い \(Mg = T\) を組み合わせて系全体を結びつける。</li>
+          <li><strong>微小変化の近似</strong>：\((1+\alpha)^2 \simeq 1+2\alpha\) を用いて，\((r-\Delta r)^2(\omega+\Delta\omega)^2\) を一次の項まで展開する。</li>
+          <li><strong>保存される量 \(r^2\omega\)</strong> を見抜くことで，後半の計算が大きく簡単になる。</li>
+          <li><strong>単振動の形式 \(a=-\Omega^2x\)</strong> に持ち込んで，周期や最大速さを機械的に求められるようにしておく。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
+

@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 生徒の反応・メモ用。閲覧者からの書き込みと管理画面からの読み取りのみ許可
+    match /student_logs/{docId} {
+      allow read, write: if true;
+    }
+    // 上記以外のコレクションは拒否（将来の誤公開を防ぐ）
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

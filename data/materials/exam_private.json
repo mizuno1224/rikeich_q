@@ -49,6 +49,32 @@
           ]
         }
       ]
+    },
+    {
+      "subjectName": "立命館大学",
+      "folderName": "ritsumei",
+      "fields": [
+        {
+          "fieldName": "2026年度",
+          "folderId": "2026",
+          "problems": [
+            {
+              "id": "2026_ritsumei_2",
+              "title": "2026年 立命館大学 大問2",
+              "desc": "ドップラー効果と移動する音源",
+              "explanationPath": "data/explanations/exam_private/ritsumei/2026/2026_ritsumei_2.html",
+              "layout": "article"
+            },
+            {
+              "id": "2026_ritsumei_3",
+              "title": "2026年 立命館大学 大問3",
+              "desc": "糸でつながれた小球とおもりの運動",
+              "explanationPath": "data/explanations/exam_private/ritsumei/2026/2026_ritsumei_3.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
