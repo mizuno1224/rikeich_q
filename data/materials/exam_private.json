@@ -59,6 +59,13 @@
           "folderId": "2026",
           "problems": [
             {
+              "id": "2026_ritsumei_1",
+              "title": "2026年 立命館大学 大問1",
+              "desc": "コンデンサーとコイル・抵抗の回路",
+              "explanationPath": "data/explanations/exam_private/ritsumei/2026/2026_ritsumei_1.html",
+              "layout": "article"
+            },
+            {
               "id": "2026_ritsumei_2",
               "title": "2026年 立命館大学 大問2",
               "desc": "ドップラー効果と移動する音源",

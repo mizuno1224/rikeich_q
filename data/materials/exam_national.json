@@ -72,6 +72,24 @@
           ]
         }
       ]
+    },
+    {
+      "subjectName": "筑波大学",
+      "folderName": "tsukuba",
+      "fields": [
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            {
+              "id": "2024_3",
+              "title": "大問3",
+              "desc": "薄膜干渉（くさび形空気層）",
+              "explanationPath": "data/explanations/exam_national/tsukuba/2024/2024_3.html"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

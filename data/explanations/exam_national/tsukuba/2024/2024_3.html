@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2024年筑波大学 大問3：薄膜干渉（くさび形空気層）</title>
+  <link rel="stylesheet" href="../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問3：薄膜干渉（くさび形空気層）</h2>
+
+      <div class="card">
+        <h3>実験の設定</h3>
+        <p>
+          図1・図2のように、<span class="highlight">ガラス板Aを水平に置き、その左端にガラス板Bを接して傾ける</span>。ガラス板Bの左下の頂点を原点 O(0,0)、右向きに $x$ 軸、鉛直下向きに $y$ 軸をとる。
+        </p>
+        <p>
+          $x$ 軸方向に距離 $L$ の位置に厚さ $D$ の薄いフィルムを挟み、O 付近で厚さ 0、$x=L$ で厚さ $D$ の<strong>くさび形のすきま（空気層）</strong>ができる。真上から単色光を鉛直下向きに入射し、真上に反射した光をスクリーンで観測する。ガラス板の屈折率は $n_G (>1)$、空気の屈折率は 1 とする。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>問1：光路差 $p$ を $x$，$D$，$L$ で表せ</h3>
+        <p>
+          <strong>考え方</strong><br>
+          位置 $x$ での空気層の厚さは、くさびの相似から
+          $$ d(x) = \frac{D}{L}\,x $$
+          である。ガラス板Bの下面で反射する光と、ガラス板Aの上面で反射する光の経路差は、空気層を往復する分で $2d$。空気中なので光路差はそのまま $2d$。
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ p = \frac{2D}{L}\,x $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問2：$m$ 番目の明線の位置 $x_m$ を $D$，$L$，$\lambda$，$m$ で表せ</h3>
+        <p>
+          <strong>考え方</strong><br>
+          ガラス板Bの下面（空気→ガラス）では反射により位相が $\pi$ ずれ、ガラス板Aの上面（空気→ガラス）でも位相が $\pi$ ずれるが、<strong>一方だけがガラス→空気の反射</strong>とみなすと、実質的に光路差に $\lambda/2$ のずれが生じる。したがって<strong>明線</strong>の条件は $2d + \dfrac{\lambda}{2} = m\lambda$、すなわち
+          $$ 2d = \left(m - \frac{1}{2}\right)\lambda \quad (m=1,2,3,\cdots) $$
+          $d = \dfrac{D}{L}x$ より
+          $$ 2\,\frac{D}{L}\,x_m = \left(m - \frac{1}{2}\right)\lambda \quad \Rightarrow \quad x_m = \frac{\left(m - \frac{1}{2}\right)\lambda L}{2D} $$
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ x_m = \frac{\left(m - \dfrac{1}{2}\right)L\lambda}{2D} $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問3：明線の間隔 $\Delta x$ を $D$，$L$，$\lambda$ で表せ</h3>
+        <p>
+          <strong>考え方</strong><br>
+          隣り合う明線は $m$ が 1 ずれるので（問2の $x_m$ を用いて）
+          $$ \Delta x = x_{m+1} - x_m = \frac{\left((m+1) - \frac{1}{2}\right)L\lambda}{2D} - \frac{\left(m - \frac{1}{2}\right)L\lambda}{2D} = \frac{L\lambda}{2D} $$
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ \Delta x = \frac{L\lambda}{2D} $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問4：ガラス板Aを $y$ 軸正方向に平行移動した後の $m$ 番目の明線の位置 $x'_m$</h3>
+        <p>
+          <strong>設定</strong><br>
+          ガラス板Bとフィルムは固定。ガラス板Aだけを $y$ 軸の正の方向（下向き）に平行移動する。ガラス板Aの左上の頂点を点Pとし、移動後のPの座標を $(0,\,y)$ とする。
+        </p>
+        <p>
+          <strong>考え方</strong><br>
+          移動後、位置 $x$ での<strong>空気層の厚さ</strong>は $d'(x) = \dfrac{D}{L}\,x - y$ である。明線の条件は問2と同様 $2d' = \left(m - \dfrac{1}{2}\right)\lambda$ なので、
+          $$ 2\left(\frac{D}{L}\,x'_m - y\right) = \left(m - \frac{1}{2}\right)\lambda $$
+          これを解いて
+          $$ x'_m = \frac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2y\right\} $$
+          $y$ が増える（Aを下に動かす）と $\left(m - \dfrac{1}{2}\right)\lambda - 2y$ は小さくなるので、$x'_m$ は小さくなり、<strong>明線は $x$ 軸の負の方向に移動する</strong>。
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ x'_m = \frac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2y\right\} $$
+          <br>（問題の条件 $0 < x'_m < L$ を満たす $m$ を考えている。）
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問5：明線が移動した方向（$x$ 軸の正・負）</h3>
+        <p>
+          <strong>考え方</strong><br>
+          Aを下に動かすと、同じ $x$ では空気層の厚さ $d' = \dfrac{D}{L}x - y$ は $y$ の増加で小さくなる。同じ $m$ 番目の明線（同じ $d' = \dfrac{\left(m - \frac{1}{2}\right)\lambda}{2}$）を見るには、$d'$ を一定に保つために $x$ を<strong>小さく</strong>する必要がある。つまり、<strong>明線は $x$ 軸の負の方向に移動する</strong>。
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          負の方向
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問6：点Pの座標 $(0,\,Y)$ のとき、$m$ 番目の明線が水平方向にちょうど4本ずれたときの $Y$</h3>
+        <p>
+          <strong>考え方</strong><br>
+          問5より、Aを下に動かすと明線は $x$ 軸の負の方向にずれる。したがって「4本ずれた」は、<strong>移動後の $m$ 番目の明線の位置</strong>が、<strong>移動前の $(m-4)$ 番目の明線の位置</strong>と一致した、と解釈する。
+        </p>
+        <p>
+          移動前：$x_{m-4} = \dfrac{\left(m - 4 - \frac{1}{2}\right)L\lambda}{2D} = \dfrac{\left(m - \frac{9}{2}\right)L\lambda}{2D}$<br>
+          移動後：$x'_m = \dfrac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2Y\right\}$
+        </p>
+        <p>
+          これらが等しいので
+          $$ \frac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2Y\right\} = \frac{\left(m - \frac{9}{2}\right)L\lambda}{2D} $$
+          $$ \left(m - \frac{1}{2}\right)\lambda - 2Y = \left(m - \frac{9}{2}\right)\lambda \quad \Rightarrow \quad -2Y = -4\lambda \quad \Rightarrow \quad Y = 2\lambda $$
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ Y = 2\lambda $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問7：液体で満たしたときの明線の間隔 $\Delta X$（波長 $\lambda'$、液体の屈折率 $n$）</h3>
+        <p>
+          <strong>設定</strong><br>
+          ガラス板A・Bとフィルムで囲まれたくさび形の空間を屈折率 $n$ の液体で満たし、波長 $\lambda'$（$>\lambda$）の単色光を入射。液体の屈折率 $n$ は波長に依存しないとする。
+        </p>
+        <p>
+          <strong>考え方</strong><br>
+          空気層の代わりに液体が入るので、<strong>光路差</strong>は厚さ $d$ に対して $2nd$（往復で $2d$ の幾何学的距離を、屈折率 $n$ の媒質中で進む）。真空中の波長 $\lambda'$ で考えると、明線の条件は問2と同様の扱いで $2nd = \left(m - \dfrac{1}{2}\right)\lambda'$ となり、間隔は
+          $$ \Delta X = x_{m+1} - x_m = \frac{L\lambda'}{2nD} $$
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ \Delta X = \frac{L\lambda'}{2nD} $$
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>問8：$\Delta X = \Delta x$ のときの液体の屈折率 $n$</h3>
+        <p>
+          <strong>考え方</strong><br>
+          問3より $\Delta x = \dfrac{L\lambda}{2D}$、問7より $\Delta X = \dfrac{L\lambda'}{2nD}$。$\Delta X = \Delta x$ より
+          $$ \frac{L\lambda'}{2nD} = \frac{L\lambda}{2D} \quad \Rightarrow \quad \frac{\lambda'}{n} = \lambda \quad \Rightarrow \quad n = \frac{\lambda'}{\lambda} $$
+        </p>
+        <div class="box-note">
+          <strong>答</strong><br>
+          $$ n = \frac{\lambda'}{\lambda} $$
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解法のポイントまとめ</h3>
+        <ul>
+          <li><strong>くさび形の厚さ</strong>：$d = \dfrac{D}{L}x$ で $x$ に比例する。</li>
+          <li><strong>明線条件</strong>：反射による位相のずれを考慮すると $2d = \left(m - \dfrac{1}{2}\right)\lambda$、よって $x_m = \dfrac{\left(m - \frac{1}{2}\right)L\lambda}{2D}$。</li>
+          <li><strong>板Aを下に動かすと</strong>：厚さが減るので、同じ $m$ の明線は左（$x$ 軸の負の方向）へ移動。</li>
+          <li><strong>液体を入れると</strong>：光路差は $2nd$ から間隔 $\Delta X = \dfrac{L\lambda'}{2nD}$。$\Delta X = \Delta x$ のとき $n = \dfrac{\lambda'}{\lambda}$。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>答一覧</h3>
+        <table class="answer-table">
+          <tr><th>問</th><th>答</th></tr>
+          <tr><td>問1</td><td>$p = \dfrac{2Dx}{L}$</td></tr>
+          <tr><td>問2</td><td>$x_m = \dfrac{\left(m - \frac{1}{2}\right)L\lambda}{2D}$</td></tr>
+          <tr><td>問3</td><td>$\Delta x = \dfrac{L\lambda}{2D}$</td></tr>
+          <tr><td>問4</td><td>$x'_m = \dfrac{L}{2D}\left\{\left(m - \dfrac{1}{2}\right)\lambda - 2y\right\}$</td></tr>
+          <tr><td>問5</td><td>負の方向</td></tr>
+          <tr><td>問6</td><td>$Y = 2\lambda$</td></tr>
+          <tr><td>問7</td><td>$\Delta X = \dfrac{L\lambda'}{2nD}$</td></tr>
+          <tr><td>問8</td><td>$n = \dfrac{\lambda'}{\lambda}$</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
