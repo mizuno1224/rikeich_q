@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年同志社大学 大問2：磁場中の電子の運動とベータトロン</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問2：磁場中の電子の運動とベータトロン</h2>
+
+      <div class="card">
+        <h3>解法の全体像</h3>
+        <p>
+          一様な磁場中の電子の円運動、コイルの電磁誘導、そして<strong>ベータトロン</strong>の原理に至る流れです。
+          図1→図2→図3の順で、磁束密度の時間変化と誘導電場・運動エネルギー増加を扱います。
+        </p>
+        <ul>
+          <li><strong>[I] 図1</strong>：ローレンツ力の向き、(ア)円運動の半径、(イ)周期。</li>
+          <li><strong>[II] 図2</strong>：ファラデーの電磁誘導の法則から誘導起電力(ウ)。ベータトロンにおける1回転あたりの運動エネルギー増加(エ)。</li>
+          <li><strong>[III] 図3</strong>：鉄心を挿入したときの磁束の倍率(オ)、および半径を一定に保つためのαの値(カ)。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>[I] 図1：磁場中の電子の等速円運動</h3>
+        <p>
+          真空中で、z軸正の向きに磁束密度 \(B\) [T] の一様な磁場がかかっています。
+          電気量 \(-e\)（\(e&gt;0\)）、質量 \(m\) [kg] の電子が、y軸正の向きに速さ \(v_0\) [m/s] でx軸を通過します。
+        </p>
+
+        <h4>(a) 磁場から受ける力の向き</h4>
+        <p>
+          <strong>フレミングの左手の法則</strong>を使います。左手の親指＝力、人差し指＝磁場の向き、中指＝電流の向きです。
+        </p>
+        <p>
+          磁場 \(\vec{B}\) はz軸正の向きなので、人差し指をz軸正に向けます。
+          電子は負の電荷なので、<strong>電流の向きは電子の速度の向きと逆向き</strong>です。電子がy軸正の向きに動くので、電流は<strong>y軸負</strong>の向きです。したがって中指をy軸負に向けます。
+        </p>
+        <p>
+          このとき、左手の親指が指す向きが、磁場から電流（ここでは電子）が受ける力の向きになります。人差し指をz軸正、中指をy軸負にすると、親指は<strong>x軸負</strong>の向きを指します。
+        </p>
+        <div class="box-note">
+          <strong>答え：(a)</strong><br>
+          (2) x軸負
+        </div>
+
+        <h4>(ア) 円運動の半径</h4>
+        <p>
+          磁場から受ける力の大きさは \(F = e v_0 B\) で、これが向心力となります。
+          \(m\frac{v_0^2}{r} = e v_0 B\) より、
+          \[
+            r = \frac{m v_0}{e B}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(ア)</strong><br>
+          \[ \frac{m v_0}{e B} \]
+        </div>
+
+        <h4>(イ) 円運動の周期</h4>
+        <p>
+          等速円運動の周期は \(T = \frac{2\pi r}{v_0}\) です。(ア)の \(r\) を代入すると、
+          \[
+            T = \frac{2\pi}{v_0} \cdot \frac{m v_0}{e B} = \frac{2\pi m}{e B}
+          \]
+          \[
+            \textbf{(イ)}\quad \frac{2\pi m}{e B}
+          \]
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>[II] 図2：電磁誘導とベータトロン</h3>
+        <p>
+          太さが無視できる1巻きの円形コイルの半径を、図1の円運動の半径(ア)に等しい \(\frac{mv_0}{eB}\) とします。
+          (イ)と同じ長さの時間の間、コイルを貫く磁束密度の大きさが \(B\) から \(B + \Delta B\)（\(\Delta B &gt; 0\)）に一定の割合で一様に増加するとします。
+        </p>
+
+        <h4>(ウ) 誘導起電力の大きさ</h4>
+        <p>
+          ファラデーの電磁誘導の法則より、誘導起電力の大きさは
+          \[
+            |\mathcal{E}| = \left| \frac{d\Phi}{dt} \right|
+          \]
+          です。コイルの面積を \(S = \pi r^2 = \pi \left( \frac{mv_0}{eB} \right)^2\) とすると、
+          磁束の変化率は \(\frac{d\Phi}{dt} = \frac{\Delta B \cdot S}{T}\)（\(T\) は(イ)の周期）です。
+        </p>
+        <p>
+          \(T = \frac{2\pi m}{eB}\) なので、
+          \[
+            \mathcal{E} = \frac{\Delta B \cdot \pi \frac{m^2 v_0^2}{e^2 B^2}}{\frac{2\pi m}{eB}}
+            = \frac{\Delta B \cdot m^2 v_0^2}{e^2 B^2} \cdot \frac{eB}{2\pi m}
+            = \frac{m v_0^2 \Delta B}{2\pi e B} \cdot \pi             = \frac{m v_0^2 \Delta B}{2 e B}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(ウ)</strong><br>
+          \[ \frac{m v_0^2 \Delta B}{2 e B} \]
+        </div>
+
+        <h4>(エ) 1回転あたりの運動エネルギー増加量</h4>
+        <p>
+          磁束密度が円周上で \(B\) から \(B+\Delta B\) に一定の割合で増加するとき、円周に接線方向の誘導電場が生じます。
+          半径 \(r\) の円軌道を貫く磁束が時間 \(T\)（(イ)の周期）のあいだに \(\Delta\Phi = \pi r^2 \Delta B\) だけ増加するので、円周に沿った誘導起電力の大きさは \(\frac{\Delta\Phi}{T} = \frac{\pi r^2 \Delta B}{T}\) です。
+          誘導電場の強さ \(E\) は円周上で一定とみなせば、起電力は \(E \times 2\pi r\) に等しいので、
+          \[
+            E \cdot 2\pi r = \frac{\pi r^2 \Delta B}{T}
+            \quad \Rightarrow \quad
+            E = \frac{r \Delta B}{2T}
+          \]
+          となります。
+        </p>
+        <p>
+          電子（電気量 \(e\)）がこの誘導電場から受ける力の大きさは \(eE\) で、円周の接線方向に働きます。
+          電子が1回転（距離 \(2\pi r\)）する間にこの力がする仕事は
+          \[
+            W = eE \times 2\pi r = e \cdot \frac{r \Delta B}{2T} \cdot 2\pi r = \frac{e \pi r^2 \Delta B}{T}
+          \]
+          です。ここに \(r = \frac{mv_0}{eB}\)、\(T = \frac{2\pi m}{eB}\) を代入すると、
+          \[
+            W = \frac{e \cdot \pi \frac{m^2 v_0^2}{e^2 B^2} \cdot \Delta B}{\frac{2\pi m}{eB}}
+            = \frac{m v_0^2 \Delta B}{2B}
+          \]
+          となります。
+        </p>
+        <p>
+          問題文では \((\Delta B/B)^2\) の項は無視できるとしているので、1回転のあいだの磁束密度の変化 \(\Delta B\) は \(B\) に比べて小さく、電子の速さや軌道半径の変化も十分小さいとみなせます。          したがって、上で求めた誘導電場がする仕事 \(W\) が、そのまま運動エネルギーの増加量とみなせます。
+        </p>
+        <div class="box-note">
+          <strong>答え：(エ)</strong><br>
+          \[ \frac{m v_0^2 \Delta B}{2B} \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>[III] 図3：鉄心を挿入した場合</h3>
+        <p>
+          電子の円運動の半径を \(r_0\) [m] とし、その中心軸に半径 \(r_0/2\) の円柱状の鉄心を挿入します。
+          z軸正の向きに磁場を加えたとき、鉄心内（半径 \(r_0/2\) より内側）の磁束密度の大きさは、常に鉄心の外側の磁束密度の大きさの \(\alpha\) 倍（\(\alpha &gt; 1\)）であるとします。
+        </p>
+
+        <h4>(オ) 半径 \(r_0\) の円を貫く磁束の倍率</h4>
+        <p>
+          鉄心なしのとき、半径 \(r_0\) の円を貫く磁束は \(\Phi_0 = B \cdot \pi r_0^2\) です。
+        </p>
+        <p>
+          鉄心ありのとき：内側（\(r \leq r_0/2\)）の磁束密度は \(\alpha B\)、外側（\(r_0/2 &lt; r \leq r_0\)）は \(B\) です。
+          したがって、半径 \(r_0\) の円を貫く磁束は
+          \[
+            \Phi = \alpha B \cdot \pi\left(\frac{r_0}{2}\right)^2 + B \cdot \left( \pi r_0^2 - \pi\left(\frac{r_0}{2}\right)^2 \right)
+            = \frac{\alpha B \pi r_0^2}{4} + B \cdot \frac{3\pi r_0^2}{4}
+            = \pi r_0^2 B \cdot \frac{\alpha + 3}{4}
+          \]
+          鉄心なしの磁束 \(\Phi_0 = \pi r_0^2 B\) との比は
+          \[
+            \frac{\Phi}{\Phi_0} = \frac{\alpha + 3}{4}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(オ)</strong><br>
+          \[ \frac{\alpha + 3}{4} \]
+        </div>
+
+        <h4>(カ) ベータトロンで半径を一定に保つための \(\alpha\)</h4>
+        <p>
+          z軸正の向きに加える磁場の磁束密度の大きさを時間変化させ、電子が円周を1回転する間に、鉄心の外側の磁束密度が \(B\) から \(B+\Delta B\) に増加するようにします。
+          このとき、半径が一定に保たれるために「軌道の内側を貫く磁束の増加量」が満たす条件を、(ア)(イ)(エ)の結果から求め、その条件に(オ)の式をあてはめて \(\alpha\) を求めます。
+        </p>
+
+        <p>
+          <strong>［半径一定のとき、必要な運動エネルギー増加］</strong><br>
+          (ア)の結果 \(r = \frac{mv}{eB}\) は、半径 \(r\) が速さ \(v\) と磁束密度 \(B\) の比 \(v/B\) で決まることを示しています。つまり、同じ半径 \(r_0\) を保つには「\(v\) と \(B\) が同じ割合で増減する」必要があります。
+          いま \(B\) が \(B + \Delta B\) に増えたとすると、半径を \(r_0\) のままにするには速さを \(v\) から \(v + \Delta v\) に増やし、\(\frac{v+\Delta v}{B+\Delta B} = \frac{v}{B}\) が成り立つようにすればよいです。両辺の分母をはらうと \((v+\Delta v)B = v(B+\Delta B)\)、展開して \(vB + B\Delta v = vB + v\Delta B\) なので、\(B\Delta v = v\Delta B\)、すなわち \(\Delta v = \frac{v \Delta B}{B}\) が得られます。問題文では \((\Delta B/B)^2\) の項は無視するとあるので、\(\Delta B\) は \(B\) に比べて十分小さく、この1次近似で十分です。
+          したがって、1回転のあいだに電子が得るべき運動エネルギー増加量は
+          \[
+            \Delta K = \frac{1}{2}m(v+\Delta v)^2 - \frac{1}{2}mv^2 \approx mv\,\Delta v = \frac{m v^2 \Delta B}{B}
+          \]
+          です。
+        </p>
+        <p>
+          <strong>［誘導電場のする仕事：(エ)の内容を用いる］</strong><br>
+          (エ)では、軌道を貫く磁束が時間 \(T\)（(イ)の周期）のあいだに \(\Delta\Phi\) だけ増加するとき、誘導電場が電子に1回転でする仕事が \(W = e \cdot \frac{\Delta\Phi}{T}\) であることを、誘導電場の強さから導きました。ここで「軌道を貫く磁束」とは、電子の円軌道が囲む<strong>円の内側の面</strong>を貫く磁束のことで、ファラデーの法則によれば誘導起電力（単位電荷が閉曲線を1周するときの仕事）は、その閉曲線が囲む面を貫く磁束の時間変化率で決まります。(カ)では鉄心があり、軌道の内側の磁束の分布は(エ)の一様な場合と異なりますが、閉曲線は同じ「半径 \(r_0\) の円」なので、この円が囲む面を貫く磁束の増加量を \(\Delta\Phi_{\text{内}}\) と書けば、やはり \(W = e \cdot \frac{\Delta\Phi_{\text{内}}}{T}\) が成り立ちます。したがって、
+          \[
+            W = e \cdot \frac{\Delta\Phi_{\text{内}}}{T}
+          \]
+          です。半径が一定に保たれるには、この仕事が運動エネルギー増加 \(\Delta K = \frac{m v^2 \Delta B}{B}\) に等しければよいので、
+          \[
+            e \cdot \frac{\Delta\Phi_{\text{内}}}{T} = \frac{m v^2 \Delta B}{B}
+            \quad \Rightarrow \quad
+            \Delta\Phi_{\text{内}} = \frac{m v^2 \Delta B}{B} \cdot \frac{T}{e}
+          \]
+          (ア)の \(r_0 = \frac{mv}{eB}\) と(イ)の \(T = \frac{2\pi m}{eB}\) を代入すると、
+          \[
+            \Delta\Phi_{\text{内}} = \frac{m v^2 \Delta B}{B} \cdot \frac{2\pi m}{e^2 B}
+            = 2\pi \cdot \frac{m^2 v^2}{e^2 B^2} \cdot \Delta B = 2\pi r_0^2 \Delta B
+          \]
+          したがって、半径を一定に保つには、1回転のあいだに軌道の内側を貫く磁束が \(\Delta\Phi_{\text{内}} = 2\pi r_0^2 \Delta B\) だけ増加していればよいです。この条件を<strong>ベータトロン条件</strong>といいます。
+        </p>
+
+        <p>
+          <strong>［(オ)の結果を使う］</strong><br>
+          ベータトロン条件を満たす \(\alpha\) を求めます。(オ)より、半径 \(r_0\) の円を貫く磁束は鉄心ありのとき
+          \[
+            \Phi_{\text{内}} = \pi r_0^2 B \cdot \frac{\alpha + 3}{4}
+          \]
+          です。\(B\) が \(B + \Delta B\) に増加するとき（\(\alpha\) は一定）、この磁束の増加量は
+          \[
+            \Delta\Phi_{\text{内}} = \pi r_0^2 \cdot \frac{\alpha + 3}{4} \cdot \Delta B
+          \]
+          です。これが上で求めた「半径一定に必要な増加量」\(2\pi r_0^2 \Delta B\) に等しければよいので、
+          \[
+            \pi r_0^2 \cdot \frac{\alpha + 3}{4} \cdot \Delta B = 2\pi r_0^2 \Delta B
+            \quad \Rightarrow \quad
+            \frac{\alpha + 3}{4} = 2
+            \quad \Rightarrow \quad
+            \alpha = 5
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(カ)</strong><br>
+          \(5\)
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解答のポイント</h3>
+        <ul>
+          <li><strong>磁場から受ける力の向き</strong>：フレミングの左手の法則（親指＝力、人差し指＝磁場、中指＝電流）を使う。電子は負の電荷なので、電流の向きは速度の向きと逆向きにとる。</li>
+          <li><strong>磁場中の円運動</strong>：半径 \(r = mv/(eB)\)、周期 \(T = 2\pi m/(eB)\) は頻出なので暗記しておくとよい。</li>
+          <li><strong>ファラデーの法則</strong>：誘導起電力の大きさは、コイル（または閉曲線が囲む面）を貫く磁束の時間変化率。コイルの形と磁束の変化の仕方を図と対応させる。</li>
+          <li><strong>ベータトロンで半径が一定の条件</strong>：\(r = mv/(eB)\) が一定のまま \(B\) が増えるには \(v\) も増える必要があり、その増加分 \(\Delta K\) が誘導電場のする仕事 \(e \cdot \Delta\Phi_{\text{内}}/T\) に等しいことから、軌道内の磁束増加が \(\Delta\Phi_{\text{内}} = 2\pi r^2 \Delta B\)、すなわち軌道内の平均磁束密度が軌道上の2倍である必要が出てくる。鉄心で軌道内の磁束が増えるので、その分 \(\alpha\) で調整する。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

@@ -8,21 +8,7 @@
   <link rel="stylesheet" href="css/base.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/viewer.css" />
-
-  <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
-
-  <script type="text/javascript" charset="UTF-8"
-    src="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraphcore.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- シミュレーション用CSS・JSは解説に sim-embed があるときのみ遅延読み込み -->
 
   <script>
     // MathJaxの設定は遅延読み込み時に設定
@@ -109,16 +95,9 @@
     </div>
   </div>
 
-  <!-- 録画用フロートは body 直下で overflow の影響を受けないようにする -->
-  <div id="recording-float-bar" class="recording-float-bar recording-float-bar--collapsed" aria-hidden="true">
-    <button type="button" id="recording-float-trigger" class="recording-float-trigger" aria-label="メニューを表示" title="メニュー">⋯</button>
-    <div class="recording-float-content">
-      <button type="button" id="recording-btn-scroll-up" class="recording-float-btn recording-float-btn-scroll" title="上にスクロール" aria-label="上にスクロール">↑</button>
-      <button type="button" id="recording-btn-scroll-down" class="recording-float-btn recording-float-btn-scroll" title="下にスクロール" aria-label="下にスクロール">↓</button>
-      <button type="button" id="recording-btn-clear" class="recording-float-btn" title="ポインターの線をすべて消す" aria-label="ポインターをクリア">🗑 クリア</button>
-      <button type="button" id="recording-btn-fullscreen" class="recording-float-btn" title="ブラウザを全画面" aria-label="全画面切替">⛶ 全画面</button>
-      <button type="button" id="recording-btn-exit" class="recording-float-btn recording-float-btn-exit" title="録画モードを終了" aria-label="録画モードを終了">終了</button>
-    </div>
+  <!-- 操作モード用フロート：終了ボタンのみ -->
+  <div id="recording-float-bar" class="recording-float-bar" aria-hidden="true">
+    <button type="button" id="recording-btn-exit" class="recording-float-btn recording-float-btn-exit" title="操作モードを終了" aria-label="操作モードを終了">終了</button>
   </div>
 
   <!-- 音声コントロールパネル（一時的に非表示） -->
@@ -144,6 +123,8 @@
 
   <footer class="site-footer">
     <div class="site-footer-inner">
+      <a href="hub.html">ハブ</a>
+      <span class="site-footer-sep">|</span>
       <a href="about.html">このサイトについて</a>
       <span class="site-footer-sep">|</span>
       <a href="privacy.html">プライバシーポリシー</a>
@@ -154,26 +135,19 @@
     </div>
   </footer>
 
-  <script src="js/error-handler.js"></script>
-  <script src="js/sim-utils.js"></script>
-  <script src="js/pointer.js"></script>
-  <script src="js/text-extractor.js"></script>
-  <script src="js/audio-enhancer.js"></script>
-  <script src="js/audio-player.js"></script>
-  <script src="js/mobile-touch.js"></script>
-  <script src="js/viewer.js"></script>
-  <script src="config/firebase-config.js"></script>
+  <script src="js/error-handler.js" defer></script>
+  <script src="js/pointer.js" defer></script>
+  <script src="js/text-extractor.js" defer></script>
+  <script src="js/audio-enhancer.js" defer></script>
+  <script src="js/audio-player.js" defer></script>
+  <script src="js/mobile-touch.js" defer></script>
+  <script src="js/viewer.js" defer></script>
+  <script src="config/firebase-config.js" defer></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js").catch(function () {});
     }
-    if (window.firebaseConfig && window.firebaseConfig.apiKey !== "YOUR_API_KEY") {
-      firebase.initializeApp(window.firebaseConfig);
-      window.db = firebase.firestore();
-      window.collection = (db, name) => db.collection(name);
-      window.doc = (db, col, id) => db.collection(col).doc(id);
-      window.setDoc = (docRef, data, opt) => docRef.set(data, opt);
-    }
+    // Firebase はリアクション送信時に遅延初期化（viewer.js）
   </script>
 </body>
 

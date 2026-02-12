@@ -1,0 +1,101 @@
+/* css/hub.css - ハブページ用 */
+
+.hub-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+}
+
+.hub-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.hub-title {
+  font-size: 2rem;
+  margin: 0 0 8px;
+  color: var(--col-text);
+  letter-spacing: 0.05em;
+}
+
+.hub-desc {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--col-text-sub);
+}
+
+.hub-main {
+  margin-bottom: 40px;
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 28px 20px;
+  background: #fff;
+  border-radius: 20px;
+  border: 2px solid #e2e8f0;
+  text-decoration: none;
+  color: var(--col-text);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.hub-card:hover {
+  border-color: var(--col-primary-light);
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+  transform: translateY(-2px);
+}
+
+.hub-card:focus-visible {
+  outline: 2px solid var(--col-primary);
+  outline-offset: 4px;
+}
+
+.hub-card-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.hub-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--col-text);
+}
+
+.hub-card-desc {
+  font-size: 0.875rem;
+  color: var(--col-text-sub);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.hub-card--student { border-left: 4px solid var(--col-primary); }
+.hub-card--teacher { border-left: 4px solid var(--col-success); }
+.hub-card--test   { border-left: 4px solid var(--col-warning); }
+.hub-card--admin { border-left: 4px solid var(--col-text-sub); }
+
+.hub-card--student:hover { border-color: var(--col-primary); }
+.hub-card--teacher:hover { border-color: var(--col-success); }
+.hub-card--test:hover   { border-color: var(--col-warning); }
+.hub-card--admin:hover  { border-color: #475569; }
+
+@media (max-width: 480px) {
+  .hub-title { font-size: 1.6rem; }
+  .hub-grid  { grid-template-columns: 1fr; gap: 16px; }
+  .hub-card  { padding: 24px 16px; }
+}

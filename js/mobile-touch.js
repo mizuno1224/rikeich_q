@@ -13,8 +13,9 @@
     timeThreshold: 300 // スワイプ判定の時間閾値（ms）
   };
 
-  // ピンチズームの制御
+  // ピンチズームの制御（操作モードでは2本指拡大縮小を許可）
   function preventPinchZoom(e) {
+    if (document.body.classList.contains('pointer-active')) return;
     if (e.touches.length > 1) {
       e.preventDefault();
     }
@@ -44,6 +45,10 @@
 
   function handleTouchEnd(e) {
     if (touchState.startX === 0 || touchState.isScrolling) {
+      resetTouchState();
+      return;
+    }
+    if (document.body.classList.contains('pointer-active')) {
       resetTouchState();
       return;
     }
@@ -93,7 +98,8 @@
   }
 
   function handleSwipeRight() {
-    // 右スワイプ: 前の問題へ、または戻る
+    // 操作モード（タッチペン描画中）ではスワイプで戻らない
+    if (document.body.classList.contains('pointer-active')) return;
     var backButton = document.querySelector('.btn-back-circle');
     if (backButton) {
       backButton.click();

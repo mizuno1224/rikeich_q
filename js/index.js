@@ -1,6 +1,9 @@
 /* js/index.js */
 
 document.addEventListener("DOMContentLoaded", () => {
+  const params = new URLSearchParams(window.location.search);
+  const isTeacherMode = params.get("mode") === "teacher";
+
   const tabContainer = document.getElementById("tab-container");
   let subTabContainer = document.getElementById("sub-tab-container");
   if (!subTabContainer) {
@@ -13,6 +16,8 @@ document.addEventListener("DOMContentLoaded", () => {
     tabContainer.after(subTabContainer);
   }
   const contentArea = document.getElementById("content-area");
+  
+  initQRCode();
 
   let manifest = [];
   const EXAM_TYPES = ["exam_year", "exam_univ"];
@@ -167,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
               html += `<span class="field-name">${esc(field.fieldName)}</span>`;
               html += `<div class="prob-grid">`;
               field.problems.forEach((p) => {
-                const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}`;
+                const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}${isTeacherMode ? "&admin=1" : ""}`;
                 const title = esc(p.title);
                 const path = p.explanationPath || "";
                 html += `<a href="${targetUrl}" class="prob-link" target="_blank" data-search-text="${esc(path + " " + p.title)}"><span>${title}</span></a>`;
@@ -241,10 +246,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (linkToBookmarks) linkToBookmarks.style.display = "";
       section.hidden = false;
+      const adminSuffix = isTeacherMode ? "&admin=1" : "";
       list.innerHTML = bookmarks
         .map(
           (b) =>
-            `<a href="viewer.html?path=${encodeURIComponent(b.path)}" class="prob-link" target="_blank">${escapeHtml(b.title)}</a>`
+            `<a href="viewer.html?path=${encodeURIComponent(b.path)}${adminSuffix}" class="prob-link" target="_blank">${escapeHtml(b.title)}</a>`
         )
         .join("");
     }
@@ -266,6 +272,74 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
     renderBookmarks();
+  }
+
+  function initQRCode() {
+    const qrTrigger = document.getElementById("qr-trigger");
+    const qrModal = document.getElementById("qr-modal");
+    if (!qrModal) return;
+    
+    const qrModalBackdrop = qrModal.querySelector(".qr-modal-backdrop");
+    const qrModalClose = qrModal.querySelector(".qr-modal-close");
+    const qrModalWrap = document.getElementById("qr-modal-canvas-wrap");
+    const qrModalUrl = document.getElementById("qr-modal-url");
+
+    function openQRModal() {
+      if (!qrModalWrap) return;
+      // ハッシュ（#bookmarksなど）を除いたURLを使用する
+      const url = window.location.href.split('#')[0];
+      
+      qrModalWrap.innerHTML = "";
+      let shown = false;
+      
+      // QRCodeライブラリが使える場合のフォールバック
+      if (typeof QRCode !== "undefined") {
+        try {
+          new QRCode(qrModalWrap, {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+          });
+          shown = !!(qrModalWrap.querySelector("canvas") || qrModalWrap.querySelector("table"));
+        } catch (e) {}
+      }
+      
+      if (!shown) {
+        const img = document.createElement("img");
+        img.alt = "QRコード";
+        // APIを使用してQRコードを生成
+        img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
+        img.width = 200;
+        img.height = 200;
+        qrModalWrap.appendChild(img);
+      }
+      
+      if (qrModalUrl) qrModalUrl.textContent = url;
+      qrModal.classList.add("is-open");
+      qrModal.setAttribute("aria-hidden", "false");
+    }
+
+    function closeQRModal() {
+      qrModal.classList.remove("is-open");
+      qrModal.setAttribute("aria-hidden", "true");
+    }
+
+    if (qrTrigger) {
+      qrTrigger.addEventListener("click", openQRModal);
+    }
+    if (qrModalBackdrop) {
+      qrModalBackdrop.addEventListener("click", closeQRModal);
+    }
+    if (qrModalClose) {
+      qrModalClose.addEventListener("click", closeQRModal);
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && qrModal.classList.contains("is-open")) {
+        closeQRModal();
+      }
+    });
   }
 });
 

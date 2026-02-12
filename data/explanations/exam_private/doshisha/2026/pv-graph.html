@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p-V グラフ（解答図 III-A）</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 1rem; }
+    main { background: #fff; border-radius: 16px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08); padding: 1.5rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <div id="sketch-holder"></div>
+  </main>
+  <script>
+(function() {
+  const W = 560;
+  const H = 420;
+  // 上・右に余白を多めにとり、グラフが真ん中に来るように
+  const margin = { left: 68, right: 88, top: 72, bottom: 62 };
+  const plotW = W - margin.left - margin.right;
+  const plotH = H - margin.top - margin.bottom;
+
+  // スケール用（比のみ使用）。V_max = S(H+h+d), p_max = p1
+  const H_ratio = 1;
+  const h_ratio = 0.35;
+  const d_ratio = 0.35;
+  const V0_ratio = H_ratio;           // SH
+  const V1_ratio = H_ratio + h_ratio; // S(H+h)
+  const V2_ratio = H_ratio + h_ratio + d_ratio; // S(H+h+d)
+  const p0_ratio = 0.7;   // p0/p1
+  const p1_ratio = 1;
+
+  const x0 = margin.left;
+  const y0 = margin.top + plotH; // 原点の y（下端）
+
+  function x(V_ratio) {
+    return x0 + (V_ratio / V2_ratio) * plotW;
+  }
+  function y(p_ratio) {
+    return y0 - (p_ratio / p1_ratio) * plotH;
+  }
+
+  const sketch = function(p) {
+    p.setup = function() {
+      const canvas = p.createCanvas(W, H);
+      canvas.parent('sketch-holder');
+      p.textFont('sans-serif');
+      p.textAlign(p.CENTER, p.CENTER);
+    };
+
+    p.draw = function() {
+      p.background(255);
+
+      const ox = x0;
+      const oy = y0;
+
+      // グリッド（薄い）
+      p.stroke(240);
+      p.strokeWeight(0.6);
+      for (let i = 1; i <= 4; i++) {
+        const vx = x0 + (i / 4) * plotW;
+        p.line(vx, margin.top, vx, y0);
+        const hy = y0 - (i / 4) * plotH;
+        p.line(x0, hy, x0 + plotW, hy);
+      }
+
+      // (エ) の面積（台形）を先に描画（曲線の下）
+      p.noStroke();
+      p.fill(59, 130, 246, 42);
+      p.beginShape();
+      p.vertex(x(V1_ratio), y0);
+      p.vertex(x(V1_ratio), y(p1_ratio));
+      p.vertex(x(V2_ratio), y(p0_ratio));
+      p.vertex(x(V2_ratio), y0);
+      p.endShape(p.CLOSE);
+
+      // 軸線（原点を通る）
+      p.stroke(40);
+      p.strokeWeight(1.8);
+      p.line(ox, y0, ox, margin.top);
+      p.line(ox, oy, x0 + plotW + 6, oy);
+
+      // 矢印（右端・上端の余白内に収める）
+      p.fill(40);
+      p.noStroke();
+      p.triangle(x0 + plotW + 6, oy, x0 + plotW - 4, oy - 5, x0 + plotW - 4, oy + 5);
+      p.triangle(ox, margin.top, ox - 5, margin.top + 8, ox + 5, margin.top + 8);
+
+      // 目盛りとラベル（V軸）— 下側に余白をとって被り防止
+      const vTicks = [
+        { r: 0, label: '0' },
+        { r: V0_ratio, label: 'SH' },
+        { r: V1_ratio, label: 'S(H+h)' },
+        { r: V2_ratio, label: 'S(H+h+d)' }
+      ];
+      p.fill(40);
+      p.noStroke();
+      p.textSize(11);
+      p.textAlign(p.CENTER, p.TOP);
+      vTicks.forEach(function(t) {
+        const tx = x(t.r);
+        p.stroke(40);
+        p.strokeWeight(1);
+        p.line(tx, oy, tx, oy + 5);
+        p.noStroke();
+        p.text(t.label, tx, oy + 10);
+      });
+
+      // 目盛りとラベル（p軸）— 左側に余白をとって被り防止
+      const pTicks = [
+        { r: 0, label: '0' },
+        { r: p0_ratio, label: 'p₀' },
+        { r: p1_ratio, label: 'p₁' }
+      ];
+      p.textAlign(p.RIGHT, p.CENTER);
+      pTicks.forEach(function(t) {
+        const ty = y(t.r);
+        p.stroke(40);
+        p.strokeWeight(1);
+        p.line(ox - 5, ty, ox, ty);
+        p.noStroke();
+        p.text(t.label, ox - 12, ty);
+      });
+
+      // 軸ラベル（余白側に配置）
+      p.textAlign(p.CENTER, p.CENTER);
+      p.textSize(14);
+      p.textStyle(p.BOLD);
+      p.text('V', x0 + plotW + 28, oy);
+      p.text('p', ox - 24, margin.top - 18);
+      p.textStyle(p.NORMAL);
+
+      // 原点の厳密な表記（グラフと被らない位置）
+      p.textSize(10);
+      p.fill(60);
+      p.text('O (0, 0)', ox + 28, oy - 14);
+
+      // 状態変化の曲線（太め）
+      p.stroke(59, 130, 246);
+      p.strokeWeight(2.8);
+      p.noFill();
+      p.beginShape();
+      p.vertex(x(V0_ratio), y(p0_ratio));
+      p.vertex(x(V0_ratio), y(p1_ratio));
+      p.vertex(x(V1_ratio), y(p1_ratio));
+      p.vertex(x(V2_ratio), y(p0_ratio));
+      p.endShape();
+
+      // 通過点の丸
+      p.noStroke();
+      p.fill(244, 63, 94);
+      const pts = [
+        [V0_ratio, p0_ratio],
+        [V0_ratio, p1_ratio],
+        [V1_ratio, p1_ratio],
+        [V2_ratio, p0_ratio]
+      ];
+      pts.forEach(function(pt) {
+        p.circle(x(pt[0]), y(pt[1]), 7);
+      });
+
+      // 過程のラベル（線や曲線と被らないよう外側に配置）
+      p.fill(59, 130, 246);
+      p.textSize(10);
+      p.text('定積', x(V0_ratio) - 24, (y(p0_ratio) + y(p1_ratio)) / 2);
+      p.text('定圧', (x(V0_ratio) + x(V1_ratio)) / 2, y(p1_ratio) - 20);
+      p.text('流出', (x(V1_ratio) + x(V2_ratio)) / 2 + 18, (y(p1_ratio) + y(p0_ratio)) / 2);
+
+    };
+  };
+
+  new p5(sketch, 'sketch-holder');
+})();
+  </script>
+</body>
+</html>

@@ -15,6 +15,13 @@
       <h2 class="prob-title-sub">大問3：薄膜干渉（くさび形空気層）</h2>
 
       <div class="card">
+        <h3>解法の全体像</h3>
+        <p>
+          くさび形の空気層に光を当てた<strong>薄膜干渉</strong>の問題です。光路差 $p = 2d$ と反射による位相のずれから明線条件を導き、$x_m$・間隔 $\Delta x$ を求めたあと、板の移動・液体の充填による変化を同じ式で扱います。
+        </p>
+      </div>
+
+      <div class="card">
         <h3>実験の設定</h3>
         <p>
           図1・図2のように、<span class="highlight">ガラス板Aを水平に置き、その左端にガラス板Bを接して傾ける</span>。ガラス板Bの左下の頂点を原点 O(0,0)、右向きに $x$ 軸、鉛直下向きに $y$ 軸をとる。
@@ -42,14 +49,26 @@
         <h3>問2：$m$ 番目の明線の位置 $x_m$ を $D$，$L$，$\lambda$，$m$ で表せ</h3>
         <p>
           <strong>考え方</strong><br>
-          ガラス板Bの下面（空気→ガラス）では反射により位相が $\pi$ ずれ、ガラス板Aの上面（空気→ガラス）でも位相が $\pi$ ずれるが、<strong>一方だけがガラス→空気の反射</strong>とみなすと、実質的に光路差に $\lambda/2$ のずれが生じる。したがって<strong>明線</strong>の条件は $2d + \dfrac{\lambda}{2} = m\lambda$、すなわち
-          $$ 2d = \left(m - \frac{1}{2}\right)\lambda \quad (m=1,2,3,\cdots) $$
+          上のガラス板Bの下面での反射は「ガラス→空気」の反射なので位相の変化はない。一方、下のガラス板Aの上面での反射は「空気→ガラス」の反射なので位相が $\pi$ ずれる。<br>
+          これより、2つの反射光は<strong>逆位相</strong>の関係にあるため、強め合う条件（明線条件）は光路差 $p$ が半波長の奇数倍となるときである。<br>
+          問1の結果 $p=2d$ を用いて
+          $$ p = 2d = \left(m - \frac{1}{2}\right)\lambda \quad (m=1,2,3,\cdots) $$
           $d = \dfrac{D}{L}x$ より
           $$ 2\,\frac{D}{L}\,x_m = \left(m - \frac{1}{2}\right)\lambda \quad \Rightarrow \quad x_m = \frac{\left(m - \frac{1}{2}\right)\lambda L}{2D} $$
         </p>
         <div class="box-note">
           <strong>答</strong><br>
           $$ x_m = \frac{\left(m - \dfrac{1}{2}\right)L\lambda}{2D} $$
+        </div>
+        <div class="box-note">
+          <strong>コラム：なぜガラス板Bの上面やガラス板Aの下面からの反射光は考えないのか？</strong><br>
+          この実験で観測しているのは、<strong>薄い空気層（くさび形部分）</strong>の上面と下面で反射した光の干渉です。<br>
+          ガラス板Bの上面や、ガラス板Aの下面からの反射光を考慮しない主な理由は、<strong>ガラス板の厚さが非常に厚いから</strong>です。<br>
+          <ul class="normal-list">
+            <li><strong>空気層の厚さ</strong>は非常に薄く（数 $\mu\text{m}$ 程度）、光の波長に近いオーダーなので、ここでの反射光同士はきれいに干渉し合います。</li>
+            <li>一方、<strong>ガラス板の厚さ</strong>（数 $\text{mm}$ 程度）は光の波長に比べて数千倍以上あります。光路差がこれほど大きくなると、実際の光源の光（完全な単色光ではなく、波長にわずかな幅や揺らぎがある）では、干渉する能力が維持できず、干渉縞を作らなくなります。</li>
+          </ul>
+          そのため、厚いガラス板の外側の面からの反射光は、干渉に関与しない「一様な明るさ」として扱われ、明暗の縞模様には影響しません。
         </div>
       </div>
 
@@ -91,7 +110,10 @@
         <h3>問5：明線が移動した方向（$x$ 軸の正・負）</h3>
         <p>
           <strong>考え方</strong><br>
-          Aを下に動かすと、同じ $x$ では空気層の厚さ $d' = \dfrac{D}{L}x - y$ は $y$ の増加で小さくなる。同じ $m$ 番目の明線（同じ $d' = \dfrac{\left(m - \frac{1}{2}\right)\lambda}{2}$）を見るには、$d'$ を一定に保つために $x$ を<strong>小さく</strong>する必要がある。つまり、<strong>明線は $x$ 軸の負の方向に移動する</strong>。
+          ガラス板Aを下に動かすと、ガラス板間の距離が広がるため、すべての位置 $x$ において空気層の厚さ $d$ が増加する。<br>
+          特定の $m$ 番目の明線が現れる条件は、空気層の厚さが特定の値（$d = \frac{1}{2}(m - 1/2)\lambda$）になることである。<br>
+          空気層の厚さが増加してしまったため、元の厚さと同じになる場所を探すと、くさび形の厚みがより薄い方、つまり原点に近い方（$x$ 軸の負の方向）に移動しなければならない。<br>
+          したがって、<strong>明線は $x$ 軸の負の方向に移動する</strong>。
         </p>
         <div class="box-note">
           <strong>答</strong><br>
@@ -103,16 +125,20 @@
         <h3>問6：点Pの座標 $(0,\,Y)$ のとき、$m$ 番目の明線が水平方向にちょうど4本ずれたときの $Y$</h3>
         <p>
           <strong>考え方</strong><br>
-          問5より、Aを下に動かすと明線は $x$ 軸の負の方向にずれる。したがって「4本ずれた」は、<strong>移動後の $m$ 番目の明線の位置</strong>が、<strong>移動前の $(m-4)$ 番目の明線の位置</strong>と一致した、と解釈する。
+          問5より、明線は $x$ 軸の負の方向に移動する。<br>
+          「明線が4本ずれた」ということは、<strong>移動前の $m$ 番目の明線の位置 $x_m$</strong> に、<strong>移動後の $(m+4)$ 番目の明線 $x'_{m+4}$</strong> が来たと考えられる。<br>
+          （負の方向にずれるため、より番号の大きい明線が移動してくる）
         </p>
         <p>
-          移動前：$x_{m-4} = \dfrac{\left(m - 4 - \frac{1}{2}\right)L\lambda}{2D} = \dfrac{\left(m - \frac{9}{2}\right)L\lambda}{2D}$<br>
-          移動後：$x'_m = \dfrac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2Y\right\}$
+          移動前：$x_m = \dfrac{\left(m - \frac{1}{2}\right)L\lambda}{2D}$<br>
+          移動後：$x'_{m+4} = \dfrac{L}{2D}\left\{\left( (m+4) - \frac{1}{2}\right)\lambda - 2Y\right\}$
         </p>
         <p>
           これらが等しいので
-          $$ \frac{L}{2D}\left\{\left(m - \frac{1}{2}\right)\lambda - 2Y\right\} = \frac{\left(m - \frac{9}{2}\right)L\lambda}{2D} $$
-          $$ \left(m - \frac{1}{2}\right)\lambda - 2Y = \left(m - \frac{9}{2}\right)\lambda \quad \Rightarrow \quad -2Y = -4\lambda \quad \Rightarrow \quad Y = 2\lambda $$
+          $$ \frac{\left(m - \frac{1}{2}\right)L\lambda}{2D} = \frac{L}{2D}\left\{\left(m + \frac{7}{2}\right)\lambda - 2Y\right\} $$
+          両辺を $\dfrac{L}{2D}$ で割って整理すると
+          $$ \left(m - \frac{1}{2}\right)\lambda = \left(m + \frac{7}{2}\right)\lambda - 2Y $$
+          $$ 0 = 4\lambda - 2Y \quad \Rightarrow \quad Y = 2\lambda $$
         </p>
         <div class="box-note">
           <strong>答</strong><br>
@@ -156,24 +182,9 @@
         <ul>
           <li><strong>くさび形の厚さ</strong>：$d = \dfrac{D}{L}x$ で $x$ に比例する。</li>
           <li><strong>明線条件</strong>：反射による位相のずれを考慮すると $2d = \left(m - \dfrac{1}{2}\right)\lambda$、よって $x_m = \dfrac{\left(m - \frac{1}{2}\right)L\lambda}{2D}$。</li>
-          <li><strong>板Aを下に動かすと</strong>：厚さが減るので、同じ $m$ の明線は左（$x$ 軸の負の方向）へ移動。</li>
+          <li><strong>板Aを下に動かすと</strong>：厚さが増すので、同じ厚さ（同じ $m$）の位置は厚みの薄い側（$x$ 軸の負の方向）へ移動。</li>
           <li><strong>液体を入れると</strong>：光路差は $2nd$ から間隔 $\Delta X = \dfrac{L\lambda'}{2nD}$。$\Delta X = \Delta x$ のとき $n = \dfrac{\lambda'}{\lambda}$。</li>
         </ul>
-      </div>
-
-      <div class="card">
-        <h3>答一覧</h3>
-        <table class="answer-table">
-          <tr><th>問</th><th>答</th></tr>
-          <tr><td>問1</td><td>$p = \dfrac{2Dx}{L}$</td></tr>
-          <tr><td>問2</td><td>$x_m = \dfrac{\left(m - \frac{1}{2}\right)L\lambda}{2D}$</td></tr>
-          <tr><td>問3</td><td>$\Delta x = \dfrac{L\lambda}{2D}$</td></tr>
-          <tr><td>問4</td><td>$x'_m = \dfrac{L}{2D}\left\{\left(m - \dfrac{1}{2}\right)\lambda - 2y\right\}$</td></tr>
-          <tr><td>問5</td><td>負の方向</td></tr>
-          <tr><td>問6</td><td>$Y = 2\lambda$</td></tr>
-          <tr><td>問7</td><td>$\Delta X = \dfrac{L\lambda'}{2nD}$</td></tr>
-          <tr><td>問8</td><td>$n = \dfrac{\lambda'}{\lambda}$</td></tr>
-        </table>
       </div>
 
     </div>

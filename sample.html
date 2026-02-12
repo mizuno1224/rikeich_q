@@ -15,10 +15,9 @@
       <h2 class="prob-title-sub">問題番号：物理テーマ</h2>
 
       <div class="card">
-        <h3>解法の指針</h3>
+        <h3>解法の全体像</h3>
         <p>
-          ここに問題の全体像，着眼点，物理現象の原理原則を記述します。<br>
-          「なぜその法則を使うのか」を明確にします。
+          ここに解法の流れの全体像を記述します。どの法則をどの順で使うか、物理現象の核となる考え方を簡潔に示します。
         </p>
       </div>
 
@@ -35,12 +34,13 @@
         <div id="sim-sample-01" class="sim-embed"></div>
         <script>
           (function(){
-            const el = document.getElementById('sim-sample-01');
-            if(!el) return;
+            var el = document.getElementById('sim-sample-01');
+            if (!el) return;
             // シミュレーションロジック (SimUtils, p5.js, Chart.js 等)
           })();
         </script>
 
+        <!-- 答えは必ず box-note で囲む -->
         <div class="box-note">
           <strong>答え：</strong><br>
           $v = 9.8 \text{ m/s}$
@@ -49,7 +49,7 @@
 
       <div class="box-alert">
         <span class="box-alert-label">Point</span>
-        <h3>まとめのタイトル</h3>
+        <h3>解法のポイント</h3>
         <ul>
           <li>ポイント1：物理法則の適用条件を確認する</li>
           <li>ポイント2：単位の換算に注意する</li>

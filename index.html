@@ -11,7 +11,12 @@
   <body>
     <a href="#content-area" class="skip-link">メインコンテンツへスキップ</a>
     <div class="container">
-      <h1 id="main-heading">Physics Lab.</h1>
+      <div class="main-header">
+        <h1 id="main-heading">Physics Lab.</h1>
+        <button type="button" id="qr-trigger" class="qr-trigger" aria-label="QRコードを表示" title="このページのQRコードを表示">
+          <span class="qr-trigger-icon">📱</span>
+        </button>
+      </div>
       <nav class="material-tabs" id="tab-container" aria-label="教材メニュー"></nav>
       <nav
         class="material-tabs"
@@ -51,6 +56,8 @@
 
     <footer class="site-footer">
       <div class="site-footer-inner">
+        <a href="hub.html">ハブ</a>
+        <span class="site-footer-sep">|</span>
         <a href="about.html">このサイトについて</a>
         <span class="site-footer-sep">|</span>
         <a href="privacy.html">プライバシーポリシー</a>
@@ -60,6 +67,17 @@
         <a href="index.html">Physics Lab.</a>
       </div>
     </footer>
+
+    <!-- QRコードモーダル -->
+    <div id="qr-modal" class="qr-modal" aria-hidden="true">
+      <div class="qr-modal-backdrop"></div>
+      <div class="qr-modal-content">
+        <button class="qr-modal-close" aria-label="閉じる">×</button>
+        <p class="qr-modal-title">このページのQRコード</p>
+        <div id="qr-modal-canvas-wrap" class="qr-modal-canvas-wrap"></div>
+        <p id="qr-modal-url" class="qr-modal-url"></p>
+      </div>
+    </div>
 
     <script src="js/error-handler.js"></script>
     <script src="js/index.js"></script>

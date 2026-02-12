@@ -127,44 +127,85 @@
           となる（選択肢からこの形のものを選ぶ）。
         </p>
 
-        <h4>仕事とエネルギー保存 → (イ) = 0</h4>
+        <h4>(イ) 関係式の導出：2つの視点</h4>
         <p>
-          おもりを \(\Delta r\) だけ下げる間，糸の張力の変化は無視して \(T \simeq mr\omega^2\) とする。
-          糸の長さ一定なので，おもりが下向きに \(\Delta r\) 動くと小球の円軌道の半径は \(r \to r-\Delta r\) と<strong>減る</strong>。
-          つまり小球は中心向きに \(\Delta r\) だけ動く。張力は小球を中心向きに引くので，力と変位は同じ向きであり，
-          張力が小球にする仕事は
-          \[
-            W = T \times \Delta r = m r\omega^2\,\Delta r
-          \]
-          この仕事が小球の運動エネルギーの増加 \(\Delta E\) に等しい：\(\Delta E = W\)。
+          この関係式 \(-2\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 0\) を導くには、主に2つの考え方があります。
+          問題の流れ（エネルギー変化）に沿った方法と、物理的背景（角運動量保存）に基づく方法です。
         </p>
+
+        <h5>アプローチ1：仕事とエネルギーの関係（問題の流れ）</h5>
         <p>
-          \(\Delta E \simeq m r^2\omega^2\left(\dfrac{\Delta\omega}{\omega} - \dfrac{\Delta r}{r}\right)\) と \(W = m r\omega^2\,\Delta r\) を \(\Delta E = W\) に代入すると，
+          おもりを \(\Delta r\) だけ下げるとき、小球は半径 \(r\) から \(r-\Delta r\) へと中心向きに移動します。
+          このとき、小球にはたらく張力 \(T\) は中心向きなので、小球に対して正の仕事をします。
+          微小変化なので張力は一定 \(T \simeq m r\omega^2\) とみなすと、仕事 \(W\) は
+          \[
+             W = \text{力} \times \text{移動距離} = (m r\omega^2) \times \Delta r
+          \]
+          この仕事が運動エネルギーの変化 \(\Delta E\) に等しい（\(\Delta E = W\)）ので、
+          先ほど求めた \(\Delta E \simeq m r^2\omega^2\left(\frac{\Delta\omega}{\omega} - \frac{\Delta r}{r}\right)\) を代入して、
           \[
             m r^2\omega^2\left(\frac{\Delta\omega}{\omega} - \frac{\Delta r}{r}\right) = m r\omega^2\,\Delta r
           \]
-          両辺を \(m r\omega^2\) で割ると
+          両辺を \(m r^2\omega^2\) で割ると、
           \[
-            r\left(\frac{\Delta\omega}{\omega} - \frac{\Delta r}{r}\right) = \Delta r
-            \quad\Rightarrow\quad
             \frac{\Delta\omega}{\omega} - \frac{\Delta r}{r} = \frac{\Delta r}{r}
             \quad\Rightarrow\quad
             \frac{\Delta\omega}{\omega} = 2\,\frac{\Delta r}{r}
           \]
-          よって \(-2\,\dfrac{\Delta r}{r} + \dfrac{\Delta\omega}{\omega} = 0\) が成り立つ。
+          移項して整理すると、
+          \[
+            \textbf{(イ)}\quad -2\,\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 0
+          \]
+          となります。
+        </p>
+
+        <h5>アプローチ2：角運動量保存則（物理的本質）</h5>
+        <p>
+          なぜこの関係式が成り立つのか、力学的な保存則から理解してみましょう。
+          小球にはたらく力は、糸の張力のみ（水平面内）です。張力は常に円運動の中心 O を向いています（<strong>中心力</strong>）。
+          中心 O のまわりの「力のモーメント \(N\)」を考えると、力 \(T\) の作用線が中心を通るため、腕の長さが 0 となり、
+          \[
+            N = 0
+          \]
+          となります。回転の運動方程式 \(\frac{d\boldsymbol{L}}{dt} = \boldsymbol{N}\) より、力のモーメントが 0 ならば<strong>角運動量 \(\boldsymbol{L}\) は時間的に変化せず保存</strong>されます。
         </p>
         <p>
-          あるいは，角運動量 \(mr^2\omega\) が保存すると考えると，\((r-\Delta r)^2(\omega+\Delta\omega) = r^2\omega\) が成り立つ。
-          近似すると \(r^2\omega\left(1 - 2\dfrac{\Delta r}{r}\right)\left(1 + \dfrac{\Delta\omega}{\omega}\right) = r^2\omega\) より
-          \(1 - 2\dfrac{\Delta r}{r} + \dfrac{\Delta\omega}{\omega} = 1\)，すなわち
+          円運動する質点の角運動量の大きさは \(L = mvr = m(r\omega)r = m r^2\omega\) です。これが変化しないので、
           \[
-            \textbf{(イ)} = 0 \quad\Leftrightarrow\quad
-            -2\,\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 0
-            \quad\Rightarrow\quad
-            \frac{\Delta\omega}{\omega} = 2\,\frac{\Delta r}{r}
+            m r^2\omega = \text{一定}
           \]
-          この関係式から，「円の中心から小球までの距離の2乗と角速度の積 \(r^2\omega\) が一定」であることがわかる。
+          操作後の状態（半径 \(r-\Delta r\)，角速度 \(\omega+\Delta\omega\)）でも角運動量は変わらないので、
+          \[
+            m(r-\Delta r)^2(\omega+\Delta\omega) = m r^2\omega
+          \]
+          近似式 \((1+x)^n \simeq 1+nx\) を使って展開します。
+          \((r-\Delta r)^2 = r^2\left(1 - \frac{\Delta r}{r}\right)^2 \simeq r^2\left(1 - 2\frac{\Delta r}{r}\right)\) なので、
+          \[
+            m r^2\left(1 - 2\frac{\Delta r}{r}\right)\omega\left(1 + \frac{\Delta\omega}{\omega}\right) = m r^2\omega
+          \]
+          両辺を \(m r^2\omega\) で割ると、
+          \[
+            \left(1 - 2\frac{\Delta r}{r}\right)\left(1 + \frac{\Delta\omega}{\omega}\right) = 1
+          \]
+          展開して2次の微小項（\(\frac{\Delta r}{r}\cdot\frac{\Delta\omega}{\omega}\)）を無視すると、
+          \[
+            1 - 2\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 1
+            \quad\Rightarrow\quad
+            -2\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 0
+          \]
+          となります。
         </p>
+        <div class="box-note">
+          <strong>📝 なぜこの式が角運動量保存則なのか？</strong>
+          <p>
+            導かれた式 \(-2\frac{\Delta r}{r} + \frac{\Delta\omega}{\omega} = 0\) を変形すると、
+            \[
+              \frac{\Delta\omega}{\omega} = 2\frac{\Delta r}{r}
+            \]
+            となります。これは、「半径 \(r\) が微小に減った割合（\(\Delta r/r\)）の2倍だけ、角速度 \(\omega\) の割合（\(\Delta\omega/\omega\)）が増える」ことを意味します。<br>
+            角運動量 \(L \propto r^2\omega\) において、\(r\) が減ると \(r^2\) は大きく減りますが、その分 \(\omega\) が増えて積を一定に保っている状態（保存則）を、微分形式（変化率の式）で表したものがこの数式です。
+          </p>
+        </div>
       </div>
 
       <div class="card">
@@ -303,18 +344,18 @@
 
       <div class="card">
         <h3>解答の整理</h3>
-        <p>
+        <div class="box-note">
           <strong>数式で答えるもの</strong><br>
           (あ) \(v = r\omega\)　(い) \(K = \dfrac12 m r^2\omega^2\)　(う) \(mr\omega^2\)　(え) \(\dfrac12 m (r-\Delta r)^2(\omega+\Delta\omega)^2\)<br>
           (お) \(r = \dfrac{Mg}{m\omega^2}\)　(か) \(\dfrac{3m\omega^2}{M+m}\)　(き) \(T = \dfrac{2\pi}{\omega}\sqrt{\dfrac{M+m}{3m}}\)　(オ) \(L\)　(く) \(\omega d\sqrt{\dfrac{3m}{M+m}}\)
-        </p>
-        <p>
+        </div>
+        <div class="box-note">
           <strong>選択肢で答えるもの</strong><br>
           (ア) \(\Delta E \simeq \textbf{(い)} \times \textbf{(ア)}\) の形 → \(2\dfrac{\Delta\omega}{\omega} - 2\dfrac{\Delta r}{r}\) に相当するもの。<br>
           (イ) \(r^2\omega\) が一定となる関係 → \(-2\dfrac{\Delta r}{r} + \dfrac{\Delta\omega}{\omega} = 0\) に相当するもの。<br>
           (ウ) おもりにはたらく力 \(F = Mg - \textbf{(ウ)}\) → \(m(r-\Delta r)(\omega+\Delta\omega)^2\)。<br>
           (エ) \(F \simeq -Mg \times \textbf{(エ)}\) → \(\dfrac{3\Delta r}{r}\) に相当するもの。
-        </p>
+        </div>
       </div>
 
       <div class="box-alert">

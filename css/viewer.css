@@ -11,9 +11,14 @@ body {
   flex-direction: column;
 }
 
-/* ポインターモード時のカーソル変更 */
+/* ポインターモード時のカーソル変更・レイアウト固定 */
 body.pointer-active {
   cursor: crosshair;
+  overflow: hidden;
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
 }
 body.pointer-active .explanation-area,
 body.pointer-active .sim-embed {
@@ -30,15 +35,22 @@ body.pointer-active .skip-link {
 
 body.pointer-active .viewer-container {
   position: fixed;
-  inset: 0;
-  width: 100vw;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   height: 100vh;
   height: 100dvh;
   z-index: 0;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* 指で縦スクロール・ピンチズーム可能。戻るは JS の履歴で無効化 */
   touch-action: pan-y pinch-zoom;
+  background: var(--col-bg);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 /* ポインターモード時は解説エリアでも指で拡大縮小を許可 */
 body.pointer-active .explanation-area,
@@ -48,11 +60,22 @@ body.pointer-active .viewer-split-content {
 
 body.pointer-active .viewer-split-content {
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body.pointer-active .explanation-area {
   min-height: 100%;
   padding-top: 24px;
+  padding-left: 20px;
+  padding-right: 20px;
+  margin-left: auto;
+  margin-right: auto;
+  background: var(--col-bg);
+  box-sizing: border-box;
 }
 
 /* ポインターモード時は疑問点メモ・リアクションボタンを非表示（録画用） */
@@ -60,16 +83,20 @@ body.pointer-active .card-reaction-footer {
   display: none !important;
 }
 
-/* 録画用フロート（右下・確実に表示されるよう余裕を持って配置） */
+/* 操作モード時は広告枠を非表示にしてレイアウトを安定 */
+body.pointer-active .ad-slot.ad-slot--sidebar {
+  display: none !important;
+}
+
+/* 操作モード用フロート（右下・終了ボタンのみ・iPadのホームインジケータで見切れないよう余裕を確保） */
 .recording-float-bar {
   display: none;
   position: fixed;
-  bottom: calc(56px + env(safe-area-inset-bottom, 0px));
-  right: calc(20px + env(safe-area-inset-right, 0px));
+  bottom: calc(48px + env(safe-area-inset-bottom, 0px));
+  right: calc(24px + env(safe-area-inset-right, 0px));
   z-index: 2147483647;
-  align-items: flex-end;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
   pointer-events: auto;
   transform: translateZ(0);
   isolation: isolate;
@@ -79,85 +106,17 @@ body.pointer-active .recording-float-bar {
   display: flex;
 }
 
-/* 折りたたみ時はトリガーのみ表示 */
-.recording-float-bar--collapsed .recording-float-content {
-  display: none;
-}
-
-.recording-float-bar--expanded .recording-float-content {
-  display: flex;
-}
-
-.recording-float-trigger {
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #fff;
-  font-size: 1.4rem;
-  line-height: 1;
-  cursor: pointer;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
-  transition: background 0.2s, transform 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-base);
-}
-
-.recording-float-trigger:hover {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.recording-float-trigger:active {
-  transform: scale(0.96);
-}
-
-.recording-float-bar--expanded .recording-float-trigger {
-  order: 2;
-  align-self: flex-end;
-}
-
-.recording-float-content {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 24px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-}
-
 .recording-float-btn {
   padding: 10px 18px;
   min-height: 44px;
   min-width: 44px;
   border: none;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  color: #fff;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, transform 0.1s;
   font-family: var(--font-base);
-}
-
-.recording-float-btn:hover {
-  background: rgba(255, 255, 255, 0.35);
-}
-
-.recording-float-btn-scroll {
-  padding: 8px 12px;
-  min-width: 36px;
-  font-size: 1.1rem;
 }
 
 .recording-float-btn:active {
@@ -167,15 +126,12 @@ body.pointer-active .recording-float-bar {
 .recording-float-btn-exit {
   background: var(--col-accent);
   color: #fff;
+  box-shadow: 0 2px 16px rgba(244, 63, 94, 0.35);
 }
 
 .recording-float-btn-exit:hover {
   background: #e11d48;
   color: #fff;
-}
-
-body.recording-fullscreen .recording-float-bar {
-  bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 12px));
 }
 
 /* 解説ページ全体で指の縦スクロール・ピンチズームを常に許可 */
@@ -256,6 +212,14 @@ body.recording-fullscreen .recording-float-bar {
   gap: 10px;
   align-items: center;
   flex-shrink: 0;
+}
+
+/* 生徒画面: 操作モードボタンを非表示にしてヘッダーを詰める */
+body.viewer-student #btn-toggle-pointer {
+  display: none !important;
+}
+body.viewer-student .header-actions {
+  gap: 6px;
 }
 
 /* QRトリガー（ブックマークの左） */

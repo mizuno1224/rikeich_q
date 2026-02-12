@@ -11,7 +11,22 @@ let currentPath = null;
 let audioPlayer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
+  // 戻るボタン: 常に index.html へ正しく遷移するよう href を現在のパスから算出
+  const backLink = document.querySelector("a.btn-back-circle");
+  if (backLink) {
+    const path = window.location.pathname || "";
+    const indexPath = path.replace(/[^/]*$/, "index.html");
+    backLink.setAttribute("href", indexPath || "index.html");
+  }
+
   const params = new URLSearchParams(window.location.search);
+
+  // 管理者画面: URL に admin=1 があるときのみ操作モードを表示（生徒画面では非表示）
+  // 例: viewer.html?path=...&admin=1 で教員用・投影用で開く
+  const isAdminMode = params.get("admin") === "1";
+  if (!isAdminMode) {
+    document.body.classList.add("viewer-student");
+  }
 
   // ★追加: index.html から渡されるパスパラメータを取得
   const directPath = params.get("path");
@@ -37,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // ポインターは解説に張り付くため、スクロールではクリアしない
   }
 
-  if (btnPointer) {
+  if (btnPointer && isAdminMode) {
     btnPointer.addEventListener("click", () => {
       const isActive = document.body.classList.toggle("pointer-active");
       btnPointer.classList.toggle("active", isActive);
@@ -56,50 +71,10 @@ document.addEventListener("DOMContentLoaded", () => {
     history.pushState({ viewer: true }, "", location.href);
   });
 
-  // 録画用フロートバー：終了・全画面
-  const floatBar = document.getElementById("recording-float-bar");
+  // 操作モード用フロートバー：終了ボタンのみ
   const btnExit = document.getElementById("recording-btn-exit");
-  const btnFullscreen = document.getElementById("recording-btn-fullscreen");
   if (btnExit) {
     btnExit.addEventListener("click", () => exitPointerAndRecordingMode());
-  }
-  if (btnFullscreen) {
-    btnFullscreen.addEventListener("click", () => toggleRecordingFullscreen());
-  }
-  const btnClear = document.getElementById("recording-btn-clear");
-  if (btnClear) {
-    btnClear.addEventListener("click", () => {
-      if (pointerInstance) pointerInstance.clear();
-    });
-  }
-  const scrollContainer = document.getElementById("main-content");
-  const scrollStep = 120;
-  const btnScrollUp = document.getElementById("recording-btn-scroll-up");
-  const btnScrollDown = document.getElementById("recording-btn-scroll-down");
-  if (btnScrollUp && scrollContainer) {
-    btnScrollUp.addEventListener("click", () => {
-      scrollContainer.scrollTop = Math.max(0, scrollContainer.scrollTop - scrollStep);
-    });
-  }
-  if (btnScrollDown && scrollContainer) {
-    btnScrollDown.addEventListener("click", () => {
-      scrollContainer.scrollTop = Math.min(
-        scrollContainer.scrollHeight - scrollContainer.clientHeight,
-        scrollContainer.scrollTop + scrollStep
-      );
-    });
-  }
-  const recordingTrigger = document.getElementById("recording-float-trigger");
-  const recordingBar = document.getElementById("recording-float-bar");
-  if (recordingTrigger && recordingBar) {
-    recordingTrigger.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const expanded = recordingBar.classList.toggle("recording-float-bar--expanded");
-      recordingBar.classList.toggle("recording-float-bar--collapsed", !expanded);
-      recordingTrigger.textContent = expanded ? "×" : "⋯";
-      recordingTrigger.setAttribute("aria-label", expanded ? "メニューを閉じる" : "メニューを表示");
-      recordingTrigger.setAttribute("title", expanded ? "閉じる" : "メニュー");
-    });
   }
   document.addEventListener("fullscreenchange", onFullscreenChange);
   document.addEventListener("webkitfullscreenchange", onFullscreenChange);
@@ -131,34 +106,57 @@ document.addEventListener("DOMContentLoaded", () => {
   const qrModalWrap = document.getElementById("qr-modal-canvas-wrap");
   const qrModalUrl = document.getElementById("qr-modal-url");
 
+  function loadQrcodeLib() {
+    if (typeof QRCode !== "undefined") return Promise.resolve();
+    return new Promise(function (resolve, reject) {
+      var s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
   function openQRModal() {
     if (!qrModal || !qrModalWrap) return;
     const url = window.location.href;
     qrModalWrap.innerHTML = "";
-    let shown = false;
-    if (typeof QRCode !== "undefined") {
+    loadQrcodeLib().then(function () {
+      var shown = false;
       try {
-        new QRCode(qrModalWrap, {
-          text: url,
-          width: 200,
-          height: 200,
-          colorDark: "#000000",
-          colorLight: "#ffffff",
-        });
-        shown = qrModalWrap.querySelector("canvas") || qrModalWrap.querySelector("table");
+        if (typeof QRCode !== "undefined") {
+          new QRCode(qrModalWrap, {
+            text: url,
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+          });
+          shown = qrModalWrap.querySelector("canvas") || qrModalWrap.querySelector("table");
+        }
       } catch (e) {}
-    }
-    if (!shown) {
-      const img = document.createElement("img");
+      if (!shown) {
+        var img = document.createElement("img");
+        img.alt = "QRコード";
+        img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
+        img.width = 200;
+        img.height = 200;
+        qrModalWrap.appendChild(img);
+      }
+      if (qrModalUrl) qrModalUrl.textContent = url;
+      qrModal.classList.add("is-open");
+      qrModal.setAttribute("aria-hidden", "false");
+    }).catch(function () {
+      var img = document.createElement("img");
       img.alt = "QRコード";
       img.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(url);
       img.width = 200;
       img.height = 200;
       qrModalWrap.appendChild(img);
-    }
-    if (qrModalUrl) qrModalUrl.textContent = url;
-    qrModal.classList.add("is-open");
-    qrModal.setAttribute("aria-hidden", "false");
+      if (qrModalUrl) qrModalUrl.textContent = url;
+      qrModal.classList.add("is-open");
+      qrModal.setAttribute("aria-hidden", "false");
+    });
   }
 
   function closeQRModal() {
@@ -212,6 +210,98 @@ function getUserId() {
   return localStorage.getItem("rikeich_uid") || "unknown";
 }
 
+/** シミュレーション用ライブラリを必要時のみ遅延読み込み */
+var simLibsLoaded = false;
+function loadSimLibs() {
+  if (simLibsLoaded) return Promise.resolve();
+  var base = "https://cdn.jsdelivr.net/npm";
+  var baseCjs = "https://cdnjs.cloudflare.com/ajax/libs";
+  var loads = [];
+
+  function loadCss(href) {
+    return new Promise(function (resolve) {
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      link.onload = resolve;
+      link.onerror = resolve;
+      document.head.appendChild(link);
+    });
+  }
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      if (document.querySelector('script[src="' + src + '"]')) {
+        resolve();
+        return;
+      }
+      var script = document.createElement("script");
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  loads.push(loadCss(base + "/jsxgraph/distrib/jsxgraph.css"));
+  loads.push(loadScript(baseCjs + "/p5.js/1.4.2/p5.min.js"));
+  loads.push(loadScript(baseCjs + "/three.js/r128/three.min.js"));
+  loads.push(loadScript(base + "/three@0.128.0/examples/js/controls/OrbitControls.js"));
+  loads.push(loadScript(base + "/chart.js"));
+  loads.push(loadScript(baseCjs + "/matter-js/0.19.0/matter.min.js"));
+  loads.push(loadScript(base + "/jsxgraph/distrib/jsxgraphcore.js"));
+  return Promise.all(loads).then(function () {
+    return loadScript("js/sim-utils.js");
+  }).then(function () {
+    simLibsLoaded = true;
+  });
+}
+
+/** 解説HTMLに sim-embed が含まれるときのみシミュレーション用ライブラリを読み込んでから描画 */
+function whenReadyToRender(html, done) {
+  if (/sim-embed|SimUtils|createCanvas|THREE\.|Chart\.|Matter\.|JXG\./.test(html)) {
+    loadSimLibs().then(done).catch(done);
+  } else {
+    done();
+  }
+}
+
+/** Firebase はリアクションUI設置時に遅延読み込み・初期化 */
+var firebaseReady = null;
+function ensureFirebase() {
+  if (window.db) return Promise.resolve();
+  if (firebaseReady) return firebaseReady;
+  var c = window.firebaseConfig;
+  if (!c || !c.apiKey || c.apiKey === "YOUR_API_KEY") {
+    firebaseReady = Promise.resolve();
+    return firebaseReady;
+  }
+  firebaseReady = new Promise(function (resolve, reject) {
+    function loadScript(src) {
+      return new Promise(function (res, rej) {
+        var s = document.createElement("script");
+        s.src = src;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js")
+      .then(function () {
+        return loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js");
+      })
+      .then(function () {
+        firebase.initializeApp(c);
+        window.db = firebase.firestore();
+        window.collection = function (db, name) { return db.collection(name); };
+        window.doc = function (db, col, id) { return db.collection(col).doc(id); };
+        window.setDoc = function (docRef, data, opt) { return docRef.set(data, opt); };
+        resolve();
+      })
+      .catch(reject);
+  });
+  return firebaseReady;
+}
+
 /**
  * パスから直接HTMLを読み込む (New)
  */
@@ -231,11 +321,15 @@ function loadExplanationByPath(path) {
       return res.text();
     })
     .then((html) => {
-      renderExplanation(textTarget, html);
-
-      const heading = textTarget.querySelector("h2, h3");
-      if (heading) updateTitle(heading.textContent);
-      updateBookmarkButton(path);
+      return new Promise((resolve) => {
+        whenReadyToRender(html, () => {
+          renderExplanation(textTarget, html);
+          const heading = textTarget.querySelector("h2, h3");
+          if (heading) updateTitle(heading.textContent);
+          updateBookmarkButton(path);
+          resolve();
+        });
+      });
     })
     .catch((err) => {
       ErrorHandler.handle(err, "loadExplanationByPath");
@@ -311,8 +405,13 @@ function applyProblemData(target) {
         return res.text();
       })
       .then((html) => {
-        renderExplanation(textTarget, html);
-        updateBookmarkButton(target.explanationPath);
+        return new Promise((resolve) => {
+          whenReadyToRender(html, () => {
+            renderExplanation(textTarget, html);
+            updateBookmarkButton(target.explanationPath);
+            resolve();
+          });
+        });
       })
       .catch((err) => {
         ErrorHandler.handle(err, "applyProblemData");
@@ -338,23 +437,8 @@ function updateTitle(title) {
  */
 function toggleRecordingFloatBar(show) {
   const bar = document.getElementById("recording-float-bar");
-  const btnFullscreen = document.getElementById("recording-btn-fullscreen");
-  const trigger = document.getElementById("recording-float-trigger");
   if (!bar) return;
   bar.setAttribute("aria-hidden", !show);
-  if (show) {
-    bar.classList.add("recording-float-bar--collapsed");
-    bar.classList.remove("recording-float-bar--expanded");
-    if (trigger) {
-      trigger.textContent = "⋯";
-      trigger.setAttribute("aria-label", "メニューを表示");
-      trigger.setAttribute("title", "メニュー");
-    }
-  }
-  if (btnFullscreen) {
-    btnFullscreen.textContent = isRecordingFullscreen() ? "⛶ 全画面解除" : "⛶ 全画面";
-    btnFullscreen.setAttribute("aria-label", isRecordingFullscreen() ? "全画面解除" : "全画面切替");
-  }
 }
 
 /**
@@ -643,14 +727,16 @@ function updateBookmarkButton(path) {
 function setupCardReactions(container) {
   const cards = container.querySelectorAll(".card");
   if (cards.length === 0) return;
+  ensureFirebase().then(function () {
+    setupCardReactionsInner(container, cards);
+  });
+}
 
-  // ★修正: コンテンツIDの生成ロジック
-  // IDパラメータがない場合(path指定の場合)は、ファイル名(拡張子なし)をIDとして扱う
-  // これにより admin.html 側の集計(ID一致)と整合させる
+function setupCardReactionsInner(container, cards) {
   let contentId = currentProbId;
   if (!contentId && currentPath) {
-     const basename = currentPath.split('/').pop(); // "q_001.html"
-     contentId = basename.replace(/\.[^/.]+$/, ""); // "q_001"
+     const basename = currentPath.split('/').pop();
+     contentId = basename.replace(/\.[^/.]+$/, "");
   }
   if (!contentId) contentId = 'unknown_content';
 

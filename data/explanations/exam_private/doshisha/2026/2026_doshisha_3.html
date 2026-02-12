@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年同志社大学 大問3：ピストンと液体・気体の熱力学</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+  <style>
+    .fig-pv-graph { margin: 1em 0; text-align: center; }
+    .fig-pv-graph .svg-pv-graph { max-width: 100%; height: auto; }
+    .fig-pv-graph figcaption { margin-top: 0.5em; font-size: 0.9em; color: var(--col-text-sub, #64748b); }
+    .fig-pv-graph iframe { border: none; border-radius: 12px; max-width: 100%; display: block; margin: 0 auto; }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問3：ピストンと液体・気体の熱力学</h2>
+
+      <div class="card">
+        <h3>解法の全体像</h3>
+        <p>
+          断面積 \(S\) の円筒容器内に<strong>単原子分子理想気体 G</strong>と、その上に液体が載った<strong>軽いピストン</strong>がある熱力学の問題です。
+          加熱→ピストン上昇→液体流出→加熱停止→手で押し戻す、という一連の過程で、圧力・体積・温度・仕事・熱量を整理します。
+        </p>
+        <ul>
+          <li><strong>[1] 初期〜ピストンが動き始める</strong>：気体の圧力が \(p_1\) になったときピストンが上昇し始めることから、<span class="highlight">液体の密度 (ア)</span> を求める。</li>
+          <li><strong>[2] 液体流出直前まで</strong>：等圧変化で体積が \(SH \to S(H+h)\)。この間の<strong>温度 (イ)</strong>と<strong>気体がした仕事 (ウ)</strong>。</li>
+          <li><strong>[3] 液体流出中</strong>：ピストンがさらに \(d\) だけ上昇する間、液圧が \(p_1\) から \(p_0\) へ変化。この間の<strong>仕事 (エ)</strong>と、<strong>p-V グラフ</strong>の概形。</li>
+          <li><strong>[4] エネルギー収支</strong>：加熱開始からスイッチを切るまでの<strong>内部エネルギー増加 (オ)</strong>と<strong>加熱器が与えた熱量 (カ)</strong>。</li>
+          <li><strong>[5] 手で押し込む</strong>：断熱変化として<strong>最終温度 (キ)</strong>を求める。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>問題の設定（図1〜4の対応）</h3>
+        <p>
+          <strong>図1</strong>：ピストンは底から高さ \(H\) のストッパーに支えられて静止。気体 G の圧力 \(p_0\)、温度 \(T_0\)。ピストン上に深さ \(d\) の液体があり、液面には大気圧 \(p_0\) がかかる。容器底に加熱器あり。
+        </p>
+        <p>
+          <strong>図2</strong>：加熱により気体の圧力が \(p_1\) になるとピストンが上昇し始める。ピストンが \(h\) だけ上昇したとき、容器上端から液体が流出し始める。
+        </p>
+        <p>
+          <strong>図3</strong>：加熱を続け、ピストンがさらに \(d\) だけ上昇して液体がすべて流出した瞬間に加熱器のスイッチを切る。
+        </p>
+        <p>
+          <strong>図4</strong>：ピストンをストッパーの位置までゆっくり手で押し込む。容器・ピストンは断熱材なので、この過程は断熱変化。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>(ア) ピストン上に注いだ液体の密度</h3>
+        <p>
+          ピストンが動き始めるのは、気体の圧力が「大気圧 \(+\) 液柱の圧力」とつりあったときである。液柱の高さは \(d\)、密度を \(\rho\) とすると、液柱による圧力は \(\rho g d\)。よって
+          \[
+            p_1 = p_0 + \rho g d
+            \quad \Rightarrow \quad
+            \rho = \frac{p_1 - p_0}{g d}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(ア)</strong><br>
+          \[ \frac{p_1 - p_0}{g d} \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(イ) 液体が流出し始める直前の気体の温度</h3>
+        <p>
+          ストッパーで止まっている間は体積 \(V_0 = SH\) 一定。加熱で圧力が \(p_0 \to p_1\) になるまで<strong>定積</strong>。このときの温度を \(T_1\) とすると \(T_1/T_0 = p_1/p_0\) より \(T_1 = T_0 p_1/p_0\)。
+        </p>
+        <p>
+          その後、ピストンが \(h\) だけ上昇する間は、気体の圧力は \(p_1\) のまま（液面が大気に接したままなので液柱の高さ \(d\) 一定）。つまり<strong>定圧 \(p_1\)</strong>で体積が \(SH \to S(H+h)\)。流出直前の体積を \(V = S(H+h)\)、温度を \(T\) とすると、
+          \[
+            \frac{T}{T_1} = \frac{V}{V_0} = \frac{H+h}{H}
+            \quad \Rightarrow \quad
+            T = T_1 \cdot \frac{H+h}{H} = \frac{T_0 p_1}{p_0} \cdot \frac{H+h}{H}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(イ)</strong><br>
+          \[ \frac{T_0 p_1 (H+h)}{p_0 H} \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(ウ) 液体が流出し始める直前までに G がした仕事</h3>
+        <p>
+          ピストンが \(h\) 上昇する間は圧力 \(p_1\) 一定の等圧過程。気体がした仕事は
+          \[
+            W = p_1 \cdot \Delta V = p_1 \cdot S h
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(ウ)</strong><br>
+          \[ p_1 S h \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>p-V グラフ（解答図 III-A）の概形</h3>
+        <p>
+          横軸を体積 \(V\)、縦軸を圧力 \(p\) とする。
+        </p>
+        <figure class="fig-pv-graph" aria-label="p-Vグラフの概形">
+          <iframe src="data/explanations/exam_private/doshisha/2026/pv-graph.html" width="560" height="420" title="p-Vグラフ（解答図 III-A）"></iframe>
+          <figcaption>解答図 III-A：加熱開始から液体流出終了までの p-V 概形。原点 O(0,0) および軸 \(V,\,p\) を厳密に表示。青の台形の面積が (エ) の仕事に等しい。</figcaption>
+        </figure>
+        <ul>
+          <li><strong>初期</strong>：\((V,\,p) = (SH,\, p_0)\)。加熱で定積のまま \(p_0 \to p_1\) なので、縦方向に線分。</li>
+          <li><strong>ピストンが \(h\) 上昇する間</strong>：定圧 \(p_1\) で \(V\) が \(SH \to S(H+h)\) なので、水平に右へ線分。</li>
+          <li><strong>液体流出中</strong>：ピストンがさらに \(d\) 上昇する間、液の深さが \(d \to 0\) なので気体にかかる圧力は \(p_1 = p_0 + \rho g d\) から \(p_0\) へ減少。\(V\) は \(S(H+h) \to S(H+h+d)\) まで増加。この区間は \(p\) が \(V\) に対して線形に減るので<strong>直線</strong>（右下がり）になる。</li>
+        </ul>
+        <p>
+          したがって、グラフの概形は「縦線分 → 水平線分 → 右下がりの直線」を一筆でつないだ形である。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>(エ) 液体が流出し始めてから全て流出し終わるまでに G がした仕事</h3>
+        <p>
+          p-V グラフにおいて、気体がした仕事 \(W\) は、その過程の曲線と <strong>V 軸</strong>で囲まれた<strong>面積</strong>に等しい（\(W = \int p\,\mathrm{d}V\)）。液体流出中の過程（③）は、\(V = S(H+h)\) から \(S(H+h+d)\) まで、\(p\) が \(p_1\) から \(p_0\) まで直線的に減少するので、グラフ上では右上 \((S(H+h),\,p_1)\) と左下 \((S(H+h+d),\,p_0)\) を結ぶ<strong>直線</strong>である。
+        </p>
+        <p>
+          この直線と V 軸で囲まれた図形は<strong>台形</strong>になる（上記 p-V 図の青い部分）。台形の「上底」は \(p_1\)、「下底」は \(p_0\)、「高さ」は体積の変化量 \(S(H+h+d) - S(H+h) = Sd\) である。よって面積は
+          \[
+            W = \frac{(\text{上底}) + (\text{下底})}{2} \times (\text{高さ})
+            = \frac{p_1 + p_0}{2} \times Sd
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(エ)</strong><br>
+          \[ \frac{(p_1 + p_0) S d}{2} \]
+        </div>
+        <p>
+          <em>（補足）</em> 積分で計算するなら、ピストン上昇量 \(x\)（\(0 \leq x \leq d\)）に対して \(p = p_1 - \frac{p_1-p_0}{d}x\)、\(\mathrm{d}V = S\,\mathrm{d}x\) なので \(W = \int_0^d p\,S\,\mathrm{d}x = S\int_0^d \bigl( p_1 - \frac{p_1-p_0}{d}x \bigr)\,\mathrm{d}x = \frac{(p_1+p_0)Sd}{2}\) となり、台形の面積と一致する。
+        </p>
+      </div>
+
+      <div class="card">
+        <h3>(オ) 加熱器のスイッチを入れてから切るまでの内部エネルギー増加</h3>
+        <p>
+          単原子分子理想気体では \(U = \frac{3}{2} n R T = \frac{3}{2} p V\)（\(pV = nRT\) より）。初期は \(p_0,\, V_0 = SH\)、スイッチを切った直後は液体がすべて流出しているので気体の圧力は \(p_0\)、体積は \(V = S(H+h+d)\)。
+        </p>
+        <p>
+          したがって
+          \[
+            \Delta U = \frac{3}{2} p_0 \cdot S(H+h+d) - \frac{3}{2} p_0 \cdot S H
+            = \frac{3}{2} p_0 S (h + d)
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(オ)</strong><br>
+          \[ \frac{3}{2} p_0 S (h + d) \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(カ) 加熱器が G に与えた熱量</h3>
+        <p>
+          第一法則 \(Q = \Delta U + W\) を用いる。\(W\) は気体がした仕事の合計で、(ウ) \(+\) (エ) である。
+          \[
+            W_{\text{全}} = p_1 S h + \frac{(p_1 + p_0) S d}{2}
+          \]
+          だから
+          \[
+            Q = \Delta U + W_{\text{全}}
+            = \frac{3}{2} p_0 S (h + d) + p_1 S h + \frac{(p_1 + p_0) S d}{2}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(カ)</strong><br>
+          \[ \frac{3}{2} p_0 S (h + d) + p_1 S h + \frac{(p_1 + p_0) S d}{2} \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(キ) ピストンをストッパーまで押し込んだ後の気体の温度</h3>
+        <p>
+          スイッチを切った直後：\(p = p_0\)、\(V = S(H+h+d)\)、温度は \(T_0 \cdot \frac{H+h+d}{H}\)（\(pV/T\) が一定より）。
+        </p>
+        <p>
+          その後、ピストンをゆっくりストッパーまで押し込む。容器は断熱材なので<strong>断熱過程</strong>。単原子分子理想気体の断熱変化では \(p V^{5/3} = \text{一定}\) を用いる。
+        </p>
+        <p>
+          押し込む前：\(p_1 = p_0\)、\(V_1 = S(H+h+d)\)。<br>
+          押し込んだ後：\(V_2 = SH\)。\(p_2\) は \(p_2 V_2^{5/3} = p_1 V_1^{5/3}\) より
+          \[
+            p_2 = p_0 \left( \frac{H+h+d}{H} \right)^{5/3}
+          \]
+          状態方程式 \(pV = nRT\) と断熱の関係から、温度比は
+          \[
+            \frac{T_2}{T_1} = \frac{p_2 V_2}{p_1 V_1}
+            = \left( \frac{H+h+d}{H} \right)^{5/3} \cdot \frac{H}{H+h+d}
+            = \left( \frac{H+h+d}{H} \right)^{2/3}
+          \]
+          押し込む前の温度 \(T_1 = T_0 \frac{H+h+d}{H}\) なので、
+          \[
+            T_2 = T_0 \cdot \frac{H+h+d}{H} \cdot \left( \frac{H+h+d}{H} \right)^{2/3}
+            = T_0 \left( \frac{H+h+d}{H} \right)^{5/3}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(キ)</strong><br>
+          \[ T_0 \left( \frac{H+h+d}{H} \right)^{5/3} \]
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解答のポイント</h3>
+        <ul>
+          <li><strong>(ア)</strong> ピストンが動き始める条件は「気体の圧力 ＝ 大気圧 \(+\) 液柱の圧力」。</li>
+          <li><strong>(イ)(ウ)</strong> ピストンが \(h\) 上昇する間は液面の高さが変わらないので<strong>定圧 \(p_1\)</strong>。体積比で温度、\(W = p \Delta V\) で仕事。</li>
+          <li><strong>(エ)</strong> 流出中は液の深さが \(d \to 0\) なので圧力が \(p_1 \to p_0\) と線形に変化。\(W = \int p\,\mathrm{d}V\) を計算するか、平均圧力 \(\frac{p_1+p_0}{2}\) と体積変化 \(Sd\) で \(W = \frac{p_1+p_0}{2} S d\)。</li>
+          <li><strong>(オ)(カ)</strong> 単原子分子では \(U = \frac{3}{2}pV\)。第一法則 \(Q = \Delta U + W\) で熱量。</li>
+          <li><strong>(キ)</strong> 断熱圧縮では \(pV^{5/3} = \text{一定}\)。そこから \(T \propto pV\) で最終温度を出す。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

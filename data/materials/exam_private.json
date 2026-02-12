@@ -51,6 +51,39 @@
       ]
     },
     {
+      "subjectName": "同志社大学",
+      "folderName": "doshisha",
+      "fields": [
+        {
+          "fieldName": "2026年度",
+          "folderId": "2026",
+          "problems": [
+            {
+              "id": "2026_doshisha_1",
+              "title": "2026年 同志社大学 大問1",
+              "desc": "2球の回転運動と相対運動",
+              "explanationPath": "data/explanations/exam_private/doshisha/2026/2026_doshisha_1.html",
+              "layout": "article"
+            },
+            {
+              "id": "2026_doshisha_2",
+              "title": "2026年 同志社大学 大問2",
+              "desc": "磁場中の電子の運動とベータトロン",
+              "explanationPath": "data/explanations/exam_private/doshisha/2026/2026_doshisha_2.html",
+              "layout": "article"
+            },
+            {
+              "id": "2026_doshisha_3",
+              "title": "2026年 同志社大学 大問3",
+              "desc": "ピストンと液体・気体の熱力学",
+              "explanationPath": "data/explanations/exam_private/doshisha/2026/2026_doshisha_3.html",
+              "layout": "article"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "subjectName": "立命館大学",
       "folderName": "ritsumei",
       "fields": [

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2026年同志社大学 大問1：2球の回転運動と相対運動</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問1：2球の回転運動と相対運動</h2>
+
+      <div class="card">
+        <h3>解法の全体像</h3>
+        <p>
+          なめらかな水平面上を糸でつながれて運動する2つの小球の問題です。
+          <strong>重心運動と相対運動</strong>を分けて考えることがポイントです。
+        </p>
+        <ul>
+          <li><strong>[I] 重心と相対速度</strong>：重心の位置と、重心から見た各小球の運動（相対運動）を考えます。相対運動は等速円運動になります。</li>
+          <li><strong>[II] 図2の瞬間の解析</strong>：特定の初期条件における重心の運動と、重心まわりの円運動を組み合わせます。</li>
+          <li><strong>[III] 図3の状態</strong>：重心運動と円運動の位相（回転角）を考慮して、小球の位置座標を求めます。</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>[I] 基本設定と保存則</h3>
+        
+        <h4>(ア) 重心GからAまでの距離</h4>
+        <p>
+          小球A（質量 \(m_1\)）と小球B（質量 \(m_2\)）の重心Gの位置を考えます。
+          AとBの距離は \(L\) です。重心の定義より、GはABを \(m_2 : m_1\) に内分する点になります。
+          したがって、GからAまでの距離 \(r_1\) は、
+          \[
+             r_1 = \frac{m_2}{m_1+m_2} L
+          \]
+          となります。
+        </p>
+        <div class="box-note">
+          <strong>答え：(ア)</strong><br>
+          \[ \frac{m_2}{m_1+m_2} L \]
+        </div>
+
+        <h4>(イ) 相対速度の関係</h4>
+        <p>
+          A, Bの速度はそれぞれ \(\vec{v_G} + \vec{v_1}\), \(\vec{v_G} + \vec{v_2}\) と表されます。
+          全運動量は
+          \[
+            m_1(\vec{v_G} + \vec{v_1}) + m_2(\vec{v_G} + \vec{v_2})
+            = (m_1+m_2)\vec{v_G} + (m_1\vec{v_1} + m_2\vec{v_2})
+          \]
+          と書けます。
+        </p>
+        <p>
+          Aが糸から受ける力とBが糸から受ける力は、作用・反作用の関係で大きさが同じ・向きが逆なので、系に働く外力の和は 0 であり、運動量保存則より系の全運動量は一定です。重心の定義から、全運動量は常に「全質量 \(\times\) 重心の速度」に等しくなります（\(\vec{P} = (m_1+m_2)\vec{v_G}\)）。よって全運動量 \((m_1+m_2)\vec{v_G} + (m_1\vec{v_1} + m_2\vec{v_2})\) が \((m_1+m_2)\vec{v_G}\) に等しく、
+          \[
+            m_1\vec{v_1} + m_2\vec{v_2} = \vec{0}
+            \quad \Rightarrow \quad
+            \vec{v_2} = -\frac{m_1}{m_2}\vec{v_1}
+          \]
+          が成り立ちます。よって \(\vec{v_2} = \textbf{(イ)}\, \vec{v_1}\) の係数は次のとおりです。
+        </p>
+        <div class="box-note">
+          <strong>答え：(イ)</strong><br>
+          \[ -\frac{m_1}{m_2} \]
+        </div>
+
+        <h4>(a) 床から見た重心Gの運動</h4>
+        <p>
+          <strong>問われていること</strong>：空欄(a)は「<strong>床（慣性系）から見た</strong>重心Gの運動」が何かを答える問題です。Gそのものの動き方です。
+        </p>
+        <p>
+          系に働く外力はありません（糸の張力はAとBの間の内力）。したがって重心Gには合力が働かず、<strong>床から見てGは等速直線運動</strong>をします。（(1)の等速円運動は、Gから見たA・Bの相対運動のことであり、ここで聞かれている「Gの運動」とは別です。）
+        </p>
+        <div class="box-note">
+          <strong>答え：(a)</strong><br>
+          (2) 等速直線運動
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>[II] 図2の瞬間の解析</h3>
+        <p>
+          図2の状態では、Aは原点Oにあり \(\vec{v_A} = \vec{0}\)、Bは \(x=L\) にあり \(\vec{v_B} = (0, v_0)\) です。
+        </p>
+
+        <h4>(ウ) 重心Gの速さ</h4>
+        <p>
+          重心Gの速度 \(\vec{v_G}\) は
+          \[
+            \vec{v_G} = \frac{m_1 \vec{v_A} + m_2 \vec{v_B}}{m_1+m_2}
+            = \frac{m_1 \vec{0} + m_2 (0, v_0)}{m_1+m_2}
+            = \left( 0, \frac{m_2 v_0}{m_1+m_2} \right)
+          \]
+          よって、重心Gの速さは次のとおりです。
+        </p>
+        <div class="box-note">
+          <strong>答え：(ウ)</strong><br>
+          \[ \frac{m_2 v_0}{m_1+m_2} \]
+        </div>
+
+        <h4>(エ) GからみたBの円運動の角速度</h4>
+        <p>
+          重心GからBまでの距離（回転半径）は \(r_2 = L - r_1 = L - \frac{m_2 L}{m_1+m_2} = \frac{m_1 L}{m_1+m_2}\) です。
+          BのGに対する相対速度 \(\vec{v_2}\) は
+          \[
+             \vec{v_2} = \vec{v_B} - \vec{v_G} = (0, v_0) - \left( 0, \frac{m_2 v_0}{m_1+m_2} \right)
+             = \left( 0, \frac{m_1 v_0}{m_1+m_2} \right)
+          \]
+          相対速さ \(v_2 = |\vec{v_2}| = \frac{m_1 v_0}{m_1+m_2}\) です。
+          円運動の式 \(v_2 = r_2 \omega\) より、角速度 \(\omega\) は
+          \[
+            \omega = \frac{v_2}{r_2} = \frac{\frac{m_1 v_0}{m_1+m_2}}{\frac{m_1 L}{m_1+m_2}} = \frac{v_0}{L}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(エ)</strong><br>
+          \[ \frac{v_0}{L} \]
+        </div>
+
+        <h4>(オ) Aが糸から受ける力の大きさ</h4>
+        <p>
+          AはGを中心とする半径 \(r_1\) の等速円運動をしています。張力 \(T\) が向心力となるので、
+          \[
+             T = m_1 r_1 \omega^2 = m_1 \left( \frac{m_2 L}{m_1+m_2} \right) \left( \frac{v_0}{L} \right)^2
+             = \frac{m_1 m_2}{m_1+m_2} \frac{v_0^2}{L}
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(オ)</strong><br>
+          \[ \frac{m_1 m_2}{m_1+m_2} \frac{v_0^2}{L} \]
+        </div>
+
+        <h4>(カ) 相対運動の運動エネルギーの和</h4>
+        <p>
+          求める値は \(K_{\text{rel}} = \frac{1}{2}m_1|\vec{v_1}|^2 + \frac{1}{2}m_2|\vec{v_2}|^2\) です。
+          \(|\vec{v_1}| = r_1 \omega\), \(|\vec{v_2}| = r_2 \omega\) なので、
+          \[
+             K_{\text{rel}} = \frac{1}{2}\omega^2 (m_1 r_1^2 + m_2 r_2^2)
+          \]
+          括弧内 \(m_1 r_1^2 + m_2 r_2^2\)（重心のまわりの回転のしやすさを表す量で、大学では慣性モーメントと呼ばれる）を計算すると、
+          \[
+             m_1 r_1^2 + m_2 r_2^2 = m_1 \left( \frac{m_2 L}{m_1+m_2} \right)^2 + m_2 \left( \frac{m_1 L}{m_1+m_2} \right)^2
+             = \frac{m_1 m_2 L^2}{(m_1+m_2)^2} (m_2 + m_1) = \frac{m_1 m_2 L^2}{m_1+m_2}
+          \]
+          したがって
+          \[
+             K_{\text{rel}} = \frac{1}{2} \left( \frac{v_0}{L} \right)^2 \frac{m_1 m_2 L^2}{m_1+m_2}
+             = \frac{1}{2} \frac{m_1 m_2}{m_1+m_2} v_0^2
+          \]
+        </p>
+        <div class="box-note">
+          <strong>答え：(カ)</strong><br>
+          \[ \frac{1}{2} \frac{m_1 m_2}{m_1+m_2} v_0^2 \]
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>[III] 図3の状態（回転と移動）</h3>
+        <p>
+          重心Gは初速度のまま等速直線運動を続け、AとBはGのまわりを等速円運動します。
+          初期状態（図2）では、Aは原点Oに、Gは \((a, 0)\) に、Bは \((L, 0)\) にありました（ここで \(a = r_1\) とします）。
+        </p>
+        <p>
+          重心Gの速度は \(\vec{v_G} = (0, a\omega)\) です（\(\because V_G = \frac{m_2 v_0}{m_1+m_2} = r_1 \frac{v_0}{L}\frac{m_1+m_2}{m_2} \frac{m_2}{m_1+m_2} = a\omega\)）。
+          したがって時刻 \(t\) におけるGの位置は \((a, a\omega t)\) です。
+        </p>
+        
+        <h4>回転角の考察</h4>
+        <p>
+          図2では \(\vec{GB}\) の偏角は \(0\)、\(\vec{GA}\) の偏角は \(\pi\) です。
+          これらが角速度 \(\omega\) で反時計回りに回転します。
+          「BがGからみて2回転し、3回転目の途中で図3のように糸とx軸のなす角が \(\frac{\pi}{4}\) となった」状況を考えます。
+        </p>
+        <p>
+          図3では、Aが右上、Bが左下に描かれており、線分AB（糸）の角度が \(\frac{\pi}{4}\) です。
+          つまり、ベクトル \(\vec{GA}\) の偏角は \(\frac{\pi}{4}\) （または \(2n\pi + \frac{\pi}{4}\)）です。
+          初期の \(\vec{GA}\) の偏角は \(\pi\) でした。
+          ここから2回転（\(4\pi\)）以上回転して \(\frac{\pi}{4}\) の向きになるまでの回転角 \(\Delta \theta\) は、
+          \[
+             \Delta \theta = (\text{2回転}) + (\pi \to \frac{\pi}{4} \text{の回転})
+          \]
+          \(\pi\) から反時計回りに \(\frac{\pi}{4}\) の向きになるには、\(\pi \to 2\pi \to 2\pi+\frac{\pi}{4}\) なので、追加の回転は \(\pi + \frac{\pi}{4} = \frac{5\pi}{4}\) です。
+          よって総回転角は
+          \[
+             \omega t = 4\pi + \frac{5\pi}{4} = \frac{21\pi}{4}
+          \]
+          となります。
+        </p>
+
+        <h4>Aの座標</h4>
+        <p>
+          このときのAの位置 \(\vec{r_A}\) は、\(\vec{r_G} + \vec{GA}\) です。
+          \[
+             \vec{r_G} = (a, a\omega t) = \left( a, a \cdot \frac{21\pi}{4} \right)
+          \]
+          \[
+             \vec{GA} = (a \cos \frac{\pi}{4}, a \sin \frac{\pi}{4}) = \left( \frac{a}{\sqrt{2}}, \frac{a}{\sqrt{2}} \right)
+          \]
+          よって、
+          \[
+             x_A = a + \frac{a}{\sqrt{2}} = \left( 1 + \frac{1}{\sqrt{2}} \right) a
+          \]
+          \[
+             y_A = \frac{21\pi}{4} a + \frac{a}{\sqrt{2}} = \left( \frac{21\pi}{4} + \frac{1}{\sqrt{2}} \right) a
+          \]
+          したがって、求める係数は次のとおりです。
+        </p>
+        <div class="box-note">
+          <strong>答え：(キ)</strong> \(1 + \frac{1}{\sqrt{2}}\)（または \(\frac{2+\sqrt{2}}{2}\)）<br>
+          <strong>答え：(ク)</strong> \(\frac{21\pi}{4} + \frac{1}{\sqrt{2}}\)（または \(\frac{21\pi + 2\sqrt{2}}{4}\) など）
+        </div>
+      </div>
+
+      <div class="box-alert">
+        <span class="box-alert-label">Point</span>
+        <h3>解答のポイント</h3>
+        <ul>
+          <li><strong>2体問題は重心と相対運動に分解する</strong>：外力が働かない系では重心は等速直線運動をし、相対運動は等速円運動になります。</li>
+          <li><strong>回転角の計算</strong>：初期位相と回転数に注意して、時刻 \(t\) を求めます。図からAとBのどちらがどの位置にあるかを正確に読み取ることが重要です。</li>
+          <li><strong>座標の合成</strong>：\(\vec{r_A} = \vec{r_G} + \vec{r_{A/G}}\) のベクトル和で座標を求めます。</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

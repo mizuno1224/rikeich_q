@@ -263,6 +263,7 @@ git push origin main
 
 ```bash
 # 本番環境へデプロイ
+npm run deploy
 firebase deploy
 ```
 
