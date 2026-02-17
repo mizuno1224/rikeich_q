@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           loadMaterial(0);
         }
-        initSearch();
+        // initSearch(); // 問題検索機能は一時無効
         initBookmarksSection();
       });
   }
@@ -85,9 +85,10 @@ document.addEventListener("DOMContentLoaded", () => {
     tabContainer.innerHTML = "";
     subTabContainer.innerHTML = "";
 
-    // 1. 通常教材のタブ生成
+    // 1. 通常教材のタブ生成（その他を除く）
     manifest.forEach((mat, index) => {
       if (EXAM_TYPES.includes(mat.type)) return; // 入試系はスキップ
+      if (mat.id === "other") return; // その他は後で入試過去問の右に配置
       createMainTab(mat.name, index);
     });
 
@@ -100,6 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.dataset.isExam = "true";
       btn.onclick = () => showExamTabs(btn);
       tabContainer.appendChild(btn);
+    }
+
+    // 3. その他を入試過去問の右に配置
+    const otherIndex = manifest.findIndex((m) => m.id === "other");
+    if (otherIndex >= 0) {
+      createMainTab(manifest[otherIndex].name, otherIndex);
     }
   }
 
@@ -176,10 +183,10 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((res) => res.json())
       .then((materialData) => {
         renderContent(materialData);
-        const searchInput = document.getElementById("problem-search");
-        if (searchInput && searchInput.value.trim()) {
-          filterProblems(searchInput.value.trim());
-        }
+        // 問題検索は一時無効
+        // if (document.getElementById("problem-search") && document.getElementById("problem-search").value.trim()) {
+        //   filterProblems(document.getElementById("problem-search").value.trim());
+        // }
       })
       .catch((err) => {
         ErrorHandler.handle(err, "loadMaterial");
@@ -200,67 +207,115 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function renderContent(material) {
     const esc = (s) => (s == null ? "" : escapeHtml(String(s)));
-    let html = `<div class="subject-grid">`;
+    const isTextbook = material.materialName === "物理基礎" || material.materialName === "物理" || material.materialName === "リードLight" || material.materialName === "リードα";
+    let html = '<div class="subject-grid">';
     if (material.subjects) {
       material.subjects.forEach((subject) => {
         const hasFields = subject.fields && subject.fields.length > 0;
         if (!hasFields) return;
 
-        html += `<div class="subject-card">`;
-        html += `<h3 class="subject-name">${esc(subject.subjectName)}</h3>`;
-        html += `<ul class="field-list">`;
+        html += '<div class="subject-card">';
+        html += '<h3 class="subject-name">' + esc(subject.subjectName) + '</h3>';
 
-        subject.fields.forEach((field) => {
-          const problems = field.problems || [];
-          const isEmpty = problems.length === 0;
-          html += `<li class="field-item" data-empty="${isEmpty}">`;
-          html += `<details class="field-details">`;
-          html += `<summary class="field-summary"><span class="field-name">${esc(field.fieldName)}</span><span class="field-count">${problems.length}件</span></summary>`;
-          html += `<div class="field-body">`;
-          if (isEmpty) {
-            html += `<p class="prob-empty">問題はまだ登録されていません</p>`;
-          } else {
-            html += `<div class="prob-grid">`;
-            problems.forEach((p) => {
-              const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}${isTeacherMode ? "&admin=1" : ""}`;
-              const title = esc(p.title);
-              const path = p.explanationPath || "";
-              html += `<a href="${targetUrl}" class="prob-link" target="_blank" data-search-text="${esc(path + " " + p.title)}"><span>${title}</span></a>`;
+        if (isTextbook) {
+          // 編ごとにグループ化し、ボタン（summary）には章のみ表示
+          var partGroups = {};
+          var partOrder = [];
+          subject.fields.forEach(function (field) {
+            var name = field.fieldName || "";
+            var slashIdx = name.indexOf(" / ");
+            var partName = slashIdx >= 0 ? name.substring(0, slashIdx) : "";
+            var chapterName = slashIdx >= 0 ? name.substring(slashIdx + 3) : name;
+            if (!partGroups[partName]) {
+              partGroups[partName] = [];
+              if (partName) partOrder.push(partName);
+            }
+            partGroups[partName].push({ field: field, chapterName: chapterName });
+          });
+          if (partGroups[""] && partGroups[""].length) partOrder.push("");
+          partOrder.forEach(function (partName) {
+            var items = partGroups[partName];
+            if (partName) html += '<h4 class="part-name">' + esc(partName) + '</h4>';
+            html += '<ul class="field-list">';
+            items.forEach(function (item) {
+              var field = item.field;
+              var problems = field.problems || [];
+              var isEmpty = problems.length === 0;
+              html += '<li class="field-item" data-empty="' + isEmpty + '">';
+              html += '<details class="field-details">';
+              html += '<summary class="field-summary"><span class="field-name">' + esc(item.chapterName) + '</span><span class="field-count">' + problems.length + '件</span></summary>';
+              html += '<div class="field-body">';
+              if (isEmpty) {
+                html += '<p class="prob-empty">問題はまだ登録されていません</p>';
+              } else {
+                html += '<div class="prob-grid">';
+                problems.forEach(function (p) {
+                  var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
+                  var title = esc(p.title);
+                  var path = p.explanationPath || "";
+                  html += '<a href="' + targetUrl + '" class="prob-link" target="_blank" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                });
+                html += '</div>';
+              }
+              html += '</div></details></li>';
             });
-            html += `</div>`;
-          }
-          html += `</div></details></li>`;
-        });
-        html += `</ul></div>`;
+            html += '</ul>';
+          });
+        } else {
+          html += '<ul class="field-list">';
+          subject.fields.forEach(function (field) {
+            var problems = field.problems || [];
+            var isEmpty = problems.length === 0;
+            html += '<li class="field-item" data-empty="' + isEmpty + '">';
+            html += '<details class="field-details">';
+            html += '<summary class="field-summary"><span class="field-name">' + esc(field.fieldName) + '</span><span class="field-count">' + problems.length + '件</span></summary>';
+            html += '<div class="field-body">';
+            if (isEmpty) {
+              html += '<p class="prob-empty">問題はまだ登録されていません</p>';
+            } else {
+              html += '<div class="prob-grid">';
+              problems.forEach(function (p) {
+                var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
+                var title = esc(p.title);
+                var path = p.explanationPath || "";
+                html += '<a href="' + targetUrl + '" class="prob-link" target="_blank" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+              });
+              html += '</div>';
+            }
+            html += '</div></details></li>';
+          });
+          html += '</ul>';
+        }
+        html += '</div>';
       });
     }
-    html += `</div>`;
+    html += '</div>';
     contentArea.innerHTML = html;
   }
 
-  function initSearch() {
-    const searchInput = document.getElementById("problem-search");
-    const clearBtn = document.getElementById("clear-search");
-    if (!searchInput) return;
+  // 問題検索機能は一時無効
+  // function initSearch() {
+  //   const searchInput = document.getElementById("problem-search");
+  //   const clearBtn = document.getElementById("clear-search");
+  //   if (!searchInput) return;
+  //   searchInput.addEventListener("input", (e) => {
+  //     const query = e.target.value.trim().toLowerCase();
+  //     filterProblems(query);
+  //     if (clearBtn) clearBtn.style.visibility = query ? "visible" : "hidden";
+  //   });
+  //   if (clearBtn) {
+  //     clearBtn.style.visibility = searchInput.value.trim() ? "visible" : "hidden";
+  //     clearBtn.addEventListener("click", () => {
+  //       searchInput.value = "";
+  //       searchInput.focus();
+  //       filterProblems("");
+  //       clearBtn.style.visibility = "hidden";
+  //     });
+  //   }
+  // }
 
-    searchInput.addEventListener("input", (e) => {
-      const query = e.target.value.trim().toLowerCase();
-      filterProblems(query);
-      if (clearBtn) clearBtn.style.visibility = query ? "visible" : "hidden";
-    });
-
-    if (clearBtn) {
-      clearBtn.style.visibility = searchInput.value.trim() ? "visible" : "hidden";
-      clearBtn.addEventListener("click", () => {
-        searchInput.value = "";
-        searchInput.focus();
-        filterProblems("");
-        clearBtn.style.visibility = "hidden";
-      });
-    }
-  }
-
-  function filterProblems(query) {
+  // function filterProblems(query) {
+  function _filterProblemsUnused(query) {
     const links = document.querySelectorAll("#content-area .prob-link");
     const lower = query.trim().toLowerCase();
 
@@ -284,14 +339,13 @@ document.addEventListener("DOMContentLoaded", () => {
       card.style.display = visible ? "" : "none";
     });
 
-    var countEl = document.getElementById("search-result-count");
-    if (countEl) {
-      var visibleCount = 0;
-      links.forEach(function (link) {
-        if (link.style.display !== "none") visibleCount++;
-      });
-      countEl.textContent = lower ? visibleCount + " 件" : "";
-    }
+    // 検索件数表示は一時無効
+    // var countEl = document.getElementById("search-result-count");
+    // if (countEl) {
+    //   var visibleCount = 0;
+    //   links.forEach(function (link) { if (link.style.display !== "none") visibleCount++; });
+    //   countEl.textContent = lower ? visibleCount + " 件" : "";
+    // }
   }
 
   function initBookmarksSection() {
