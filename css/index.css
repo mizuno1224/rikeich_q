@@ -324,6 +324,19 @@ h1 {
   color: var(--col-primary);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
+.prob-link-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
+.prob-link-disabled:hover {
+  transform: none;
+  box-shadow: none;
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+}
 .prob-empty {
   color: #94a3b8;
   font-size: 0.85rem;

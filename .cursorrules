@@ -133,6 +133,41 @@
 <!-- 答一覧は含めない -->
 ```
 
+#### 2.6.1 HTMLフラグメント形式の厳守（★重要）
+
+**解説ページのHTMLファイルは、必ずHTMLフラグメント形式で生成すること。完全なHTMLドキュメント（`<!DOCTYPE html>`, `<html>`, `<head>`, `<body>` タグを含む形式）は生成しない。**
+
+- **正しい形式（フラグメント）**：`<div class="explanation-area">` の中身のみ、またはその中身を直接記述する形式
+  ```html
+  <h2 class="prob-title-sub">問題番号：物理テーマ</h2>
+  <div class="card">
+    <h3>解法の全体像</h3>
+    ...
+  </div>
+  ...
+  ```
+- **誤った形式（完全なHTMLドキュメント）**：以下のような形式は生成しない
+  ```html
+  <!DOCTYPE html>
+  <html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    ...
+  </head>
+  <body>
+    <div class="viewer-container">
+      <div class="explanation-area">
+        ...
+      </div>
+    </div>
+  </body>
+  </html>
+  ```
+
+**理由**：解説ページは `viewer.js` の `renderExplanation` 関数で `innerHTML` を使って挿入されるため、完全なHTMLドキュメントではなく、挿入可能なHTMLフラグメントである必要がある。完全なHTMLドキュメントを生成すると、パースエラーや表示不具合の原因となる。
+
+**チェック方法**：生成したHTMLファイルの先頭が `<!DOCTYPE html>` や `<html` で始まっていないことを確認する。先頭は `<h2>` や `<div class="card">` などのコンテンツ要素から始まるべきである。
+
 #### 2.7 解説ページ作成・増築時のチェックリスト
 
 解説ページを**新規作成**または**既存ページに追記・修正**するときは、作業完了前に以下を必ず確認する：

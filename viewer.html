@@ -32,7 +32,7 @@
     };
     
     // MathJaxの遅延読み込み
-    function loadMathJax() {
+    window.loadMathJax = function() {
       if (window.MathJax) return;
       window.MathJax = window.MathJaxConfig;
       var script = document.createElement('script');
@@ -43,35 +43,38 @@
         if (window.onMathJaxLoaded) window.onMathJaxLoaded();
       };
       document.head.appendChild(script);
-    }
+    };
     
     // スクロール時または一定時間後にMathJaxを読み込み
     var mathJaxLoaded = false;
     function tryLoadMathJax() {
       if (mathJaxLoaded) return;
       mathJaxLoaded = true;
-      setTimeout(loadMathJax, 500);
+      setTimeout(window.loadMathJax, 500);
     }
     
     window.addEventListener('scroll', tryLoadMathJax, { once: true, passive: true });
-    setTimeout(tryLoadMathJax, 2000);
+    setTimeout(tryLoadMathJax, 1000); // 読み込みタイミングを早める
   </script>
 </head>
 
 <body>
   <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
   <header class="prob-header-top" role="banner">
-    <div class="header-left">
-      <a href="index.html" class="btn-back-circle" aria-label="一覧に戻る">←</a>
-      <h1 id="prob-title-header">読み込み中...</h1>
+    <div class="header-top-row">
+      <div class="header-left">
+        <a href="index.html" class="btn-back-circle" aria-label="一覧に戻る">←</a>
+        <h1 id="prob-title-header">読み込み中...</h1>
+      </div>
+      <div class="header-actions" role="group" aria-label="操作">
+        <button type="button" id="qr-trigger" class="btn-sm qr-trigger" aria-label="このページのQRコードを表示" title="QRコードでアクセス">▣ QR</button>
+        <button type="button" id="btn-bookmark" class="btn-sm btn-bookmark" aria-label="ブックマークに追加" title="ブックマークに追加">☆ ブックマーク</button>
+        <button type="button" id="btn-toggle-pointer" class="btn-sm" aria-label="操作モード切替">👆 操作モード</button>
+        <!-- 音声機能は一時的に非表示 -->
+        <!-- <button id="audio-generate-btn" class="btn-sm" style="display: none;" title="補足説明付きで音声解説を再生">🎤 音声解説</button> -->
+      </div>
     </div>
-    <div class="header-actions" role="group" aria-label="操作">
-      <button type="button" id="qr-trigger" class="btn-sm qr-trigger" aria-label="このページのQRコードを表示" title="QRコードでアクセス">▣ QR</button>
-      <button type="button" id="btn-bookmark" class="btn-sm btn-bookmark" aria-label="ブックマークに追加" title="ブックマークに追加">☆ ブックマーク</button>
-      <button type="button" id="btn-toggle-pointer" class="btn-sm" aria-label="操作モード切替">👆 操作モード</button>
-      <!-- 音声機能は一時的に非表示 -->
-      <!-- <button id="audio-generate-btn" class="btn-sm" style="display: none;" title="補足説明付きで音声解説を再生">🎤 音声解説</button> -->
-    </div>
+    <!-- タブバーはここに動的に挿入される -->
   </header>
 
   <div class="viewer-container" id="main-content">

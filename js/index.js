@@ -1,6 +1,15 @@
 /* js/index.js */
 
 document.addEventListener("DOMContentLoaded", () => {
+  // viewer.htmlから戻ってきた場合、スクロール位置を復元
+  var savedScrollPosition = sessionStorage.getItem('indexScrollPosition');
+  if (savedScrollPosition) {
+    sessionStorage.removeItem('indexScrollPosition');
+    setTimeout(function() {
+      window.scrollTo(0, parseInt(savedScrollPosition, 10));
+    }, 100);
+  }
+  
   const params = new URLSearchParams(window.location.search);
   const isTeacherMode = params.get("mode") === "teacher";
 
@@ -250,10 +259,17 @@ document.addEventListener("DOMContentLoaded", () => {
               } else {
                 html += '<div class="prob-grid">';
                 problems.forEach(function (p) {
-                  var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                  var title = esc(p.title);
                   var path = p.explanationPath || "";
-                  html += '<a href="' + targetUrl + '" class="prob-link" target="_blank" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                  var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
+                  var hasExplanation = path && !isPDF;
+                  var title = esc(p.title);
+                  if (isPDF || !hasExplanation) {
+                    // PDFからの解説ページ、または解説がない問題はグレーアウトして無効化
+                    html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span></a>';
+                  } else {
+                    var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
+                    html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                  }
                 });
                 html += '</div>';
               }
@@ -275,10 +291,17 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               html += '<div class="prob-grid">';
               problems.forEach(function (p) {
-                var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                var title = esc(p.title);
                 var path = p.explanationPath || "";
-                html += '<a href="' + targetUrl + '" class="prob-link" target="_blank" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
+                var hasExplanation = path && !isPDF;
+                var title = esc(p.title);
+                if (isPDF || !hasExplanation) {
+                  // PDFからの解説ページ、または解説がない問題はグレーアウトして無効化
+                  html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span></a>';
+                } else {
+                  var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
+                  html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                }
               });
               html += '</div>';
             }
@@ -366,8 +389,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const adminSuffix = isTeacherMode ? "&admin=1" : "";
       list.innerHTML = bookmarks
         .map(
-          (b) =>
-            `<a href="viewer.html?path=${encodeURIComponent(b.path)}${adminSuffix}" class="prob-link" target="_blank">${escapeHtml(b.title)}</a>`
+          (b) => {
+            var isPDF = /\.pdf$/i.test(b.path) || b.path.includes('pdfs/') || b.path.includes('\\pdfs\\');
+            if (isPDF) {
+              return `<a href="#" class="prob-link prob-link-disabled" onclick="return false;">${escapeHtml(b.title)}</a>`;
+            } else {
+              return `<a href="viewer.html?path=${encodeURIComponent(b.path)}${adminSuffix}" class="prob-link">${escapeHtml(b.title)}</a>`;
+            }
+          }
         )
         .join("");
     }
@@ -458,6 +487,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  
+  // viewer.htmlへのリンククリック時にスクロール位置を保存
+  contentArea.addEventListener("click", function(e) {
+    var link = e.target.closest("a.prob-link");
+    if (link && link.href && link.href.indexOf("viewer.html") !== -1 && !link.classList.contains("prob-link-disabled")) {
+      sessionStorage.setItem("indexScrollPosition", window.scrollY.toString());
+      // viewer.htmlに遷移する前に現在のURLを保存
+      sessionStorage.setItem("previousPageUrl", window.location.href);
+    }
+  });
 });
 
 function getBookmarksList() {

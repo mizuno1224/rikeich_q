@@ -11,13 +11,91 @@ let currentPath = null;
 let audioPlayer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 戻るボタン: 常に index.html へ正しく遷移するよう href を現在のパスから算出
+  // 戻るボタン: 直前の位置に戻る
   const backLink = document.querySelector("a.btn-back-circle");
   if (backLink) {
-    const path = window.location.pathname || "";
-    const indexPath = path.replace(/[^/]*$/, "index.html");
-    backLink.setAttribute("href", indexPath || "index.html");
+    backLink.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // sessionStorageに保存された前のページのURLを確認
+      var previousUrl = sessionStorage.getItem('previousPageUrl');
+      
+      // 履歴がある場合は戻る
+      if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+        // 前のページのURLをsessionStorageに保存（次回の戻るボタン用）
+        sessionStorage.setItem('previousPageUrl', document.referrer);
+        window.history.back();
+      } else if (previousUrl && previousUrl !== window.location.href) {
+        // sessionStorageに保存されたURLがある場合はそこに戻る
+        window.location.href = previousUrl;
+      } else {
+        // フォールバック: index.htmlへ
+        const path = window.location.pathname || "";
+        const indexPath = path.replace(/[^/]*$/, "index.html");
+        window.location.href = indexPath || "index.html";
+      }
+    });
   }
+  
+  // ページ読み込み時に現在のURLをsessionStorageに保存（次回の戻るボタン用）
+  if (document.referrer && document.referrer !== window.location.href) {
+    sessionStorage.setItem('previousPageUrl', document.referrer);
+  }
+  
+  // スクロール時にタイトル行を隠す
+  var headerTop = document.querySelector('.prob-header-top');
+  var headerTopRow = headerTop ? headerTop.querySelector('.header-top-row') : null;
+  var scrollThreshold = 100; // 100pxスクロールしたらタイトルを隠す
+  var compactBackBtn = null;
+  
+  function handleScroll() {
+    if (!headerTop || !headerTopRow) return;
+    
+    var scrollY = window.scrollY || window.pageYOffset;
+    var isScrolled = scrollY > scrollThreshold;
+    
+    if (isScrolled) {
+      headerTop.classList.add('header-scrolled');
+      // コンパクトな戻るボタンを追加
+      if (!compactBackBtn) {
+        var tabBar = headerTop.querySelector('.card-tabs-bar');
+        if (tabBar && !tabBar.querySelector('.compact-back-btn')) {
+          compactBackBtn = document.createElement('button');
+          compactBackBtn.className = 'compact-back-btn';
+          compactBackBtn.innerHTML = '←';
+          compactBackBtn.setAttribute('aria-label', '一覧に戻る');
+          compactBackBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // 戻るボタンのロジックを直接実行
+            var previousUrl = sessionStorage.getItem('previousPageUrl');
+            if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+              sessionStorage.setItem('previousPageUrl', document.referrer);
+              window.history.back();
+            } else if (previousUrl && previousUrl !== window.location.href) {
+              window.location.href = previousUrl;
+            } else {
+              const path = window.location.pathname || "";
+              const indexPath = path.replace(/[^/]*$/, "index.html");
+              window.location.href = indexPath || "index.html";
+            }
+          });
+          tabBar.appendChild(compactBackBtn);
+        }
+      }
+    } else {
+      headerTop.classList.remove('header-scrolled');
+      // コンパクトな戻るボタンを削除
+      if (compactBackBtn && compactBackBtn.parentNode) {
+        compactBackBtn.parentNode.removeChild(compactBackBtn);
+        compactBackBtn = null;
+      }
+    }
+  }
+  
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll(); // 初期状態をチェック
 
   const params = new URLSearchParams(window.location.search);
 
@@ -520,7 +598,34 @@ function onFullscreenChange() {
 
 function renderExplanation(container, html) {
   // 1. HTML挿入（直接innerHTMLで高速化、DocumentFragmentは不要）
-  container.innerHTML = html;
+  // 完全なHTMLドキュメントの場合は<div class="explanation-area">の中身だけを抽出
+  var htmlContent = html.trim();
+  if (htmlContent.match(/^\s*<!DOCTYPE\s+html/i) || htmlContent.match(/^\s*<html/i)) {
+    // 完全なHTMLドキュメントの場合、<div class="explanation-area">の中身を抽出
+    var explanationAreaMatch = htmlContent.match(/<div\s+class=["']explanation-area["'][^>]*>([\s\S]*?)<\/div>\s*<\/div>\s*<\/body>/i);
+    if (explanationAreaMatch && explanationAreaMatch[1]) {
+      htmlContent = explanationAreaMatch[1].trim();
+    } else {
+      // <div class="explanation-area">が見つからない場合、<body>タグの中身を抽出
+      var bodyMatch = htmlContent.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+      if (bodyMatch && bodyMatch[1]) {
+        htmlContent = bodyMatch[1].trim();
+        // <div class="viewer-container">と<div class="explanation-area">のラッパーを除去
+        htmlContent = htmlContent.replace(/^\s*<div\s+class=["']viewer-container["'][^>]*>\s*/i, '');
+        htmlContent = htmlContent.replace(/^\s*<div\s+class=["']explanation-area["'][^>]*>\s*/i, '');
+        htmlContent = htmlContent.replace(/\s*<\/div>\s*<\/div>\s*$/i, '');
+        htmlContent = htmlContent.trim();
+      } else {
+        // <body>タグが見つからない場合、<html>タグの中身を抽出
+        var htmlMatch = htmlContent.match(/<html[^>]*>([\s\S]*)<\/html>/i);
+        if (htmlMatch && htmlMatch[1]) {
+          // <head>タグを除去
+          htmlContent = htmlMatch[1].replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '').trim();
+        }
+      }
+    }
+  }
+  container.innerHTML = htmlContent;
   
   // 画像の遅延読み込み（requestIdleCallbackで遅延）
   var scheduleImg = window.requestIdleCallback || function(cb) {
@@ -687,6 +792,9 @@ function renderExplanation(container, html) {
       pointerInstance.resize();
     });
   }
+
+  // 7. タブ機能の追加（カードごとにタブで切り替え、Pointは最後のタブ）
+  setupCardTabs(container);
 }
 
 function showError(msg) {
@@ -963,5 +1071,358 @@ function initAudioControls() {
         controlsPanel.style.display = 'none';
       }
     });
+  }
+}
+
+/**
+ * カードごとにタブで切り替えられるようにする
+ * Pointは最後のタブに配置
+ *
+ * 重要: DOM要素を移動しない。元のカード/Pointをそのまま残し、
+ * display で表示/非表示を切り替える。
+ * 非表示カード内のスクリプトは data-tab-deferred でマークし、
+ * タブを開いた時に初めて実行する。これによりシミュレーションが
+ * 正しいコンテナ幅で描画される。
+ */
+function setupCardTabs(container) {
+  var cards = Array.from(container.querySelectorAll('.card'));
+  var pointBox = container.querySelector('.box-alert');
+
+  if (cards.length < 2 && !pointBox) return;
+
+  // タブの対象要素一覧（カード + Point）
+  var items = cards.slice();
+  if (pointBox) items.push(pointBox);
+
+  // --- 遅延スクリプトの実行関数（先に定義） ---
+  function executeDeferredScripts(item) {
+    var scripts = item.querySelectorAll('script[data-tab-deferred]');
+    if (scripts.length === 0) return;
+    for (var i = 0; i < scripts.length; i++) {
+      var oldScript = scripts[i];
+      oldScript.removeAttribute('data-tab-deferred');
+      var newScript = document.createElement('script');
+      var attrs = oldScript.attributes;
+      for (var j = 0; j < attrs.length; j++) {
+        if (attrs[j].name !== 'data-executed' && attrs[j].name !== 'data-tab-deferred') {
+          newScript.setAttribute(attrs[j].name, attrs[j].value);
+        }
+      }
+      newScript.textContent = oldScript.textContent;
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    }
+  }
+
+  // --- MathJax を処理（先に定義） ---
+  function processMathInItem(item) {
+    if (!item) return;
+    
+    // アイテムが表示されていることを確認
+    var computedStyle = window.getComputedStyle(item);
+    var isVisible = computedStyle.display !== 'none' && computedStyle.visibility !== 'hidden' && item.offsetParent !== null;
+    if (!isVisible) {
+      // 非表示の場合は表示されるまで待機（最大5秒）
+      var retryCount = 0;
+      var maxRetries = 50;
+      var checkVisible = function() {
+        retryCount++;
+        var style = window.getComputedStyle(item);
+        var visible = style.display !== 'none' && style.visibility !== 'hidden' && item.offsetParent !== null;
+        if (visible) {
+          processMathInItem(item);
+        } else if (retryCount < maxRetries) {
+          setTimeout(checkVisible, 100);
+        }
+      };
+      setTimeout(checkVisible, 100);
+      return;
+    }
+    
+    // MathJaxが読み込まれるまで待機（最大20回、2秒まで）
+    var maxRetries = 20;
+    var retryCount = 0;
+    var checkAndProcess = function() {
+      retryCount++;
+      if (window.MathJax) {
+        if (MathJax.typesetPromise) {
+          // MathJax 3.x
+          MathJax.typesetPromise([item]).then(function() {
+            // 処理完了
+          }).catch(function(err) {
+            console.log('MathJax typeset error:', err);
+            // エラーが発生しても再試行（最大3回）
+            if (retryCount < maxRetries + 3) {
+              setTimeout(function() {
+                if (window.MathJax && MathJax.typesetPromise) {
+                  MathJax.typesetPromise([item]).catch(function() {});
+                }
+              }, 500);
+            }
+          });
+        } else if (MathJax.Hub) {
+          // MathJax 2.x
+          MathJax.Hub.Queue(['Typeset', MathJax.Hub, item]);
+        }
+      } else {
+        // MathJaxがまだ読み込まれていない場合は待機（最大20回）
+        if (retryCount < maxRetries) {
+          setTimeout(checkAndProcess, 100);
+        } else {
+          // 最大試行回数に達した場合は、MathJaxの読み込みを強制的に試みる
+          // viewer.htmlで定義されたloadMathJax関数を呼び出す
+          if (typeof window.loadMathJax === 'function') {
+            window.loadMathJax();
+            setTimeout(checkAndProcess, 500);
+          } else {
+            // loadMathJaxが定義されていない場合は、直接スクリプトを読み込む
+            var script = document.createElement('script');
+            script.id = 'MathJax-script';
+            script.async = true;
+            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+            script.onload = function() {
+              setTimeout(checkAndProcess, 200);
+            };
+            document.head.appendChild(script);
+          }
+        }
+      }
+    };
+    
+    // レイアウト確定を待ってから処理
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        checkAndProcess();
+      });
+    });
+  }
+
+  // --- 非表示カードのスクリプトを遅延マーク ---
+  // setupCardTabs は renderExplanation の最後に同期的に呼ばれ、
+  // スクリプトの実行は requestIdleCallback で遅延されるため、
+  // この時点ではまだスクリプトは実行されていない。
+  items.forEach(function(item, index) {
+    if (index > 0) {
+      item.style.display = 'none';
+      var scripts = item.querySelectorAll('script:not([data-executed])');
+      for (var i = 0; i < scripts.length; i++) {
+        scripts[i].setAttribute('data-tab-deferred', 'true');
+        scripts[i].setAttribute('data-executed', 'true');
+      }
+    }
+  });
+  
+  // 最初のタブのMathJaxを処理（表示されているので）
+  // レイアウト確定を待ってから処理
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      setTimeout(function() {
+        if (items.length > 0) {
+          processMathInItem(items[0]);
+        }
+      }, 200);
+    });
+  });
+
+  // --- タブバーを作成 ---
+  var tabBar = document.createElement('div');
+  tabBar.className = 'card-tabs-bar';
+  tabBar.setAttribute('role', 'tablist');
+  tabBar.setAttribute('aria-label', '解説セクション');
+
+  var tabButtons = [];
+
+  // MathJaxマークアップを除去または簡略化する関数
+  function cleanMathForTabTitle(text) {
+    if (!text) return text;
+    
+    // 数式内容を簡略化する内部関数（先に定義）
+    function cleanMathContent(content) {
+      if (!content) return '';
+      // よく使われる記号を変換（長いコマンドを先に処理）
+      content = content.replace(/\\leq\b/g, '≤').replace(/\\geq\b/g, '≥');
+      content = content.replace(/\\ldots\b/g, '...').replace(/\\cdots\b/g, '...');
+      content = content.replace(/\\times\b/g, '×').replace(/\\div\b/g, '÷');
+      content = content.replace(/\\pm\b/g, '±').replace(/\\mp\b/g, '∓');
+      content = content.replace(/\\neq\b/g, '≠');
+      content = content.replace(/\\approx\b/g, '≈');
+      content = content.replace(/\\sim\b/g, '∼');
+      content = content.replace(/\\le\b/g, '≤').replace(/\\ge\b/g, '≥');
+      content = content.replace(/\\lt\b/g, '<').replace(/\\gt\b/g, '>');
+      content = content.replace(/\\cdot\b/g, '・');
+      // 残りのバックスラッシュコマンドを除去
+      content = content.replace(/\\[a-zA-Z]+\b/g, '');
+      // 余分な空白を除去
+      content = content.replace(/\s+/g, ' ').trim();
+      return content;
+    }
+    
+    // まず、不完全なMathJaxマークアップ（閉じていない$など）を処理
+    // $で始まって閉じていない場合
+    text = text.replace(/\$([^$]*)$/g, function(match, content) {
+      var cleaned = cleanMathContent(content);
+      return cleaned || '';
+    });
+    // $で終わっているが開始がない場合（通常はないが念のため）
+    text = text.replace(/^([^$]*)\$/g, function(match, content) {
+      var cleaned = cleanMathContent(content);
+      return cleaned || '';
+    });
+    
+    // MathJaxのインライン数式マークアップを除去（括弧は追加しない）
+    text = text.replace(/\$([^$]*)\$/g, function(match, content) {
+      var cleaned = cleanMathContent(content);
+      return cleaned || '';
+    });
+    
+    // \(...\)形式も処理（括弧は追加しない）
+    text = text.replace(/\\\(([^\)]*)\\\)/g, function(match, content) {
+      var cleaned = cleanMathContent(content);
+      return cleaned || '';
+    });
+    // 閉じていない\(...\)も処理
+    text = text.replace(/\\\(([^\)]*)$/g, function(match, content) {
+      var cleaned = cleanMathContent(content);
+      return cleaned || '';
+    });
+    
+    // \[...\]形式も処理（ブロック数式は除去）
+    text = text.replace(/\\\[[\s\S]*?\\\]/g, '');
+    text = text.replace(/\\\[[\s\S]*$/g, '');
+    
+    // 残りのバックスラッシュコマンドを除去（不完全なものも含む）
+    text = text.replace(/\\[a-zA-Z]+\b/g, '');
+    text = text.replace(/\\[^a-zA-Z]/g, ''); // 不完全なバックスラッシュも除去
+    
+    // 余分な空白を整理（連続する空白や、括弧の前後の空白を整理）
+    text = text.replace(/\s+/g, ' ');
+    // 全角括弧の前後の空白を除去
+    text = text.replace(/\s*（\s*/g, '（').replace(/\s*）\s*/g, '）');
+    // 半角括弧の前後の空白を除去
+    text = text.replace(/\s*\(\s*/g, '(').replace(/\s*\)\s*/g, ')');
+    text = text.trim();
+    
+    return text;
+  }
+
+  items.forEach(function(item, index) {
+    var isPoint = item === pointBox;
+    var btn = document.createElement('button');
+    btn.className = 'card-tab-btn' + (isPoint ? ' card-tab-btn-point' : '');
+    btn.setAttribute('role', 'tab');
+    btn.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+
+    var heading = item.querySelector('h3');
+    var label = isPoint ? 'Point' : (heading ? heading.textContent.trim() : 'セクション ' + (index + 1));
+    // MathJaxマークアップを除去
+    label = cleanMathForTabTitle(label);
+    if (label.length > 20) label = label.substring(0, 17) + '...';
+    btn.textContent = label;
+
+    if (index === 0) btn.classList.add('active');
+
+    btn.addEventListener('click', function() { switchTab(index); });
+    tabButtons.push(btn);
+    tabBar.appendChild(btn);
+  });
+
+  // 固定バー（prob-header-top）内にタブバーを挿入
+  var headerTop = document.querySelector('.prob-header-top');
+  if (headerTop) {
+    // header-top-rowの後にタブバーを挿入
+    var headerTopRow = headerTop.querySelector('.header-top-row');
+    if (headerTopRow && headerTopRow.nextSibling) {
+      headerTop.insertBefore(tabBar, headerTopRow.nextSibling);
+    } else {
+      headerTop.appendChild(tabBar);
+    }
+    
+    // スクロール時にタブバー内の戻るボタンエリアをクリック可能にする
+    tabBar.addEventListener('click', function(e) {
+      // タブバーの左側（戻るボタンエリア）をクリックした場合
+      var rect = tabBar.getBoundingClientRect();
+      if (e.clientX < rect.left + 60) {
+        e.preventDefault();
+        e.stopPropagation();
+        // 戻るボタンのロジックを直接実行
+        var previousUrl = sessionStorage.getItem('previousPageUrl');
+        if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+          sessionStorage.setItem('previousPageUrl', document.referrer);
+          window.history.back();
+        } else if (previousUrl && previousUrl !== window.location.href) {
+          window.location.href = previousUrl;
+        } else {
+          const path = window.location.pathname || "";
+          const indexPath = path.replace(/[^/]*$/, "index.html");
+          window.location.href = indexPath || "index.html";
+        }
+      }
+    });
+  } else {
+    // フォールバック：タイトルの直後にタブバーを挿入
+    var title = container.querySelector('.prob-title-sub');
+    if (title && title.nextSibling) {
+      container.insertBefore(tabBar, title.nextSibling);
+    } else if (title) {
+      container.insertBefore(tabBar, items[0]);
+    } else {
+      container.insertBefore(tabBar, container.firstChild);
+    }
+  }
+  
+  // ページ上部のタイトル（prob-title-sub）を非表示にする
+  var title = container.querySelector('.prob-title-sub');
+  if (title) {
+    title.style.display = 'none';
+  }
+
+  // --- タブ切り替え ---
+  var currentTabIndex = 0;
+  function switchTab(index) {
+    // すべて非表示
+    tabButtons.forEach(function(btn) {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    items.forEach(function(item) {
+      item.style.display = 'none';
+    });
+
+    // 選択タブを表示
+    tabButtons[index].classList.add('active');
+    tabButtons[index].setAttribute('aria-selected', 'true');
+    items[index].style.display = '';
+    currentTabIndex = index;
+
+    // 遅延スクリプトの実行（初回のみ）+ MathJax
+    // 表示状態を確実にするため、少し待ってから処理
+    setTimeout(function() {
+      executeDeferredScripts(items[index]);
+      
+      // アイテムが表示されたことを確認してからMathJaxを処理
+      // レイアウト確定を待つ
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          // DOMの更新とレイアウト確定を確実に待つ
+          setTimeout(function() {
+            // 再度表示状態を確認
+            if (items[index].style.display !== 'none' && items[index].offsetParent !== null) {
+              processMathInItem(items[index]);
+            } else {
+              // まだ表示されていない場合は再試行
+              setTimeout(function() {
+                processMathInItem(items[index]);
+              }, 200);
+            }
+          }, 150);
+        });
+      });
+      
+      // シミュレーションが window.resize を監視してリサイズする場合用
+      setTimeout(function() {
+        window.dispatchEvent(new Event('resize'));
+      }, 300);
+    }, 100);
+
+    // タブバーが固定バー内にある場合はスクロール位置調整不要
   }
 }
