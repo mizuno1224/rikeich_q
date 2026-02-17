@@ -1,0 +1,849 @@
+<h2 class="prob-title-sub">30 正弦波の反射</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    この問題は、原点から $+x$ 方向に進む正弦波（入射波）が $x = 8.0\,\mathrm{m}$ の<strong>自由端</strong>で反射し、
+    <strong>定在波</strong>（定常波）を形成する状況を扱います。
+  </p>
+  <ul>
+    <li><strong>グラフの読み取り</strong>：入射波の波長 $\lambda = 4.0\,\mathrm{m}$、振幅 $A = 0.10\,\mathrm{m}$</li>
+    <li><strong>自由端反射のルール</strong>：自由端では<span class="highlight">位相が変わらない</span>（上下反転なし）。壁の位置を対称軸として波形を折り返したものが反射波。</li>
+    <li><strong>(1) 合成波</strong>：入射波と反射波の変位を各点で足し合わせ、合成波形を描く。</li>
+    <li><strong>(2) 節の位置</strong>：定在波の節（常に変位ゼロ）は、自由端（腹）から $\frac{\lambda}{4}$ ごとに現れる。</li>
+    <li><strong>(3) 振動周期</strong>：$v = f\lambda$ から周期 $T$ を求める。</li>
+  </ul>
+
+  <h4>入射波・反射波・合成波のシミュレーション</h4>
+  <p>
+    入射波（青）・反射波（緑破線）・合成波（赤太線）の時間変化を確認できます。
+    <strong>「図の瞬間」</strong>ボタンで問題の図に対応する瞬間（合成波がゼロになる瞬間）に移動します。
+  </p>
+
+  <div id="sim-free-ref-main" class="sim-embed" style="height:380px; margin-bottom:60px; overflow:visible;"></div>
+  <script>
+  (function() {
+    var targetId = 'sim-free-ref-main';
+    var el = document.getElementById(targetId);
+    if (!el) return;
+
+    var sketch = function(p) {
+      var A = 0.10;
+      var lambda = 4.0;
+      var L = 8.0;
+      var k = 2 * Math.PI / lambda;
+      var phase = 1.0;
+      var playing = true;
+      var W, H;
+      var xMin = -0.5, xMax = 9.5;
+      var LM = 55, RM = 20;
+      var pSlider, pLabel;
+
+      function x2px(xv) { return LM + (xv - xMin) / (xMax - xMin) * (W - LM - RM); }
+      function y2px(yv) { var mid = H * 0.50; return mid - yv / (2.8 * A) * (H * 0.38); }
+
+      function yInc(x) { return A * Math.sin(k * x - phase); }
+      function yRef(x) { return A * Math.sin(2 * k * L - k * x - phase); }
+
+      p.setup = function() {
+        W = el.clientWidth;
+        H = el.clientHeight || 380;
+        p.createCanvas(W, H).parent(el);
+        p.textFont('sans-serif');
+
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+        el.appendChild(wrap);
+
+        var playBtn = document.createElement('button');
+        playBtn.textContent = '\u25b6 / \u25a0';
+        playBtn.style.padding = '4px 12px';
+        playBtn.onclick = function() { playing = !playing; };
+        wrap.appendChild(playBtn);
+
+        pLabel = document.createElement('span');
+        pLabel.style.cssText = 'min-width:80px;font-family:monospace;';
+        wrap.appendChild(pLabel);
+
+        pSlider = document.createElement('input');
+        pSlider.type = 'range';
+        pSlider.min = '0';
+        pSlider.max = '628';
+        pSlider.value = String(Math.round(phase * 100));
+        pSlider.step = '1';
+        pSlider.style.flex = '1';
+        pSlider.style.minWidth = '80px';
+        pSlider.oninput = function() {
+          phase = parseInt(pSlider.value) / 100;
+          playing = false;
+          syncLabel();
+        };
+        wrap.appendChild(pSlider);
+
+        var ansBtn = document.createElement('button');
+        ansBtn.textContent = '\u56f3\u306e\u77ac\u9593';
+        ansBtn.style.cssText = 'padding:4px 10px;background:#dc3545;color:#fff;border:1px solid #ccc;border-radius:4px;cursor:pointer;';
+        ansBtn.onclick = function() {
+          phase = 0;
+          playing = false;
+          pSlider.value = '0';
+          syncLabel();
+        };
+        wrap.appendChild(ansBtn);
+
+        syncLabel();
+      };
+
+      function syncLabel() {
+        if (pLabel) {
+          var tVal = phase / (2 * Math.PI) * 0.40;
+          pLabel.textContent = 't = ' + tVal.toFixed(3) + ' s';
+        }
+      }
+
+      p.draw = function() {
+        if (playing) {
+          phase += 0.04;
+          if (phase > 2 * Math.PI) phase -= 2 * Math.PI;
+          if (pSlider) pSlider.value = String(Math.round(phase * 100));
+          syncLabel();
+        }
+        p.background(255);
+
+        var axisY = y2px(0);
+
+        p.stroke(235); p.strokeWeight(0.5);
+        for (var i = 0; i <= 8; i++) {
+          p.line(x2px(i), 20, x2px(i), H - 20);
+        }
+
+        var wallX = x2px(L);
+        p.fill(220); p.noStroke();
+        p.rect(wallX, axisY - 90, 22, 180);
+        p.stroke(160); p.strokeWeight(1);
+        for (var yy = axisY - 90; yy < axisY + 90; yy += 8) {
+          p.line(wallX, yy, wallX + 18, yy - 12);
+        }
+        p.stroke(80); p.strokeWeight(2);
+        p.line(wallX, axisY - 90, wallX, axisY + 90);
+
+        p.stroke(80); p.strokeWeight(1.5);
+        p.line(x2px(xMin), axisY, x2px(xMax), axisY);
+        p.line(x2px(0), y2px(2.5 * A), x2px(0), y2px(-2.5 * A));
+
+        var ar = 6;
+        p.line(x2px(xMax), axisY, x2px(xMax) - ar, axisY - ar / 2);
+        p.line(x2px(xMax), axisY, x2px(xMax) - ar, axisY + ar / 2);
+        p.line(x2px(0), y2px(2.5 * A), x2px(0) - ar / 2, y2px(2.5 * A) + ar);
+        p.line(x2px(0), y2px(2.5 * A), x2px(0) + ar / 2, y2px(2.5 * A) + ar);
+
+        p.noStroke(); p.fill(60); p.textSize(13);
+        p.textAlign(p.LEFT, p.CENTER);
+        p.text('x [m]', x2px(xMax) - 32, axisY + 18);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('y [m]', x2px(0) + 20, y2px(2.5 * A) - 2);
+
+        p.textSize(11); p.textAlign(p.CENTER, p.TOP); p.fill(100);
+        for (var i = 0; i <= 8; i += 2) {
+          p.text(i.toFixed(1), x2px(i), axisY + 4);
+        }
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text('0.10', x2px(0) - 5, y2px(A));
+        p.text('\u22120.10', x2px(0) - 5, y2px(-A));
+        p.text('0.20', x2px(0) - 5, y2px(2 * A));
+        p.text('\u22120.20', x2px(0) - 5, y2px(-2 * A));
+
+        var steps = 300;
+        p.stroke(0, 100, 255); p.strokeWeight(2); p.noFill();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var xv = i / steps * L;
+          p.vertex(x2px(xv), y2px(yInc(xv)));
+        }
+        p.endShape();
+
+        p.stroke(40, 180, 60); p.strokeWeight(2);
+        p.drawingContext.setLineDash([6, 4]);
+        p.noFill();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var xv = i / steps * L;
+          p.vertex(x2px(xv), y2px(yRef(xv)));
+        }
+        p.endShape();
+        p.drawingContext.setLineDash([]);
+
+        p.stroke(220, 40, 30); p.strokeWeight(3.5); p.noFill();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var xv = i / steps * L;
+          p.vertex(x2px(xv), y2px(yInc(xv) + yRef(xv)));
+        }
+        p.endShape();
+
+        p.noStroke(); p.textSize(12); p.textAlign(p.LEFT, p.CENTER);
+        var legY = y2px(2.3 * A);
+        p.fill(0, 100, 255); p.text('\u2500 \u5165\u5c04\u6ce2', x2px(0.3), legY);
+        p.fill(40, 180, 60); p.text('-- \u53cd\u5c04\u6ce2', x2px(2.8), legY);
+        p.fill(220, 40, 30); p.text('\u2501 \u5408\u6210\u6ce2', x2px(5.3), legY);
+
+        p.fill(60); p.textSize(12); p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('\u81ea\u7531\u7aef', x2px(L) + 2, axisY - 94);
+
+        if (Math.abs(phase) < 0.06 || Math.abs(phase - 2 * Math.PI) < 0.06) {
+          p.fill(220, 40, 30, 180); p.textSize(14); p.textAlign(p.CENTER, p.TOP);
+          p.text('\u2605 \u56f3\u306e\u77ac\u9593\uff1a\u5408\u6210\u6ce2 = 0', x2px(4), y2px(-2 * A) + 8);
+        }
+      };
+
+      p.windowResized = function() {
+        var parent = document.getElementById(targetId);
+        if (parent) {
+          W = parent.clientWidth;
+          p.resizeCanvas(W, H);
+        }
+      };
+    };
+
+    var myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) 図の瞬間に観察される合成波の波形</h3>
+
+  <h4>自由端反射の作図手順</h4>
+  <p>
+    自由端反射では、次の手順で反射波を求めます：
+  </p>
+  <ol>
+    <li><strong>延長する</strong>：壁がないと仮定して、入射波を壁の向こう側（$x > 8.0$）にそのまま延長する。</li>
+    <li><strong>折り返す</strong>：延長した部分を $x = 8.0$（自由端）を<span class="highlight">対称軸として線対称</span>に折り返す。自由端では<strong>上下反転しない</strong>。</li>
+    <li><strong>重ね合わせ</strong>：入射波と反射波の変位を各点で足し合わせる。</li>
+  </ol>
+
+  <h4>この瞬間の反射波を図から求める</h4>
+  <p>
+    まず、図から<strong>入射波の各点の変位</strong>を読み取ります。
+  </p>
+  <table style="margin:0.5em auto; border-collapse:collapse; text-align:center; font-size:14px;">
+    <tr style="border-bottom:2px solid #333;">
+      <td style="padding:4px 10px;"><strong>$x$ [m]</strong></td>
+      <td style="padding:4px 8px;">0</td><td style="padding:4px 8px;">1.0</td><td style="padding:4px 8px;">2.0</td><td style="padding:4px 8px;">3.0</td><td style="padding:4px 8px;">4.0</td><td style="padding:4px 8px;">5.0</td><td style="padding:4px 8px;">6.0</td><td style="padding:4px 8px;">7.0</td><td style="padding:4px 8px;">8.0</td>
+    </tr>
+    <tr style="color:#0064ff;">
+      <td style="padding:4px 10px;"><strong>入射波</strong></td>
+      <td>0</td><td>+0.10</td><td>0</td><td>−0.10</td><td>0</td><td>+0.10</td><td>0</td><td>−0.10</td><td>0</td>
+    </tr>
+  </table>
+
+  <p><strong>Step 1：壁の向こうに延長する</strong></p>
+  <p>
+    入射波をそのまま $x > 8.0$ に延長します。波形はそのまま正弦波が続くので：
+  </p>
+  <ul>
+    <li>$x = 9.0$：$y = +0.10$、$x = 10.0$：$y = 0$、$x = 11.0$：$y = -0.10$、$x = 12.0$：$y = 0$</li>
+  </ul>
+
+  <p><strong>Step 2：$x = 8.0$ で折り返す（自由端 → 上下反転なし）</strong></p>
+  <p>
+    延長した各点を $x = 8.0$ を対称軸にして折り返します。折り返し先は「$x = 16 - x_{\text{元}}$」です。
+  </p>
+  <ul>
+    <li>$x = 9$ の値 $(+0.10)$ → 折り返して $x = 7$ の反射波 = $+0.10$</li>
+    <li>$x = 10$ の値 $(0)$ → 折り返して $x = 6$ の反射波 = $0$</li>
+    <li>$x = 11$ の値 $(-0.10)$ → 折り返して $x = 5$ の反射波 = $-0.10$</li>
+    <li>同様にして $x = 4, 3, 2, 1, 0$ の反射波も求まる</li>
+  </ul>
+
+  <table style="margin:0.5em auto; border-collapse:collapse; text-align:center; font-size:14px;">
+    <tr style="border-bottom:2px solid #333;">
+      <td style="padding:4px 10px;"><strong>$x$ [m]</strong></td>
+      <td style="padding:4px 8px;">0</td><td style="padding:4px 8px;">1.0</td><td style="padding:4px 8px;">2.0</td><td style="padding:4px 8px;">3.0</td><td style="padding:4px 8px;">4.0</td><td style="padding:4px 8px;">5.0</td><td style="padding:4px 8px;">6.0</td><td style="padding:4px 8px;">7.0</td><td style="padding:4px 8px;">8.0</td>
+    </tr>
+    <tr style="color:#0064ff;">
+      <td style="padding:4px 10px;"><strong>入射波</strong></td>
+      <td>0</td><td>+0.10</td><td>0</td><td>−0.10</td><td>0</td><td>+0.10</td><td>0</td><td>−0.10</td><td>0</td>
+    </tr>
+    <tr style="color:#28b44a;">
+      <td style="padding:4px 10px;"><strong>反射波</strong></td>
+      <td>0</td><td>−0.10</td><td>0</td><td>+0.10</td><td>0</td><td>−0.10</td><td>0</td><td>+0.10</td><td>0</td>
+    </tr>
+    <tr style="border-top:2px solid #333; color:#dc3545; font-weight:bold;">
+      <td style="padding:4px 10px;"><strong>合成波</strong></td>
+      <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+    </tr>
+  </table>
+
+  <p><strong>Step 3：重ね合わせ</strong></p>
+  <p>
+    各点で入射波と反射波の変位を足し合わせると、<span class="highlight">すべての点で変位が打ち消し合い、合成波は $y = 0$ になる</span>ことがわかります。
+  </p>
+  <p>
+    これは定在波が<strong>つりあいの位置を通過する瞬間</strong>に対応しています。この瞬間、すべての媒質がちょうど平衡位置にあります。
+  </p>
+
+  <h4>補足：別解（三角関数による導出）</h4>
+  <p>
+    入射波を $y_{\mathrm{i}}(x) = 0.10\sin\!\left(\dfrac{\pi}{2}x\right)$ と表すと、
+    自由端（$x = 8.0$）で折り返した反射波は $y_{\mathrm{r}}(x) = 0.10\sin\!\left(\dfrac{\pi}{2}(16 - x)\right)$ です。
+    三角関数の公式 $\sin(8\pi - \theta) = -\sin\theta$ を使うと、
+    $$y_{\mathrm{r}}(x) = 0.10\sin\!\left(8\pi - \frac{\pi}{2}x\right) = -0.10\sin\!\left(\frac{\pi}{2}x\right)$$
+    よって $y = y_{\mathrm{i}} + y_{\mathrm{r}} = 0.10\sin\!\left(\frac{\pi}{2}x\right) - 0.10\sin\!\left(\frac{\pi}{2}x\right) = 0$
+  </p>
+
+  <h4>反射波の作図（ステップ表示）</h4>
+  <p>ボタンで作図の各ステップを確認できます。</p>
+  <div id="sim-q1-construct" class="sim-embed" style="height:340px; margin-bottom:60px; overflow:visible;"></div>
+  <script>
+  (function() {
+    var targetId = 'sim-q1-construct';
+    var el = document.getElementById(targetId);
+    if (!el) return;
+
+    var currentStep = 1;
+
+    var sketch = function(p) {
+      var A = 0.10;
+      var lambda = 4.0;
+      var L = 8.0;
+      var k = Math.PI / 2;
+      var W, H;
+      var xMin = -0.5, xMax = 13.0;
+      var LM = 55, RM = 20;
+
+      function x2px(xv) { return LM + (xv - xMin) / (xMax - xMin) * (W - LM - RM); }
+      function y2px(yv) { var mid = H * 0.50; return mid - yv / (2.5 * A) * (H * 0.36); }
+
+      function yInc(x) { return A * Math.sin(k * x); }
+      function yRef(x) { return -A * Math.sin(k * x); }
+
+      p.setup = function() {
+        W = el.clientWidth;
+        H = el.clientHeight || 340;
+        p.createCanvas(W, H).parent(el);
+        p.textFont('sans-serif');
+        p.noLoop();
+
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px;';
+        el.appendChild(wrap);
+
+        function mkBtn(txt, step, bg) {
+          var b = document.createElement('button');
+          b.textContent = txt;
+          b.style.cssText = 'padding:4px 10px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:' + (bg || '#f8f9fa') + ';color:' + (bg ? '#fff' : '#333') + ';';
+          b.onclick = function() { currentStep = step; p.redraw(); };
+          wrap.appendChild(b);
+        }
+        mkBtn('Step 1: \u5165\u5c04\u6ce2', 1);
+        mkBtn('Step 2: \u5ef6\u9577', 2);
+        mkBtn('Step 3: \u53cd\u5c04\u6ce2', 3);
+        mkBtn('Step 4: \u5408\u6210\u6ce2', 4, '#dc3545');
+      };
+
+      p.draw = function() {
+        p.background(255);
+        var axisY = y2px(0);
+
+        var wallX = x2px(L);
+        p.stroke(180); p.strokeWeight(1);
+        p.drawingContext.setLineDash([4, 4]);
+        p.line(wallX, 20, wallX, H - 20);
+        p.drawingContext.setLineDash([]);
+
+        p.fill(230, 230, 230, 120); p.noStroke();
+        p.rect(wallX, 20, x2px(xMax) - wallX, H - 40);
+
+        p.stroke(80); p.strokeWeight(1.5);
+        p.line(x2px(xMin), axisY, x2px(xMax), axisY);
+        p.line(x2px(0), y2px(2 * A), x2px(0), y2px(-2 * A));
+
+        p.noStroke(); p.fill(60); p.textSize(12);
+        p.textAlign(p.CENTER, p.TOP);
+        for (var i = 0; i <= 12; i += 2) {
+          p.text(i.toFixed(1), x2px(i), axisY + 4);
+        }
+        p.textAlign(p.RIGHT, p.CENTER); p.textSize(11);
+        p.text('0.10', x2px(0) - 5, y2px(A));
+        p.text('\u22120.10', x2px(0) - 5, y2px(-A));
+
+        p.textSize(12); p.textAlign(p.CENTER, p.BOTTOM);
+        p.fill(100);
+        p.text('x = 8.0 (\u81ea\u7531\u7aef)', wallX, 16);
+
+        var steps = 400;
+
+        if (currentStep >= 1) {
+          p.stroke(0, 100, 255); p.strokeWeight(2.5); p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var xv = i / steps * L;
+            p.vertex(x2px(xv), y2px(yInc(xv)));
+          }
+          p.endShape();
+        }
+
+        if (currentStep >= 2) {
+          p.stroke(0, 100, 255, 100); p.strokeWeight(2);
+          p.drawingContext.setLineDash([5, 3]);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var xv = L + i / steps * (lambda);
+            p.vertex(x2px(xv), y2px(A * Math.sin(k * xv)));
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+        }
+
+        if (currentStep >= 3) {
+          p.stroke(40, 180, 60); p.strokeWeight(2.5);
+          p.drawingContext.setLineDash([6, 4]);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var xv = i / steps * L;
+            p.vertex(x2px(xv), y2px(yRef(xv)));
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          if (currentStep === 3) {
+            var arY = y2px(1.8 * A);
+            p.stroke(200, 100, 40); p.strokeWeight(1.5);
+            p.line(x2px(9), arY, x2px(7), arY);
+            p.line(x2px(7), arY, x2px(7.3), arY - 4);
+            p.line(x2px(7), arY, x2px(7.3), arY + 4);
+            p.noStroke(); p.fill(200, 100, 40); p.textSize(10);
+            p.textAlign(p.CENTER, p.BOTTOM);
+            p.text('\u6298\u308a\u8fd4\u3057', (x2px(9) + x2px(7)) / 2, arY - 3);
+          }
+        }
+
+        if (currentStep >= 4) {
+          p.stroke(220, 40, 30); p.strokeWeight(4); p.noFill();
+          p.line(x2px(0), axisY, x2px(L), axisY);
+
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u5408\u6210\u6ce2 = 0\uff08\u5168\u533a\u9593\u3067\u5909\u4f4d\u30bc\u30ed\uff09', x2px(4), axisY - 10);
+        }
+
+        p.noStroke(); p.textSize(12); p.textAlign(p.LEFT, p.TOP);
+        var legY = H - 28;
+        p.fill(0, 100, 255); p.text('\u2500 \u5165\u5c04\u6ce2', 8, legY);
+        if (currentStep >= 3) { p.fill(40, 180, 60); p.text('-- \u53cd\u5c04\u6ce2', 100, legY); }
+        if (currentStep >= 4) { p.fill(220, 40, 30); p.text('\u2501 \u5408\u6210\u6ce2', 200, legY); }
+
+        p.fill(50); p.textSize(13); p.textAlign(p.LEFT, p.TOP);
+        var stepTexts = [
+          'Step 1: \u5165\u5c04\u6ce2\u3060\u3051\u3092\u63cf\u304f',
+          'Step 2: \u58c1\u306e\u5411\u3053\u3046\u306b\u5ef6\u9577\uff08\u8584\u9752\u7834\u7dda\uff09',
+          'Step 3: x = 8.0 \u3067\u6298\u308a\u8fd4\u3057\u2192\u53cd\u5c04\u6ce2\uff08\u7dd1\u7834\u7dda\uff09',
+          'Step 4: \u5165\u5c04\u6ce2 + \u53cd\u5c04\u6ce2 = 0\uff08\u8d64\u592a\u7dda\uff09'
+        ];
+        p.text(stepTexts[currentStep - 1], 8, 8);
+      };
+
+      p.windowResized = function() {
+        var parent = document.getElementById(targetId);
+        if (parent) { W = parent.clientWidth; p.resizeCanvas(W, H); p.redraw(); }
+      };
+    };
+
+    var myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え (1)：</strong><br>
+    合成波は<strong>全区間で $y = 0$</strong>（$x$ 軸上の直線）。<br>
+    この瞬間、定在波はつりあいの位置を通過しており、すべての点で変位がゼロである。
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 定在波の節の位置（$0 \leq x \leq 8.0$ m）</h3>
+
+  <h4>自由端から腹・節を数える（図的解法）</h4>
+  <p>
+    定在波の節の位置は、<strong>自由端の性質</strong>と<strong>波長</strong>だけで求められます。三角関数の式は不要です。
+  </p>
+  <p>
+    <strong>ルール</strong>：
+  </p>
+  <ul>
+    <li><span class="highlight">自由端は必ず<strong>腹</strong></span>（変位が最大の点）になる。</li>
+    <li>腹と節は <span class="highlight">$\dfrac{\lambda}{4}$</span> の間隔で<strong>交互に</strong>並ぶ。</li>
+  </ul>
+  <p>
+    波長 $\lambda = 4.0$ m なので、$\dfrac{\lambda}{4} = 1.0$ m です。
+    自由端 $x = 8.0$ m（腹）から原点に向かって $1.0$ m ごとに「腹 → 節 → 腹 → 節 → …」と数えていきます：
+  </p>
+  <table style="margin:0.5em auto; border-collapse:collapse; text-align:center; font-size:14px;">
+    <tr style="border-bottom:2px solid #333;">
+      <td style="padding:4px 10px;"><strong>$x$ [m]</strong></td>
+      <td style="padding:4px 10px;">8.0</td><td style="padding:4px 10px;">7.0</td><td style="padding:4px 10px;">6.0</td><td style="padding:4px 10px;">5.0</td><td style="padding:4px 10px;">4.0</td><td style="padding:4px 10px;">3.0</td><td style="padding:4px 10px;">2.0</td><td style="padding:4px 10px;">1.0</td><td style="padding:4px 10px;">0</td>
+    </tr>
+    <tr>
+      <td style="padding:4px 10px;"><strong>腹 or 節</strong></td>
+      <td style="color:#dc3545; font-weight:bold;">腹</td>
+      <td style="font-weight:bold;">節</td>
+      <td style="color:#dc3545; font-weight:bold;">腹</td>
+      <td style="font-weight:bold;">節</td>
+      <td style="color:#dc3545; font-weight:bold;">腹</td>
+      <td style="font-weight:bold;">節</td>
+      <td style="color:#dc3545; font-weight:bold;">腹</td>
+      <td style="font-weight:bold;">節</td>
+      <td style="color:#dc3545; font-weight:bold;">腹</td>
+    </tr>
+  </table>
+  <p>
+    したがって、<strong>節</strong>の位置は $x = 1.0,\;3.0,\;5.0,\;7.0$ m です。
+  </p>
+
+  <h4>補足：別解（三角関数による定在波の式からの導出）</h4>
+  <p>
+    入射波と反射波を式で表すと、
+    $y_{\mathrm{i}} = A\sin(kx - \omega t)$、$y_{\mathrm{r}} = A\sin(2kL - kx - \omega t)$
+  </p>
+  <p>
+    和積の公式を適用すると、定在波の式
+    $$y = 2A\cos\!\bigl(k(x - L)\bigr)\,\sin(kL - \omega t)$$
+    が得られます。節は $\cos\!\bigl(k(x - L)\bigr) = 0$ となる位置で、$k = \frac{\pi}{2}$、$L = 8.0$ を代入すると
+    $\frac{\pi}{2}(x - 8) = \pm\frac{\pi}{2},\;\pm\frac{3\pi}{2},\;\cdots$ より $x = 7,\;5,\;3,\;1$ m が得られます。
+  </p>
+
+  <h4>定在波のシミュレーション</h4>
+  <p>
+    定在波の振動を時間変化とともに確認できます。<strong>節</strong>（黒丸）は常に変位ゼロ、<strong>腹</strong>では振幅が最大（$2A = 0.20$ m）になります。
+  </p>
+  <div id="sim-q2-standing" class="sim-embed" style="height:360px; margin-bottom:60px; overflow:visible;"></div>
+  <script>
+  (function() {
+    var targetId = 'sim-q2-standing';
+    var el = document.getElementById(targetId);
+    if (!el) return;
+
+    var sketch = function(p) {
+      var A = 0.10;
+      var lambda = 4.0;
+      var L = 8.0;
+      var k = Math.PI / 2;
+      var phase = 0;
+      var playing = true;
+      var W, H;
+      var xMin = -0.5, xMax = 9.0;
+      var LM = 55, RM = 25;
+
+      function x2px(xv) { return LM + (xv - xMin) / (xMax - xMin) * (W - LM - RM); }
+      function y2px(yv) { var mid = H * 0.50; return mid - yv / (2.8 * A) * (H * 0.38); }
+
+      function standingWave(x, ph) {
+        return 2 * A * Math.cos(k * (x - L)) * Math.sin(k * L - ph);
+      }
+
+      p.setup = function() {
+        W = el.clientWidth;
+        H = el.clientHeight || 360;
+        p.createCanvas(W, H).parent(el);
+        p.textFont('sans-serif');
+
+        var wrap = document.createElement('div');
+        wrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+        el.appendChild(wrap);
+
+        var playBtn = document.createElement('button');
+        playBtn.textContent = '\u25b6 / \u25a0';
+        playBtn.style.padding = '4px 12px';
+        playBtn.onclick = function() { playing = !playing; };
+        wrap.appendChild(playBtn);
+
+        var resetBtn = document.createElement('button');
+        resetBtn.textContent = '\u30ea\u30bb\u30c3\u30c8';
+        resetBtn.style.padding = '4px 12px';
+        resetBtn.onclick = function() { phase = 0; };
+        wrap.appendChild(resetBtn);
+      };
+
+      p.draw = function() {
+        if (playing) phase += 0.05;
+        p.background(255);
+
+        var axisY = y2px(0);
+
+        p.stroke(235); p.strokeWeight(0.5);
+        for (var i = 0; i <= 8; i++) {
+          p.line(x2px(i), 20, x2px(i), H - 20);
+        }
+
+        var wallX = x2px(L);
+        p.fill(220); p.noStroke();
+        p.rect(wallX, axisY - 90, 18, 180);
+        p.stroke(160); p.strokeWeight(1);
+        for (var yy = axisY - 90; yy < axisY + 90; yy += 8) {
+          p.line(wallX, yy, wallX + 14, yy - 10);
+        }
+        p.stroke(80); p.strokeWeight(2);
+        p.line(wallX, axisY - 90, wallX, axisY + 90);
+
+        p.stroke(80); p.strokeWeight(1.5);
+        p.line(x2px(xMin), axisY, x2px(xMax), axisY);
+        p.line(x2px(0), y2px(2.5 * A), x2px(0), y2px(-2.5 * A));
+
+        p.noStroke(); p.fill(80); p.textSize(11);
+        p.textAlign(p.CENTER, p.TOP);
+        for (var i = 0; i <= 8; i++) {
+          p.text(i.toFixed(1), x2px(i), axisY + 4);
+        }
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text('0.20', x2px(0) - 5, y2px(2 * A));
+        p.text('\u22120.20', x2px(0) - 5, y2px(-2 * A));
+
+        var steps = 300;
+        p.stroke(180); p.strokeWeight(1);
+        p.drawingContext.setLineDash([4, 3]);
+        p.noFill();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var xv = i / steps * L;
+          p.vertex(x2px(xv), y2px(2 * A * Math.cos(k * (xv - L))));
+        }
+        p.endShape();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var xv = i / steps * L;
+          p.vertex(x2px(xv), y2px(-2 * A * Math.cos(k * (xv - L))));
+        }
+        p.endShape();
+        p.drawingContext.setLineDash([]);
+
+        for (var t = 0; t < 8; t++) {
+          var pastPh = phase - t * 0.3;
+          var alpha = 255 - t * 30;
+          if (alpha < 30) break;
+          p.stroke(220, 40, 30, alpha);
+          p.strokeWeight(t === 0 ? 3 : 1.2);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var xv = i / steps * L;
+            p.vertex(x2px(xv), y2px(standingWave(xv, pastPh)));
+          }
+          p.endShape();
+        }
+
+        var nodes = [1.0, 3.0, 5.0, 7.0];
+        for (var n = 0; n < nodes.length; n++) {
+          var nx = x2px(nodes[n]);
+          p.fill(30); p.stroke(30); p.strokeWeight(1.5);
+          p.ellipse(nx, axisY, 10, 10);
+          p.noStroke(); p.fill(30); p.textSize(13);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u7bc0', nx, axisY + 18);
+          p.textSize(11); p.fill(100);
+          p.text(nodes[n].toFixed(1), nx, axisY + 34);
+        }
+
+        var antinodes = [0, 2.0, 4.0, 6.0, 8.0];
+        for (var n = 0; n < antinodes.length; n++) {
+          var ax = x2px(antinodes[n]);
+          if (antinodes[n] > 7.9) continue;
+          p.noFill(); p.stroke(220, 60, 40); p.strokeWeight(2);
+          p.ellipse(ax, axisY, 12, 12);
+          p.noStroke(); p.fill(220, 60, 40); p.textSize(13);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u8179', ax, axisY - 18);
+        }
+
+        p.noStroke(); p.fill(220, 60, 40); p.textSize(13);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('\u8179(\u81ea\u7531\u7aef)', x2px(8), axisY - 18);
+
+        p.fill(60); p.textSize(12); p.textAlign(p.LEFT, p.TOP);
+        p.text('x [m]', x2px(xMax) - 32, axisY + 4);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('y [m]', x2px(0) + 20, y2px(2.5 * A) - 2);
+      };
+
+      p.windowResized = function() {
+        var parent = document.getElementById(targetId);
+        if (parent) { W = parent.clientWidth; p.resizeCanvas(W, H); }
+      };
+    };
+
+    var myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え (2)：</strong><br>
+    節の位置は $x = 1.0\,\mathrm{m},\;3.0\,\mathrm{m},\;5.0\,\mathrm{m},\;7.0\,\mathrm{m}$
+  </div>
+</div>
+
+<div class="card">
+  <h3>(3) 自由端で変位が正で最大になる時間間隔</h3>
+
+  <h4>周期の計算</h4>
+  <p>
+    波の速さ $v = 10\,\mathrm{m/s}$、波長 $\lambda = 4.0\,\mathrm{m}$ より、周期は
+    $$T = \frac{\lambda}{v} = \frac{4.0}{10} = 0.40\,\mathrm{s}$$
+  </p>
+
+  <h4>自由端での振動</h4>
+  <p>
+    自由端（$x = 8.0$ m）は定在波の<strong>腹</strong>なので、振幅は最大の $2A = 0.20\,\mathrm{m}$ です。
+    腹の各点は<strong>周期 $T$ で単振動</strong>します。
+  </p>
+  <p>
+    1周期の間に、変位は「$0 \to +0.20 \to 0 \to -0.20 \to 0$」と変化します。
+    <br>つまり、変位が<strong>正で最大</strong>（$+0.20$ m）になるのは <span class="highlight">$T = 0.40$ s ごと</span>に1回です。
+  </p>
+
+  <h4>補足：別解（定在波の式による確認）</h4>
+  <p>
+    定在波の式 $y = 2A\cos\!\bigl(k(x - L)\bigr)\sin(kL - \omega t)$ に $x = 8.0$ を代入すると、
+    $y(8,\,t) = 0.20\,\sin(4\pi - \omega t)$。
+    これは角振動数 $\omega = \frac{2\pi}{T}$ の正弦関数で、正の最大値は $T = 0.40$ s ごとに1回現れます。
+  </p>
+
+  <h4>自由端の変位の時間変化</h4>
+  <p>
+    $x = 8.0$ m（自由端）における $y$-$t$ グラフです。$T = 0.40$ s ごとに変位が正の最大値 $+0.20$ m に達します。
+  </p>
+  <div id="sim-q3-freeend" class="sim-embed" style="height:300px; margin-bottom:8px;"></div>
+  <script>
+  (function() {
+    var targetId = 'sim-q3-freeend';
+    var el = document.getElementById(targetId);
+    if (!el) return;
+
+    var sketch = function(p) {
+      var A2 = 0.20;
+      var T = 0.40;
+      var omega = 2 * Math.PI / T;
+      var W, H;
+      var tMin = -0.05, tMax = 1.05;
+      var LM = 55, RM = 20, TM = 30, BM = 30;
+
+      function t2px(tv) { return LM + (tv - tMin) / (tMax - tMin) * (W - LM - RM); }
+      function y2px(yv) { var mid = (TM + H - BM) / 2; return mid - yv / (1.3 * A2) * ((H - TM - BM) * 0.42); }
+
+      p.setup = function() {
+        W = el.clientWidth;
+        H = el.clientHeight || 300;
+        p.createCanvas(W, H).parent(el);
+        p.textFont('sans-serif');
+        p.noLoop();
+      };
+
+      p.draw = function() {
+        p.background(255);
+        var axisY = y2px(0);
+
+        p.stroke(235); p.strokeWeight(0.5);
+        for (var i = 0; i <= 10; i++) {
+          var tv = i * 0.1;
+          p.line(t2px(tv), TM, t2px(tv), H - BM);
+        }
+
+        p.stroke(80); p.strokeWeight(1.5);
+        p.line(t2px(tMin), axisY, t2px(tMax), axisY);
+        p.line(t2px(0), TM, t2px(0), H - BM);
+
+        var ar = 6;
+        p.line(t2px(tMax), axisY, t2px(tMax) - ar, axisY - ar / 2);
+        p.line(t2px(tMax), axisY, t2px(tMax) - ar, axisY + ar / 2);
+
+        p.noStroke(); p.fill(60); p.textSize(12);
+        p.textAlign(p.LEFT, p.CENTER);
+        p.text('t [s]', t2px(tMax) - 24, axisY + 16);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('y [m]', t2px(0) + 18, TM - 2);
+
+        p.textSize(11); p.fill(100);
+        p.textAlign(p.CENTER, p.TOP);
+        for (var i = 0; i <= 10; i++) {
+          var tv = i * 0.1;
+          if (i % 2 === 0) p.text(tv.toFixed(1), t2px(tv), axisY + 4);
+        }
+        p.textAlign(p.RIGHT, p.CENTER);
+        p.text('0.20', t2px(0) - 5, y2px(A2));
+        p.text('\u22120.20', t2px(0) - 5, y2px(-A2));
+
+        var steps = 400;
+        p.stroke(220, 40, 30); p.strokeWeight(2.5); p.noFill();
+        p.beginShape();
+        for (var i = 0; i <= steps; i++) {
+          var tv = tMin + (tMax - tMin) * i / steps;
+          var yv = -A2 * Math.sin(omega * tv);
+          p.vertex(t2px(tv), y2px(yv));
+        }
+        p.endShape();
+
+        var posMaxTimes = [0.30, 0.70];
+        for (var m = 0; m < posMaxTimes.length; m++) {
+          var tm = posMaxTimes[m];
+          var px = t2px(tm);
+          var py = y2px(A2);
+          p.noStroke(); p.fill(220, 40, 30);
+          p.ellipse(px, py, 8, 8);
+          p.fill(220, 40, 30); p.textSize(11);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u6b63\u306e\u6700\u5927', px, py - 6);
+        }
+
+        var t1 = 0.30, t2 = 0.70;
+        var arrY = y2px(A2) - 28;
+        p.stroke(0, 100, 200); p.strokeWeight(1.8);
+        p.line(t2px(t1), arrY, t2px(t2), arrY);
+        p.line(t2px(t1), arrY, t2px(t1) + 6, arrY - 4);
+        p.line(t2px(t1), arrY, t2px(t1) + 6, arrY + 4);
+        p.line(t2px(t2), arrY, t2px(t2) - 6, arrY - 4);
+        p.line(t2px(t2), arrY, t2px(t2) - 6, arrY + 4);
+        p.noStroke(); p.fill(0, 100, 200); p.textSize(13); p.textStyle(p.BOLD);
+        p.textAlign(p.CENTER, p.BOTTOM);
+        p.text('T = 0.40 s', (t2px(t1) + t2px(t2)) / 2, arrY - 3);
+        p.textStyle(p.NORMAL);
+
+        p.fill(80); p.textSize(12); p.textAlign(p.LEFT, p.TOP);
+        p.text('x = 8.0 m\uff08\u81ea\u7531\u7aef\uff09\u3067\u306e y-t \u30b0\u30e9\u30d5', 8, 8);
+      };
+
+      p.windowResized = function() {
+        var parent = document.getElementById(targetId);
+        if (parent) { W = parent.clientWidth; p.resizeCanvas(W, H); p.redraw(); }
+      };
+    };
+
+    var myP5 = new p5(sketch);
+    if (!window.p5Instances) window.p5Instances = [];
+    window.p5Instances.push(myP5);
+  })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え (3)：</strong><br>
+    $T = \dfrac{\lambda}{v} = \dfrac{4.0}{10} = 0.40\,\mathrm{s}$ ごと
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>自由端反射</strong>：自由端では<span class="highlight">位相が変わらない</span>（上下反転なし）。壁の位置を対称軸に入射波を折り返せば反射波が得られる。自由端は常に<strong>腹</strong>になる。</li>
+    <li><strong>合成波がゼロになる瞬間</strong>：定在波はつりあいの位置を通過する瞬間がある。このとき入射波と反射波の変位が全区間で打ち消し合い、合成波の変位はゼロになる。エネルギーはすべて運動エネルギーの形をとっている。</li>
+    <li><strong>節と腹の配置</strong>：自由端（腹）から $\frac{\lambda}{4}$ ごとに節と腹が交互に並ぶ。原点と自由端の間に $L / \lambda = 2$ 波長分あるので、節は $\frac{\lambda}{4},\;\frac{3\lambda}{4},\;\frac{5\lambda}{4},\;\frac{7\lambda}{4}$ すなわち $x = 1.0,\;3.0,\;5.0,\;7.0$ m。</li>
+    <li><strong>振動の周期</strong>：$T = \frac{\lambda}{v}$ で求まる。自由端（腹）は周期 $T$ で振動し、正の最大変位に達するのは $T$ ごとに1回。</li>
+  </ul>
+</div>

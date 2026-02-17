@@ -27,6 +27,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!isAdminMode) {
     document.body.classList.add("viewer-student");
   }
+  if (isAdminMode) {
+    var footerInner = document.querySelector(".site-footer .site-footer-inner");
+    if (footerInner && footerInner.firstChild) {
+      var hubLink = document.createElement("a");
+      hubLink.href = "hub.html";
+      hubLink.textContent = "ハブ";
+      var hubSep = document.createElement("span");
+      hubSep.className = "site-footer-sep";
+      hubSep.textContent = "|";
+      footerInner.insertBefore(hubLink, footerInner.firstChild);
+      footerInner.insertBefore(hubSep, hubLink.nextSibling);
+    }
+  }
 
   // ★追加: index.html から渡されるパスパラメータを取得
   const directPath = params.get("path");

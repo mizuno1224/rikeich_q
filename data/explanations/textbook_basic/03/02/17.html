@@ -1,0 +1,432 @@
+<h2 class="prob-title-sub">17 気柱の振動</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    この問題は、<strong>開管</strong>内で生じる<strong>気柱の固有振動</strong>について、与えられた振動数と倍振動の情報から次の共鳴振動数を求めるものです。
+  </p>
+  <ul>
+    <li><strong>開管の固有振動</strong>：開管では<span class="highlight">両端が腹</span>となる定常波が生じる。管の長さ $L$ と波長 $\lambda$ の関係は $L = n\cdot\dfrac{\lambda}{2}$（$n=1,2,3,\cdots$）。</li>
+    <li><strong>固有振動数</strong>：$n$ 倍振動の振動数は $f_n = n\cdot f_1$（$f_1$：基本振動数）。開管では<span class="highlight">すべての整数倍</span>の振動が存在する。</li>
+    <li><strong>解法の流れ</strong>：3倍振動の振動数が与えられているので、基本振動数 $f_1$ を求め、次の固有振動（4倍振動）の振動数を計算する。</li>
+  </ul>
+
+  <h4>開管の気柱の振動（シミュレーション）</h4>
+  <p>
+    開管内に音を入れたときの定常波の様子を再現しています。スライダーで振動数を変えると、共鳴時の定常波パターンを確認できます。3倍振動（450 Hz）と4倍振動（600 Hz）のときに共鳴が起こることを観察してください。
+  </p>
+  <div id="sim-open-pipe-17" class="sim-embed" style="min-height: 420px; margin-bottom: 60px; overflow: visible;"></div>
+  <script>
+    (function () {
+      var targetId = 'sim-open-pipe-17';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function (p) {
+        var f1 = 150;
+        var currentF = 450;
+        var time = 0;
+        var isPlaying = true;
+        var inputF, labelF;
+
+        p.setup = function () {
+          var w = el.clientWidth;
+          var h = Math.max(400, el.clientHeight);
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+
+          var ctrWrap = document.createElement('div');
+          ctrWrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctrWrap);
+
+          var playBtn = document.createElement('button');
+          playBtn.textContent = '\u25b6 / \u25a0';
+          playBtn.style.padding = '4px 12px';
+          playBtn.onclick = function () { isPlaying = !isPlaying; };
+          ctrWrap.appendChild(playBtn);
+
+          labelF = document.createElement('span');
+          labelF.style.cssText = 'min-width:140px;font-family:monospace;';
+          ctrWrap.appendChild(labelF);
+
+          inputF = document.createElement('input');
+          inputF.type = 'range';
+          inputF.min = 100;
+          inputF.max = 900;
+          inputF.value = 450;
+          inputF.step = 1;
+          inputF.style.flex = '1';
+          inputF.style.minWidth = '80px';
+          inputF.oninput = function () {
+            currentF = Number(inputF.value);
+            syncLabel();
+          };
+          ctrWrap.appendChild(inputF);
+
+          function mkPreset(txt, val) {
+            var b = document.createElement('button');
+            b.textContent = txt;
+            b.style.padding = '4px 8px';
+            b.onclick = function () {
+              currentF = val;
+              inputF.value = val;
+              syncLabel();
+            };
+            ctrWrap.appendChild(b);
+          }
+          mkPreset('1\u500d (150Hz)', 150);
+          mkPreset('2\u500d (300Hz)', 300);
+          mkPreset('3\u500d (450Hz)', 450);
+          mkPreset('4\u500d (600Hz)', 600);
+          syncLabel();
+        };
+
+        function syncLabel() {
+          labelF.textContent = 'f = ' + currentF + ' Hz';
+        }
+
+        function drawSpeaker(p, cx, cy, sc) {
+          p.push();
+          p.fill(80, 80, 85);
+          p.stroke(50);
+          p.strokeWeight(1.5);
+          p.rect(cx - 18 * sc, cy - 10 * sc, 12 * sc, 20 * sc, 2);
+          p.fill(100, 100, 105);
+          p.beginShape();
+          p.vertex(cx - 6 * sc, cy - 10 * sc);
+          p.vertex(cx + 14 * sc, cy - 22 * sc);
+          p.vertex(cx + 14 * sc, cy + 22 * sc);
+          p.vertex(cx - 6 * sc, cy + 10 * sc);
+          p.endShape(p.CLOSE);
+          p.fill(60);
+          p.noStroke();
+          p.ellipse(cx + 4 * sc, cy, 12 * sc, 12 * sc);
+          p.fill(90);
+          p.ellipse(cx + 4 * sc, cy, 6 * sc, 6 * sc);
+          p.pop();
+        }
+
+        p.draw = function () {
+          if (isPlaying) time += 0.05;
+          p.background(255);
+
+          var w = p.width;
+          var h = p.height;
+          var pipeY = h * 0.38;
+          var pipeH = 80;
+          var mL = 90;
+          var mR = 50;
+          var speakerOffset = 42;
+          var pipeL = mL + speakerOffset;
+          var pipeR = w - mR;
+          var pipeLen = pipeR - pipeL;
+
+          var nHarmonic = Math.round(currentF / f1);
+          nHarmonic = Math.max(1, Math.min(nHarmonic, 6));
+          var isResonance = Math.abs(currentF - nHarmonic * f1) < 12;
+          var ampMax = isResonance ? 28 : 5;
+
+          p.fill(230, 235, 240);
+          p.stroke(160);
+          p.strokeWeight(1.5);
+          p.rect(pipeL, pipeY - pipeH / 2, pipeLen, pipeH, 0, 4, 4, 0);
+
+          p.stroke(140);
+          p.strokeWeight(0.5);
+          for (var i = 0; i < pipeLen; i += 12) {
+            p.line(pipeL + i, pipeY - pipeH / 2, pipeL + i + 6, pipeY - pipeH / 2 + 6);
+            p.line(pipeL + i, pipeY + pipeH / 2, pipeL + i + 6, pipeY + pipeH / 2 - 6);
+          }
+
+          drawSpeaker(p, mL - 8, pipeY, 1.1);
+
+          var steps = 200;
+          p.stroke(30, 70, 180);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var xx = pipeL + frac * pipeLen;
+            var disp = Math.cos(nHarmonic * Math.PI * frac) * Math.sin(time * 4) * ampMax;
+            p.vertex(xx, pipeY - disp);
+          }
+          p.endShape();
+
+          p.stroke(30, 70, 180, 60);
+          p.strokeWeight(1.2);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var xx = pipeL + frac * pipeLen;
+            var envPlus = Math.cos(nHarmonic * Math.PI * frac) * ampMax;
+            p.vertex(xx, pipeY - envPlus);
+          }
+          p.endShape();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var xx = pipeL + frac * pipeLen;
+            var envMinus = -Math.cos(nHarmonic * Math.PI * frac) * ampMax;
+            p.vertex(xx, pipeY - envMinus);
+          }
+          p.endShape();
+
+          if (isResonance) {
+            p.noStroke();
+            p.fill(220, 50, 50);
+            p.textSize(10);
+            p.textAlign(p.CENTER, p.TOP);
+            for (var k = 0; k <= nHarmonic; k++) {
+              var xNode = pipeL + (k / nHarmonic) * pipeLen;
+              if (k % 1 === 0) {
+                var fracNode = k / nHarmonic;
+                var cosVal = Math.cos(nHarmonic * Math.PI * fracNode);
+                if (Math.abs(cosVal) > 0.95) {
+                  p.fill(30, 120, 200);
+                  p.text('\u8179', xNode, pipeY + pipeH / 2 + 6);
+                }
+              }
+            }
+            for (var k = 0; k < nHarmonic; k++) {
+              var fracMid = (k + 0.5) / nHarmonic;
+              var xMid = pipeL + fracMid * pipeLen;
+              var cosValMid = Math.cos(nHarmonic * Math.PI * fracMid);
+              if (Math.abs(cosValMid) < 0.05) {
+                p.fill(220, 50, 50);
+                p.text('\u7bc0', xMid, pipeY + pipeH / 2 + 6);
+              }
+            }
+          }
+
+          p.noStroke();
+          p.fill(30);
+          p.textSize(14);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u958b\u53e3', pipeL, pipeY + pipeH / 2 + 22);
+          p.text('\u958b\u53e3', pipeR, pipeY + pipeH / 2 + 22);
+
+          var arrowY = pipeY + pipeH / 2 + 50;
+          p.stroke(200, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(pipeL, arrowY, pipeR, arrowY);
+          p.line(pipeL, arrowY, pipeL + 8, arrowY - 4);
+          p.line(pipeL, arrowY, pipeL + 8, arrowY + 4);
+          p.line(pipeR, arrowY, pipeR - 8, arrowY - 4);
+          p.line(pipeR, arrowY, pipeR - 8, arrowY + 4);
+          p.noStroke();
+          p.fill(180, 50, 40);
+          p.textSize(16);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.textStyle(p.ITALIC);
+          p.text('L', (pipeL + pipeR) / 2, arrowY - 4);
+          p.textStyle(p.NORMAL);
+
+          p.fill(40);
+          p.textSize(13);
+          p.textAlign(p.LEFT, p.TOP);
+          var info = nHarmonic + '\u500d\u632f\u52d5\u3000f = ' + (nHarmonic * f1) + ' Hz';
+          if (isResonance) {
+            info += '\u3000\u2605 \u5171\u9cf4\u4e2d';
+            if (nHarmonic === 3) info += '\uff08\u554f\u984c\u306e\u521d\u671f\u72b6\u614b\uff09';
+            else if (nHarmonic === 4) info += '\uff08\u6b21\u306e\u56fa\u6709\u632f\u52d5 = \u7b54\u3048\uff09';
+          } else {
+            info = '\u975e\u5171\u9cf4\u3000(\u8fd1\u3044\u5012\u500d\u632f\u52d5: ' + nHarmonic + '\u500d)';
+          }
+          p.text(info, 10, 10);
+
+          p.fill(80);
+          p.textSize(12);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('\u958b\u7ba1\uff1a\u4e21\u7aef\u304c\u8179\u3001\u5168\u6574\u6570\u500d\u306e\u56fa\u6709\u632f\u52d5\u304c\u5b58\u5728', 10, 28);
+        };
+
+        p.windowResized = function () {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>開管の固有振動の整理</h3>
+
+  <h4>開管の定常波の条件</h4>
+  <p>
+    開管では、<span class="highlight">管の両端が腹（自由端）</span>になる定常波が生じます。管の長さを $L$ 、波長を $\lambda$ とすると、定常波が成り立つ条件は
+    $$ L = n \cdot \frac{\lambda}{2} \quad (n = 1,\,2,\,3,\,\cdots) $$
+    です。ここで $n$ は振動の<strong>倍数</strong>を表します。
+  </p>
+  <p>
+    振動数 $f$ と波長 $\lambda$ の関係 $v = f\lambda$（$v$ は音速）を使うと、$n$ 倍振動の振動数 $f_n$ は
+    $$ f_n = n \cdot \frac{v}{2L} = n \cdot f_1 $$
+    となります。ここで $f_1 = \dfrac{v}{2L}$ は<strong>基本振動数</strong>です。
+  </p>
+  <p>
+    <strong>重要な特徴</strong>：開管では $n = 1, 2, 3, 4, \cdots$ の<span class="highlight">すべての整数倍</span>の固有振動が存在します。（閉管では奇数倍のみ。）
+  </p>
+
+  <h4>開管の各倍振動（図解）</h4>
+  <div id="sim-open-pipe-modes-17" class="sim-embed" style="min-height: 340px;"></div>
+  <script>
+    (function () {
+      var targetId = 'sim-open-pipe-modes-17';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function (p) {
+        p.setup = function () {
+          var w = el.clientWidth;
+          var h = Math.max(320, el.clientHeight);
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function () {
+          p.background(255);
+          var w = p.width;
+          var h = p.height;
+          var mL = 72;
+          var mR = 155;
+          var pipeLen = w - mL - mR;
+          var rowH = h / 4.5;
+          var modes = [1, 2, 3, 4];
+
+          for (var m = 0; m < modes.length; m++) {
+            var n = modes[m];
+            var cy = 30 + m * rowH + rowH * 0.4;
+            var amp = 20;
+
+            p.fill(240, 242, 245);
+            p.stroke(180);
+            p.strokeWeight(1);
+            p.rect(mL, cy - 30, pipeLen, 60, 0, 3, 3, 0);
+
+            p.stroke(30, 100, 200, 80);
+            p.strokeWeight(1);
+            p.noFill();
+            p.beginShape();
+            for (var i = 0; i <= 150; i++) {
+              var frac = i / 150;
+              var xx = mL + frac * pipeLen;
+              var yy = cy - Math.cos(n * Math.PI * frac) * amp;
+              p.vertex(xx, yy);
+            }
+            p.endShape();
+            p.beginShape();
+            for (var i = 0; i <= 150; i++) {
+              var frac = i / 150;
+              var xx = mL + frac * pipeLen;
+              var yy = cy + Math.cos(n * Math.PI * frac) * amp;
+              p.vertex(xx, yy);
+            }
+            p.endShape();
+
+            p.noStroke();
+            p.fill(40);
+            p.textSize(13);
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text(n + '\u500d\u632f\u52d5', mL - 8, cy);
+
+            var labelX = mL + pipeLen + 10;
+            p.textAlign(p.LEFT, p.CENTER);
+            p.fill(100);
+            p.textSize(12);
+            var fLabel = 'f\u2083 = ' + n + 'f\u2081';
+            if (n === 1) fLabel = 'f\u2081 (\u57fa\u672c\u632f\u52d5)';
+            else if (n === 2) fLabel = 'f\u2082 = 2f\u2081';
+            else if (n === 3) fLabel = 'f\u2083 = 3f\u2081';
+            else if (n === 4) fLabel = 'f\u2084 = 4f\u2081';
+            p.text(fLabel, labelX, cy);
+
+            if (n === 3) {
+              p.fill(220, 60, 40);
+              p.textSize(11);
+              p.textAlign(p.LEFT, p.CENTER);
+              p.text('\u2190 450 Hz', labelX, cy + 16);
+            }
+            if (n === 4) {
+              p.fill(30, 120, 200);
+              p.textSize(11);
+              p.textAlign(p.LEFT, p.CENTER);
+              p.text('\u2190 600 Hz (\u7b54\u3048)', labelX, cy + 16);
+            }
+          }
+        };
+
+        p.windowResized = function () {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>次の固有振動数 $f$ の導出</h3>
+
+  <h4>考え方</h4>
+  <p>
+    問題文より、開管内に $4.5 \times 10^2 = 450$ Hz の音を入れたところ<strong>3倍振動</strong>が発生しています。
+  </p>
+  <p>
+    開管の $n$ 倍振動の振動数は $f_n = n \cdot f_1$ なので、3倍振動のとき
+    $$ f_3 = 3f_1 = 450 \text{ Hz} $$
+    これを解いて、<strong>基本振動数</strong>は
+    $$ f_1 = \frac{450}{3} = 150 \text{ Hz} $$
+  </p>
+
+  <h4>次の固有振動数を求める</h4>
+  <p>
+    開管では $n = 1, 2, 3, 4, \cdots$ の<strong>すべての整数倍</strong>の固有振動が存在します。現在 $n=3$（3倍振動 = 450 Hz）なので、振動数を徐々に大きくしていくと<span class="highlight">次に共鳴が起こるのは $n=4$（4倍振動）</span>です。
+  </p>
+  <p>
+    4倍振動の振動数は
+    $$ f_4 = 4f_1 = 4 \times 150 = 600 \text{ Hz} $$
+  </p>
+  <p>
+    よって、次の固有振動の振動数は
+    $$ f = 6.0 \times 10^2 \text{ Hz} $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $f = 6.0 \times 10^2$ Hz
+  </div>
+
+  <h4>補足：なぜ「すべての整数倍」か？</h4>
+  <p>
+    開管では両端が<strong>腹</strong>（自由端）です。定常波の条件は
+    $$ L = n \cdot \frac{\lambda_n}{2} \quad (n = 1, 2, 3, \cdots) $$
+    であり、$n$ に制限がないため、<strong>すべての正の整数倍</strong>の固有振動が現れます。
+  </p>
+  <p>
+    一方、<strong>閉管</strong>では一端が節（閉端）・一端が腹（開端）となるため、
+    $$ L = (2m-1) \cdot \frac{\lambda}{4} \quad (m = 1, 2, 3, \cdots) $$
+    つまり $n = 1, 3, 5, 7, \cdots$ の<strong>奇数倍</strong>の固有振動しか存在しません。この違いが問題を解くうえで非常に重要です。
+  </p>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>開管の固有振動</strong>：両端が腹（自由端）で、$f_n = nf_1$（$n = 1, 2, 3, \cdots$）の<strong>すべての整数倍</strong>の振動が存在する。</li>
+    <li><strong>閉管との違い</strong>：閉管では奇数倍のみ（$n = 1, 3, 5, \cdots$）なので、次の固有振動の間隔が異なる。開管か閉管かを正しく把握することが最重要。</li>
+    <li><strong>基本振動数の特定</strong>：$n$ 倍振動の振動数が分かれば $f_1 = f_n / n$ で基本振動数を求められる。そこから任意の倍数の固有振動数を計算できる。</li>
+    <li><strong>「次の」固有振動</strong>：振動数を大きくする場合は $n$ を1つ増やした $(n+1)$ 倍振動が次の共鳴。小さくする場合は $n$ を1つ減らす。</li>
+  </ul>
+</div>

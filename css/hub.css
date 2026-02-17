@@ -86,11 +86,13 @@
 
 .hub-card--student { border-left: 4px solid var(--col-primary); }
 .hub-card--teacher { border-left: 4px solid var(--col-success); }
+.hub-card--sample { border-left: 4px solid #8b5cf6; }
 .hub-card--test   { border-left: 4px solid var(--col-warning); }
 .hub-card--admin { border-left: 4px solid var(--col-text-sub); }
 
 .hub-card--student:hover { border-color: var(--col-primary); }
 .hub-card--teacher:hover { border-color: var(--col-success); }
+.hub-card--sample:hover { border-color: #8b5cf6; }
 .hub-card--test:hover   { border-color: var(--col-warning); }
 .hub-card--admin:hover  { border-color: #475569; }
 

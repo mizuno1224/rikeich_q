@@ -1,0 +1,706 @@
+<h2 class="prob-title-sub">29 縦波</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    この問題は、<strong>縦波</strong>（疎密波）の変位を<strong>横波のグラフ</strong>（$y$-$x$ グラフ）で表したとき、
+    <span class="highlight">最も「密」な点</span>をどのように見分けるかを問うものです。
+  </p>
+  <ul>
+    <li><strong>横波表示の読み方</strong>：グラフで $y &gt; 0$ の点は媒質が $x$ 軸正の方向（右）に変位、$y &lt; 0$ の点は負の方向（左）に変位していることを表す。</li>
+    <li><strong>密の判定法</strong>：横波グラフで<span class="highlight">傾きが最も急な右下がり（$\dfrac{\partial y}{\partial x}$ が最も負）の位置が「最も密」</span>。その点の左側の粒子は右に、右側の粒子は左に変位しており、粒子が集中するため。</li>
+    <li><strong>波長の読み取り</strong>：BD 間の距離 0.40 m は半波長に相当するので、$\lambda = 0.80$ m。</li>
+    <li><strong>波の進行</strong>：時間 $\Delta t$ が経つと波形全体が $+x$ 方向に $v \Delta t$ だけ移動するので、密な位置も同じだけ移動する。</li>
+  </ul>
+
+  <h4>縦波と横波表示の対応（シミュレーション）</h4>
+  <p>
+    上段に $y$-$x$ グラフ（横波表示）、下段に実際の縦波（媒質粒子の配置）を表示しています。
+    密な領域は<span style="color:#c03030;">赤</span>、疎な領域は<span style="color:#3030c0;">青</span>で色分けしています。
+    スライダーやボタンで時刻を変えると、波形の移動と密・疎の変化が確認できます。
+  </p>
+
+  <div id="sim-longitudinal-main" class="sim-embed" style="height:500px; margin-bottom:60px; overflow:visible;"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-longitudinal-main';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var lambda = 0.80;
+        var vWave = 2.0;
+        var Tp = lambda / vWave;
+        var kk = 2 * Math.PI / lambda;
+        var ww = 2 * Math.PI / Tp;
+        var Adisp = 0.032;
+
+        var time = 0;
+        var playing = false;
+        var W, H;
+        var LM = 55, RM = 25, TM = 38;
+        var xMin = -0.08, xMax = 1.14;
+
+        var ptLabel = ['O', 'A', 'B', 'C', 'D', 'E'];
+        var ptX = [0, lambda / 4, lambda / 2, 3 * lambda / 4, lambda, 5 * lambda / 4];
+
+        var tSlider, tLabel;
+
+        function x2px(xp) {
+          return LM + (xp - xMin) / (xMax - xMin) * (W - LM - RM);
+        }
+
+        p.setup = function() {
+          W = el.clientWidth;
+          H = el.clientHeight || 500;
+          p.createCanvas(W, H).parent(el);
+          p.textFont('sans-serif');
+
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(wrap);
+
+          var btn = document.createElement('button');
+          btn.textContent = '\u25b6 / \u25a0';
+          btn.style.padding = '4px 12px';
+          btn.onclick = function() { playing = !playing; };
+          wrap.appendChild(btn);
+
+          tLabel = document.createElement('span');
+          tLabel.style.cssText = 'min-width:100px;font-family:monospace;';
+          tLabel.textContent = 't = 0.000 s';
+          wrap.appendChild(tLabel);
+
+          tSlider = document.createElement('input');
+          tSlider.type = 'range';
+          tSlider.min = '0';
+          tSlider.max = '400';
+          tSlider.value = '0';
+          tSlider.step = '1';
+          tSlider.style.flex = '1';
+          tSlider.style.minWidth = '100px';
+          tSlider.oninput = function() {
+            time = parseInt(tSlider.value) / 1000;
+            playing = false;
+            sync();
+          };
+          wrap.appendChild(tSlider);
+
+          function mkPre(txt, val) {
+            var b = document.createElement('button');
+            b.textContent = txt;
+            b.style.padding = '4px 8px';
+            b.onclick = function() {
+              time = val;
+              playing = false;
+              tSlider.value = String(Math.round(val * 1000));
+              sync();
+            };
+            wrap.appendChild(b);
+          }
+          mkPre('t = 0', 0);
+          mkPre('t = 0.10 s', 0.10);
+        };
+
+        function sync() {
+          if (tLabel) tLabel.textContent = 't = ' + time.toFixed(3) + ' s';
+        }
+
+        p.draw = function() {
+          if (playing) {
+            time += 0.005;
+            if (time > Tp) time -= Tp;
+            if (tSlider) tSlider.value = String(Math.round(time * 1000));
+            sync();
+          }
+          p.background(255);
+
+          var gTop = TM;
+          var gMid = H * 0.23;
+          var gBot = H * 0.39;
+          var yAmp = (gBot - gTop) * 0.42;
+          var phase = ww * time;
+
+          /* ----- y-x graph ----- */
+          /* background shading for dense/sparse */
+          var nS = 180;
+          var sW = (x2px(1.05) - x2px(0)) / nS;
+          for (var s = 0; s < nS; s++) {
+            var xs = s / nS * 1.05;
+            var dn = Math.cos(kk * xs - phase);
+            dn = Math.max(-1, Math.min(1, dn));
+            if (dn > 0) {
+              p.fill(255, 210 - 130 * dn, 210 - 130 * dn, 45 * dn);
+            } else {
+              p.fill(210 + 130 * dn, 210 + 130 * dn, 255, -45 * dn);
+            }
+            p.noStroke();
+            p.rect(x2px(xs), gTop + 2, sW + 1, gBot - gTop - 4);
+          }
+
+          /* axes */
+          p.stroke(130); p.strokeWeight(1.2);
+          p.line(x2px(xMin), gMid, x2px(xMax), gMid);
+          p.line(x2px(0), gTop, x2px(0), gBot);
+          var ar = 6;
+          p.line(x2px(xMax), gMid, x2px(xMax) - ar, gMid - ar / 2);
+          p.line(x2px(xMax), gMid, x2px(xMax) - ar, gMid + ar / 2);
+          p.line(x2px(0), gTop, x2px(0) - ar / 2, gTop + ar);
+          p.line(x2px(0), gTop, x2px(0) + ar / 2, gTop + ar);
+          p.noStroke(); p.fill(70); p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y', x2px(0) + 14, gTop - 4);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('x', x2px(xMax) + 4, gMid + 1);
+
+          p.fill(110); p.textSize(11); p.textAlign(p.LEFT, p.BOTTOM);
+          p.text('\u6a2a\u6ce2\u8868\u793a\uff08y-x \u30b0\u30e9\u30d5\uff09', 4, gTop - 10);
+
+          /* sine wave (inverted: -sin) */
+          p.stroke(25, 75, 180); p.strokeWeight(2.5); p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 280; i++) {
+            var xp = xMin + (xMax - xMin) * i / 280;
+            var yv = -Math.sin(kk * xp - phase);
+            p.vertex(x2px(xp), gMid - yv * yAmp);
+          }
+          p.endShape();
+
+          /* labeled points */
+          for (var j = 0; j < ptLabel.length; j++) {
+            var xp = ptX[j];
+            var px = x2px(xp);
+            var yv = -Math.sin(kk * xp - phase);
+            var py = gMid - yv * yAmp;
+            p.stroke(80); p.strokeWeight(1);
+            p.line(px, gMid - 4, px, gMid + 4);
+            p.noStroke(); p.fill(210, 55, 35);
+            p.ellipse(px, py, 7, 7);
+            p.fill(25); p.textSize(14); p.textAlign(p.CENTER, p.TOP);
+            p.text(ptLabel[j], px, gMid + 7);
+          }
+
+          /* slope indicators */
+          for (var j = 0; j < ptLabel.length; j++) {
+            var xp = ptX[j];
+            var sl = Math.cos(kk * xp - phase);
+            var dn = sl;
+            if (Math.abs(dn) > 0.85) {
+              var px = x2px(xp);
+              var yv = -Math.sin(kk * xp - phase);
+              var py = gMid - yv * yAmp;
+              p.noStroke(); p.textSize(12); p.textAlign(p.CENTER, p.BOTTOM);
+              if (dn > 0.85) {
+                p.fill(200, 40, 30);
+                p.text('\u5bc6', px, py - 8);
+              } else {
+                p.fill(40, 40, 200);
+                p.text('\u758e', px, py - 8);
+              }
+            }
+          }
+
+          /* ----- Longitudinal wave ----- */
+          var longMid = H * 0.63;
+          p.fill(110); p.textSize(11); p.textAlign(p.LEFT, p.TOP);
+          p.text('\u5b9f\u969b\u306e\u7e26\u6ce2\uff08\u5a92\u8cea\u7c92\u5b50\u306e\u914d\u7f6e\uff09', 4, H * 0.50);
+
+          /* equilibrium line */
+          p.stroke(215); p.strokeWeight(0.5);
+          p.line(x2px(0), longMid, x2px(1.08), longMid);
+
+          /* equilibrium ticks */
+          p.stroke(210); p.strokeWeight(0.5);
+          var nPart = 60;
+          for (var n = 0; n <= nPart; n++) {
+            var x0 = n / nPart * 1.05;
+            var px = x2px(x0);
+            p.line(px, longMid - 3, px, longMid + 3);
+          }
+
+          /* particles */
+          for (var n = 0; n <= nPart; n++) {
+            var x0 = n / nPart * 1.05;
+            var disp = -Adisp * Math.sin(kk * x0 - phase);
+            var xAct = x0 + disp;
+            var px = x2px(xAct);
+            var dydx = -Adisp * kk * Math.cos(kk * x0 - phase);
+            var dn = -dydx / (Adisp * kk);
+            dn = Math.max(-1, Math.min(1, dn));
+            var rr, gg, bb;
+            if (dn > 0) {
+              rr = 170 + 85 * dn; gg = 60 * (1 - dn); bb = 60 * (1 - dn);
+            } else {
+              rr = 60 * (1 + dn); gg = 60 * (1 + dn); bb = 170 - 85 * dn;
+            }
+            p.noStroke(); p.fill(rr, gg, bb);
+            p.ellipse(px, longMid, 7, 7);
+          }
+
+          /* labeled point markers on longitudinal */
+          for (var j = 0; j < ptLabel.length; j++) {
+            var xp = ptX[j];
+            var disp = -Adisp * Math.sin(kk * xp - phase);
+            var xAct = xp + disp;
+            var px = x2px(xAct);
+            p.noFill(); p.stroke(25, 25, 25); p.strokeWeight(1.5);
+            p.ellipse(px, longMid, 14, 14);
+            p.noStroke(); p.fill(25); p.textSize(12);
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(ptLabel[j], px, longMid + 11);
+          }
+
+          /* dense/sparse markers on longitudinal (show all in range) */
+          var baseDens = (phase / kk) % lambda;
+          if (baseDens < 0) baseDens += lambda;
+          p.noStroke(); p.fill(200, 40, 30); p.textSize(13);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          for (var dd = baseDens; dd <= xMax; dd += lambda) {
+            if (dd >= -0.02) p.text('\u2193 \u5bc6 \u2193', x2px(dd), longMid - 10);
+          }
+          if (baseDens > 0.1) {
+            for (var dd2 = baseDens - lambda; dd2 >= -0.02; dd2 -= lambda) {
+              p.text('\u2193 \u5bc6 \u2193', x2px(dd2), longMid - 10);
+            }
+          }
+
+          var baseSpar = ((Math.PI + phase) / kk) % lambda;
+          if (baseSpar < 0) baseSpar += lambda;
+          p.fill(40, 40, 200);
+          for (var ss = baseSpar; ss <= xMax; ss += lambda) {
+            if (ss >= -0.02) p.text('\u2193 \u758e \u2193', x2px(ss), longMid - 10);
+          }
+          if (baseSpar > 0.1) {
+            for (var ss2 = baseSpar - lambda; ss2 >= -0.02; ss2 -= lambda) {
+              p.text('\u2193 \u758e \u2193', x2px(ss2), longMid - 10);
+            }
+          }
+
+          /* legend */
+          p.fill(190, 50, 50); p.textSize(11); p.textAlign(p.RIGHT, p.TOP);
+          p.text('\u25cf \u5bc6\uff08\u7c92\u5b50\u304c\u5bc6\u96c6\uff09', W - 10, longMid + 28);
+          p.fill(50, 50, 190);
+          p.text('\u25cf \u758e\uff08\u7c92\u5b50\u304c\u307e\u3070\u3089\uff09', W - 10, longMid + 44);
+
+          /* wave direction arrow */
+          p.fill(100); p.textSize(12); p.textAlign(p.LEFT, p.TOP);
+          p.text('\u6ce2\u306e\u9032\u884c\u65b9\u5411 \u2192', 4, longMid + 28);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (parent) {
+            W = parent.clientWidth;
+            p.resizeCanvas(W, H);
+          }
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) 時刻 $t = 0$ s における最も密な点</h3>
+
+  <h4>波長の確認</h4>
+  <p>
+    まず波長を確認します。図より、<strong>B</strong> は波が $y = 0$ を上向きに横切る点（上昇ゼロクロス）、<strong>D</strong> は $y = 0$ を下向きに横切る点（下降ゼロクロス）です。B と D の間にはちょうど<strong>ピーク（山）</strong>が 1 つあるので、
+    $$\text{BD} = \frac{\lambda}{2}$$
+    これより、
+    $$\lambda = 2 \times 0.40 = 0.80 \text{ m}$$
+  </p>
+
+  <h4>密の判定方法</h4>
+  <p>
+    横波表示のグラフにおいて、<span class="highlight">「密」は $y$-$x$ グラフの傾き $\dfrac{\partial y}{\partial x}$ が最も負（右下がりが最も急）な位置</span>に対応します。
+  </p>
+  <p>
+    直感的な理解：ある点 P の<strong>左側</strong>の粒子が $y > 0$（右に変位）、<strong>右側</strong>の粒子が $y < 0$（左に変位）であれば、両側から粒子が P に向かって集まり、<strong>密</strong>になります。このとき、P 付近のグラフは右下がりです。
+  </p>
+
+  <h4>各点の判定（$t = 0$ s）</h4>
+  <p>
+    時刻 $t = 0$ s における各点の変位と傾きを確認すると、
+  </p>
+  <ul>
+    <li><strong>A</strong>（トラフ＝負のピーク）：傾き $= 0$ → 密でも疎でもない</li>
+    <li><strong>B</strong>（上昇ゼロクロス）：傾きが最も急な右上がり → 最も<strong>疎</strong></li>
+    <li><strong>C</strong>（正のピーク）：傾き $= 0$ → 密でも疎でもない</li>
+    <li><strong>D</strong>（下降ゼロクロス）：<span class="highlight">傾きが最も急な右下がり → <strong>最も密</strong></span></li>
+    <li><strong>E</strong>（トラフ＝負のピーク）：傾き $= 0$ → 密でも疎でもない</li>
+  </ul>
+
+  <div id="sim-q1-t0" class="sim-embed" style="height:320px; margin-bottom:8px;"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-q1-t0';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var lambda = 0.80;
+        var kk = 2 * Math.PI / lambda;
+        var W, H;
+        var LM = 55, RM = 25, TM = 12;
+        var xMin = -0.06, xMax = 1.10;
+        var ptL = ['O', 'A', 'B', 'C', 'D', 'E'];
+        var ptX = [0, lambda / 4, lambda / 2, 3 * lambda / 4, lambda, 5 * lambda / 4];
+
+        function x2px(xp) { return LM + (xp - xMin) / (xMax - xMin) * (W - LM - RM); }
+
+        p.setup = function() {
+          W = el.clientWidth;
+          H = el.clientHeight || 320;
+          p.createCanvas(W, H).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var gMid = H * 0.35;
+          var yAmp = H * 0.22;
+
+          /* axes */
+          p.stroke(130); p.strokeWeight(1.2);
+          p.line(x2px(xMin), gMid, x2px(xMax), gMid);
+          p.line(x2px(0), gMid - yAmp - 15, x2px(0), gMid + yAmp + 15);
+          p.noStroke(); p.fill(70); p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y', x2px(0) + 14, gMid - yAmp - 8);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('x', x2px(xMax) + 4, gMid + 1);
+          p.fill(110); p.textSize(11); p.textAlign(p.LEFT, p.TOP);
+          p.text('t = 0 s', 4, TM);
+
+          /* sine wave at t=0 (inverted: -sin) */
+          p.stroke(25, 75, 180); p.strokeWeight(2.5); p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 280; i++) {
+            var xp = xMin + (xMax - xMin) * i / 280;
+            var yv = -Math.sin(kk * xp);
+            p.vertex(x2px(xp), gMid - yv * yAmp);
+          }
+          p.endShape();
+
+          /* labeled points */
+          for (var j = 0; j < ptL.length; j++) {
+            var xp = ptX[j];
+            var px = x2px(xp);
+            var yv = -Math.sin(kk * xp);
+            var py = gMid - yv * yAmp;
+            p.stroke(80); p.strokeWeight(1);
+            p.line(px, gMid - 4, px, gMid + 4);
+            p.noStroke();
+            p.fill(j === 4 ? p.color(220, 40, 30) : p.color(80));
+            p.ellipse(px, py, 8, 8);
+            p.fill(25); p.textSize(14); p.textAlign(p.CENTER, p.TOP);
+            p.text(ptL[j], px, gMid + 7);
+          }
+
+          /* displacement arrows at A-E */
+          for (var j = 0; j < ptL.length; j++) {
+            var xp = ptX[j];
+            var px = x2px(xp);
+            var yv = -Math.sin(kk * xp);
+            if (Math.abs(yv) < 0.05) continue;
+            var dir = yv > 0 ? 1 : -1;
+            var arLen = 22;
+            var baseY = gMid + yAmp + 30;
+            p.stroke(100, 60, 160); p.strokeWeight(1.8);
+            p.line(px, baseY, px + dir * arLen, baseY);
+            p.line(px + dir * arLen, baseY, px + dir * arLen - dir * 5, baseY - 4);
+            p.line(px + dir * arLen, baseY, px + dir * arLen - dir * 5, baseY + 4);
+            p.noStroke(); p.fill(100, 60, 160); p.textSize(10);
+            p.textAlign(p.CENTER, p.TOP);
+            p.text(ptL[j], px, baseY + 6);
+          }
+
+          /* highlight D as dense */
+          var dpx = x2px(ptX[4]);
+          var dpy = gMid;
+          p.noFill(); p.stroke(220, 40, 30); p.strokeWeight(2);
+          p.ellipse(dpx, dpy, 30, 30);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u2190 \u5bc6 \u2192', dpx, dpy - 18);
+
+          /* convergence arrows near D */
+          var baseY2 = gMid + yAmp + 30;
+          p.stroke(220, 40, 30); p.strokeWeight(2);
+          var lx = x2px(ptX[4] - 0.06);
+          var rx = x2px(ptX[4] + 0.06);
+          p.line(lx - 18, baseY2, lx, baseY2);
+          p.line(lx, baseY2, lx - 5, baseY2 - 4);
+          p.line(lx, baseY2, lx - 5, baseY2 + 4);
+          p.line(rx + 18, baseY2, rx, baseY2);
+          p.line(rx, baseY2, rx + 5, baseY2 - 4);
+          p.line(rx, baseY2, rx + 5, baseY2 + 4);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u7c92\u5b50\u304c D \u306b\u96c6\u307e\u308b', x2px(ptX[4]), baseY2 + 8);
+
+          /* slope annotation near D */
+          p.fill(180, 40, 30); p.textSize(11); p.textAlign(p.LEFT, p.TOP);
+          p.text('\u50be\u304d\u304c\u6700\u3082\u6025\u306a\u53f3\u4e0b\u304c\u308a', dpx + 20, dpy - 40);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    D の左隣（C 側）の粒子は $y > 0$ なので<strong>右に変位</strong>し、D の右隣（E 側）の粒子は $y < 0$ なので<strong>左に変位</strong>しています。
+    つまり、D に向かって両側から粒子が集まるため、D が<strong>最も密</strong>です。
+  </p>
+
+  <div class="box-note">
+    <strong>答え (1)：</strong><br>
+    $t = 0$ s で最も密な点は <strong>D</strong>
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 時刻 $t = 0.10$ s における最も密な点</h3>
+
+  <h4>波の移動量を求める</h4>
+  <p>
+    波の速さ $v = 2.0$ m/s、経過時間 $\Delta t = 0.10$ s なので、波が移動する距離は
+    $$\Delta x = v \cdot \Delta t = 2.0 \times 0.10 = 0.20 \text{ m}$$
+  </p>
+  <p>
+    波長 $\lambda = 0.80$ m より、$\frac{\lambda}{4} = 0.20$ m なので、
+    <span class="highlight">波形全体が $+x$ 方向に $\dfrac{\lambda}{4}$ だけ移動</span>します。
+  </p>
+
+  <h4>移動後の密の位置</h4>
+  <p>
+    $t = 0$ s で D（下降ゼロクロス）にあった「密」は、$\frac{\lambda}{4} = 0.20$ m だけ右に移動します。
+    $$x_\text{D} + 0.20 = \lambda + \frac{\lambda}{4} = \frac{5\lambda}{4}$$
+    $\frac{5\lambda}{4}$ の位置は <strong>E</strong> です。
+  </p>
+  <p>
+    同様に、$t = 0$ s で O（原点）にも下降ゼロクロスがあり、その密も $\frac{\lambda}{4}$ だけ右に移動して <strong>A</strong> の位置に来ます。
+    $$x_\text{O} + 0.20 = 0 + \frac{\lambda}{4} = \frac{\lambda}{4} = x_\text{A}$$
+  </p>
+
+  <div id="sim-q2-t010" class="sim-embed" style="height:420px; margin-bottom:8px;"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-q2-t010';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var lambda = 0.80;
+        var kk = 2 * Math.PI / lambda;
+        var vWave = 2.0;
+        var Tp = lambda / vWave;
+        var ww = 2 * Math.PI / Tp;
+        var t1 = 0.10;
+        var W, H;
+        var LM = 55, RM = 25, TM = 52;
+        var xMin = -0.06, xMax = 1.10;
+        var ptL = ['O', 'A', 'B', 'C', 'D', 'E'];
+        var ptX = [0, lambda / 4, lambda / 2, 3 * lambda / 4, lambda, 5 * lambda / 4];
+
+        function x2px(xp) { return LM + (xp - xMin) / (xMax - xMin) * (W - LM - RM); }
+
+        p.setup = function() {
+          W = el.clientWidth;
+          H = el.clientHeight || 420;
+          p.createCanvas(W, H).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var gMid = H * 0.42;
+          var yAmp = H * 0.20;
+
+          /* axes */
+          p.stroke(130); p.strokeWeight(1.2);
+          p.line(x2px(xMin), gMid, x2px(xMax), gMid);
+          p.line(x2px(0), gMid - yAmp - 15, x2px(0), gMid + yAmp + 15);
+          p.noStroke(); p.fill(70); p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y', x2px(0) + 14, gMid - yAmp - 8);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('x', x2px(xMax) + 4, gMid + 1);
+
+          /* t=0 wave (dashed, inverted) */
+          p.stroke(160, 180, 220); p.strokeWeight(1.5);
+          p.drawingContext.setLineDash([6, 4]);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 280; i++) {
+            var xp = xMin + (xMax - xMin) * i / 280;
+            var yv = -Math.sin(kk * xp);
+            p.vertex(x2px(xp), gMid - yv * yAmp);
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          /* t=0.10 wave (solid, inverted) */
+          p.stroke(25, 75, 180); p.strokeWeight(2.5); p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 280; i++) {
+            var xp = xMin + (xMax - xMin) * i / 280;
+            var yv = -Math.sin(kk * xp - ww * t1);
+            p.vertex(x2px(xp), gMid - yv * yAmp);
+          }
+          p.endShape();
+
+          /* legend: place at bottom to avoid overlap with arrows above wave */
+          var legY1 = H - 44;
+          var legY2 = H - 28;
+          p.textSize(11); p.textAlign(p.LEFT, p.CENTER);
+          p.stroke(160, 180, 220); p.strokeWeight(1.5);
+          p.drawingContext.setLineDash([6, 4]);
+          p.line(W - 180, legY1, W - 150, legY1);
+          p.drawingContext.setLineDash([]);
+          p.noStroke(); p.fill(140, 150, 180);
+          p.text('t = 0 s', W - 145, legY1);
+
+          p.stroke(25, 75, 180); p.strokeWeight(2.5);
+          p.line(W - 180, legY2, W - 150, legY2);
+          p.noStroke(); p.fill(25, 75, 180);
+          p.text('t = 0.10 s', W - 145, legY2);
+
+          /* labeled points (on t=0.10 wave) */
+          for (var j = 0; j < ptL.length; j++) {
+            var xp = ptX[j];
+            var px = x2px(xp);
+            var yv = -Math.sin(kk * xp - ww * t1);
+            var py = gMid - yv * yAmp;
+            p.stroke(80); p.strokeWeight(1);
+            p.line(px, gMid - 4, px, gMid + 4);
+            p.noStroke();
+            var isHL = (j === 1 || j === 5);
+            p.fill(isHL ? p.color(220, 40, 30) : p.color(80));
+            p.ellipse(px, py, 8, 8);
+            p.fill(25); p.textSize(14); p.textAlign(p.CENTER, p.TOP);
+            p.text(ptL[j], px, gMid + 7);
+          }
+
+          /* highlight A as dense at t=0.10 */
+          var apx = x2px(ptX[1]);
+          var apy = gMid;
+          p.noFill(); p.stroke(220, 40, 30); p.strokeWeight(2);
+          p.ellipse(apx, apy, 30, 30);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(13);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u5bc6', apx, apy - 18);
+
+          /* highlight E as dense at t=0.10 */
+          var epx = x2px(ptX[5]);
+          var epy = gMid;
+          p.noFill(); p.stroke(220, 40, 30); p.strokeWeight(2);
+          p.ellipse(epx, epy, 30, 30);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(13);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u5bc6', epx, epy - 18);
+
+          /* shift arrow: D -> E (above wave, with room from top) */
+          var arY = gMid - yAmp - 32;
+          var dpx = x2px(ptX[4]);
+          p.stroke(200, 100, 40); p.strokeWeight(1.8);
+          p.line(dpx, arY, epx, arY);
+          p.line(epx, arY, epx - 6, arY - 4);
+          p.line(epx, arY, epx - 6, arY + 4);
+          p.noStroke(); p.fill(200, 100, 40); p.textSize(11);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u03bb/4 = 0.20 m', (dpx + epx) / 2, arY - 2);
+          p.textSize(10); p.textAlign(p.CENTER, p.TOP);
+          p.text('D\u306e\u5bc6 \u2192 E\u3078', (dpx + epx) / 2, arY + 2);
+
+          /* shift arrow: O -> A */
+          var arY2 = arY - 26;
+          var opx = x2px(ptX[0]);
+          p.stroke(200, 100, 40); p.strokeWeight(1.8);
+          p.line(opx, arY2, apx, arY2);
+          p.line(apx, arY2, apx - 6, arY2 - 4);
+          p.line(apx, arY2, apx - 6, arY2 + 4);
+          p.noStroke(); p.fill(200, 100, 40); p.textSize(11);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u03bb/4 = 0.20 m', (opx + apx) / 2, arY2 - 2);
+          p.textSize(10); p.textAlign(p.CENTER, p.TOP);
+          p.text('O\u306e\u5bc6 \u2192 A\u3078', (opx + apx) / 2, arY2 + 2);
+
+          /* convergence arrows at A */
+          var baseY2 = gMid + yAmp + 32;
+          p.stroke(220, 40, 30); p.strokeWeight(2);
+          var lxA = x2px(ptX[1] - 0.06);
+          var rxA = x2px(ptX[1] + 0.06);
+          p.line(lxA - 16, baseY2, lxA, baseY2);
+          p.line(lxA, baseY2, lxA - 5, baseY2 - 4);
+          p.line(lxA, baseY2, lxA - 5, baseY2 + 4);
+          p.line(rxA + 16, baseY2, rxA, baseY2);
+          p.line(rxA, baseY2, rxA + 5, baseY2 - 4);
+          p.line(rxA, baseY2, rxA + 5, baseY2 + 4);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('A\u306b\u96c6\u307e\u308b', apx, baseY2 + 6);
+
+          /* convergence arrows at E */
+          var lxE = x2px(ptX[5] - 0.06);
+          var rxE = x2px(ptX[5] + 0.06);
+          p.stroke(220, 40, 30); p.strokeWeight(2);
+          p.line(lxE - 16, baseY2, lxE, baseY2);
+          p.line(lxE, baseY2, lxE - 5, baseY2 - 4);
+          p.line(lxE, baseY2, lxE - 5, baseY2 + 4);
+          p.line(rxE + 16, baseY2, rxE, baseY2);
+          p.line(rxE, baseY2, rxE + 5, baseY2 - 4);
+          p.line(rxE, baseY2, rxE + 5, baseY2 + 4);
+          p.noStroke(); p.fill(220, 40, 30); p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('E\u306b\u96c6\u307e\u308b', epx, baseY2 + 6);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    上の図で、破線（$t = 0$）から実線（$t = 0.10$ s）へ波形が $\frac{\lambda}{4}$ だけ右に移動しています。
+  </p>
+
+  <p>
+    $t = 0.10$ s での各点の状態を整理すると：
+  </p>
+  <ul>
+    <li><strong>O</strong>：$t = 0$ で下降ゼロクロス（密）→ $t = 0.10$ s でピーク（密でも疎でもない）</li>
+    <li><strong>A</strong>：$t = 0$ でトラフ → <span class="highlight">$t = 0.10$ s で<strong>下降ゼロクロス（最も密）</strong></span></li>
+    <li><strong>B</strong>：$t = 0$ で上昇ゼロクロス（疎）→ $t = 0.10$ s でトラフ（密でも疎でもない）</li>
+    <li><strong>C</strong>：$t = 0$ でピーク → $t = 0.10$ s で上昇ゼロクロス（最も<strong>疎</strong>）</li>
+    <li><strong>D</strong>：$t = 0$ で下降ゼロクロス（密）→ $t = 0.10$ s でピーク（密でも疎でもない）</li>
+    <li><strong>E</strong>：$t = 0$ でトラフ → <span class="highlight">$t = 0.10$ s で<strong>下降ゼロクロス（最も密）</strong></span></li>
+  </ul>
+
+  <div class="box-note">
+    <strong>答え (2)：</strong><br>
+    $t = 0.10$ s で最も密な点は <strong>A, E</strong>
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>縦波の横波表示</strong>：$y &gt; 0$ は $+x$ 方向への変位、$y &lt; 0$ は $-x$ 方向への変位を表す。$y$ 値そのものが「粒子の位置」ではなく「変位量」であることに注意。</li>
+    <li><strong>密・疎の判定</strong>：<span class="highlight">$y$-$x$ グラフで傾きが最も急な右下がりの位置が「密」、最も急な右上がりの位置が「疎」</span>。ピークやトラフの位置は密でも疎でもない（傾き $= 0$）。</li>
+    <li><strong>波の進行と密・疎の移動</strong>：波が $+x$ 方向に速さ $v$ で進むとき、密・疎の位置も同じ方向に $v \Delta t$ だけ移動する。本問では $v \Delta t = 2.0 \times 0.10 = 0.20 = \frac{\lambda}{4}$。</li>
+    <li><strong>波長の求め方</strong>：正弦波の同種のゼロクロス間（上昇→上昇、下降→下降）は $\lambda$、異種のゼロクロス間（上昇→下降、下降→上昇）は $\frac{\lambda}{2}$ 離れている。本問の BD 間は $\frac{\lambda}{2}$ に相当する。</li>
+  </ul>
+</div>

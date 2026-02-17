@@ -8,14 +8,7 @@
         {
           "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
           "folderId": "01/01",
-          "problems": [
-            {
-              "id": "001_p12_ex1",
-              "title": "総合演習：物理シミュレーション",
-              "desc": "Matter.js, JSXGraph, Chart.js, p5.js, Three.js を使用したサンプル",
-              "explanationPath": "data/explanations/textbook_basic/01/01/001_p12_ex1.html"
-            }
-          ]
+          "problems": []
         },
         {
           "fieldName": "第1編 運動とエネルギー / 第2章 運動の法則",
@@ -89,28 +82,44 @@
               "title": "演習問題1：波形の移動",
               "desc": "波形グラフから波の要素を読み取り、媒質の速度の向きから進行方向を決定する方法と、時間の経過による波形の移動を作図する問題。",
               "explanationPath": "data/explanations/textbook_basic/03/01/28.html"
+            },
+            {
+              "id": "basic_03_01_29",
+              "title": "演習問題2：縦波",
+              "desc": "縦波の横波表示グラフから、傾きの正負を用いて密・疎を判定し、波の進行に伴う密の移動を求める問題",
+              "explanationPath": "data/explanations/textbook_basic/03/01/29.html"
+            },
+            {
+              "id": "basic_03_01_30",
+              "title": "演習問題3：正弦波の反射",
+              "desc": "自由端反射における合成波の作図と定在波の節の位置、振動周期を求める問題",
+              "explanationPath": "data/explanations/textbook_basic/03/01/30.html"
             }
           ]
         },
         {
           "fieldName": "第3編 波 / 第2章 音",
           "folderId": "03/02",
-          "problems": []
-        },
-        {
-          "fieldName": "第4編 電気 / 第1章 物質と電気",
-          "folderId": "04/01",
-          "problems": []
-        },
-        {
-          "fieldName": "第4編 電気 / 第2章 磁場と交流",
-          "folderId": "04/02",
-          "problems": []
-        },
-        {
-          "fieldName": "第5編 物理学と社会 / 第1章 エネルギーの利用",
-          "folderId": "05/01",
-          "problems": []
+          "problems": [
+            {
+              "id": "16",
+              "title": "演習問題1：弦の振動",
+              "desc": "弦の共振実験から波長と波の速さを求める問題（物基707）",
+              "explanationPath": "data/explanations/textbook_basic/03/02/16.html"
+            },
+            {
+              "id": "17",
+              "title": "演習問題2：気柱の振動",
+              "desc": "開管の3倍振動から次の固有振動数を求める問題（物基707）",
+              "explanationPath": "data/explanations/textbook_basic/03/02/17.html"
+            },
+            {
+              "id": "18",
+              "title": "演習問題3：気柱の共鳴",
+              "desc": "水の入った円筒管の共鳴実験から音の速さと開口端補正を求める問題（物基707）",
+              "explanationPath": "data/explanations/textbook_basic/03/02/18.html"
+            }
+          ]
         }
       ]
     }

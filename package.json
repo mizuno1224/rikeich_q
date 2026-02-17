@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "bump-cache": "node scripts/bump-sw-cache-version.js",
-    "deploy": "npm run bump-cache && firebase deploy"
+    "deploy": "npm run bump-cache && firebase deploy",
+    "check-paths": "node scripts/check-explanation-paths.js"
   }
 }

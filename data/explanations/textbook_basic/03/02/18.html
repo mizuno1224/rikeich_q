@@ -1,0 +1,653 @@
+<h2 class="prob-title-sub">18 気柱の共鳴</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    この問題は、水を入れた円筒管（<strong>閉管</strong>）の<strong>気柱の共鳴</strong>実験から、<strong>音の速さ</strong> $V$ と<strong>開口端補正</strong> $\Delta l$ を求めるものです。
+  </p>
+  <ul>
+    <li><strong>閉管の共鳴条件</strong>：管口（開口端）が腹、水面（閉端）が節となる定常波が生じる。開口端補正を考慮すると、気柱の有効長さ $l + \Delta l$ が $\dfrac{\lambda}{4}$ の奇数倍のとき共鳴する。</li>
+    <li><strong>隣り合う共鳴</strong>：1回目の共鳴の気柱長 $l_1$ と2回目の気柱長 $l_2$ の差は <span class="highlight">$\dfrac{\lambda}{2}$</span>。これは $\Delta l$ に無関係に成り立つ。</li>
+    <li><strong>解法の流れ</strong>：(1) $l_2 - l_1 = \dfrac{\lambda}{2}$ から波長 $\lambda$ を求め、$V = f\lambda$ で音速を算出。(2) 1回目の共鳴条件 $l_1 + \Delta l = \dfrac{\lambda}{4}$ から $\Delta l$ を求める。</li>
+  </ul>
+
+  <h4>気柱の共鳴実験（シミュレーション）</h4>
+  <p>
+    おんさと水の入った円筒管の実験装置を再現しています。スライダーで水面の位置を変えると、管口から水面までの距離（気柱の長さ）が変化します。共鳴位置（13.6 cm、42.6 cm）で定常波が大きく振動する様子を確認してください。
+  </p>
+  <div id="sim-closed-pipe-18" class="sim-embed" style="min-height: 520px; margin-bottom: 60px; overflow: visible;"></div>
+  <script>
+    (function () {
+      var targetId = 'sim-closed-pipe-18';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function (p) {
+        var freq = 600;
+        var l1 = 13.6;
+        var l2 = 42.6;
+        var lambdaHalf = l2 - l1;
+        var lambda = lambdaHalf * 2;
+        var deltaL = lambda / 4 - l1;
+        var currentL = l1;
+        var time = 0;
+        var isPlaying = true;
+        var inputL, labelL;
+
+        p.setup = function () {
+          var w = el.clientWidth;
+          var h = Math.max(500, el.clientHeight);
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+
+          var ctrWrap = document.createElement('div');
+          ctrWrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctrWrap);
+
+          var playBtn = document.createElement('button');
+          playBtn.textContent = '\u25b6 / \u25a0';
+          playBtn.style.padding = '4px 12px';
+          playBtn.onclick = function () { isPlaying = !isPlaying; };
+          ctrWrap.appendChild(playBtn);
+
+          labelL = document.createElement('span');
+          labelL.style.cssText = 'min-width:160px;font-family:monospace;';
+          ctrWrap.appendChild(labelL);
+
+          inputL = document.createElement('input');
+          inputL.type = 'range';
+          inputL.min = 5;
+          inputL.max = 60;
+          inputL.value = Math.round(l1 * 10) / 10;
+          inputL.step = 0.1;
+          inputL.style.flex = '1';
+          inputL.style.minWidth = '80px';
+          inputL.oninput = function () {
+            currentL = Number(inputL.value);
+            syncLabel();
+          };
+          ctrWrap.appendChild(inputL);
+
+          function mkPreset(txt, val) {
+            var b = document.createElement('button');
+            b.textContent = txt;
+            b.style.padding = '4px 8px';
+            b.onclick = function () {
+              currentL = val;
+              inputL.value = val;
+              syncLabel();
+            };
+            ctrWrap.appendChild(b);
+          }
+          mkPreset('1\u56de\u76ee\u5171\u9cf4 (13.6cm)', l1);
+          mkPreset('2\u56de\u76ee\u5171\u9cf4 (42.6cm)', l2);
+          syncLabel();
+        };
+
+        function syncLabel() {
+          labelL.textContent = '\u6c17\u67f1\u306e\u9577\u3055 l = ' + Number(currentL).toFixed(1) + ' cm';
+        }
+
+        function drawTuningFork(p, tipX, tipY, sc) {
+          p.push();
+          p.fill(110, 110, 115);
+          p.stroke(70);
+          p.strokeWeight(1.2);
+          var thick = 4 * sc;
+          var len = 28 * sc;
+          var gap = 14 * sc;
+          var baseW = 5 * sc;
+          var handleLen = 34 * sc;
+          var handleH = 9 * sc;
+          var topY = tipY - gap / 2 - thick;
+          var botY = tipY + gap / 2;
+          p.rect(tipX, topY, len, thick, 1);
+          p.rect(tipX, botY, len, thick, 1);
+          p.noStroke();
+          p.ellipse(tipX, topY + thick / 2, thick * 1.3, thick * 1.3);
+          p.ellipse(tipX, botY + thick / 2, thick * 1.3, thick * 1.3);
+          p.stroke(70);
+          p.strokeWeight(1.2);
+          var baseX = tipX + len;
+          p.rect(baseX, topY, baseW, botY + thick - topY);
+          p.rect(baseX + baseW, tipY - handleH / 2, handleLen, handleH, 2);
+          p.pop();
+        }
+
+        p.draw = function () {
+          if (isPlaying) time += 0.05;
+          p.background(255);
+
+          var w = p.width;
+          var h = p.height;
+          var tubeW = 70;
+          var tubeCx = w * 0.38;
+          var tubeTop = 100;
+          var tubeBottom = h - 50;
+          var tubeH = tubeBottom - tubeTop;
+          var maxLenCm = 60;
+          var scale = tubeH / maxLenCm;
+          var waterY = tubeTop + currentL * scale;
+
+          p.fill(240, 242, 248);
+          p.stroke(160);
+          p.strokeWeight(1.5);
+          p.rect(tubeCx - tubeW / 2, tubeTop, tubeW, tubeH, 0, 0, 4, 4);
+          p.stroke(140);
+          p.strokeWeight(0.5);
+          for (var yy = tubeTop + 8; yy < tubeBottom; yy += 8) {
+            p.line(tubeCx - tubeW / 2, yy, tubeCx - tubeW / 2 + 5, yy - 5);
+            p.line(tubeCx + tubeW / 2, yy, tubeCx + tubeW / 2 - 5, yy - 5);
+          }
+
+          p.noStroke();
+          p.fill(100, 160, 220, 120);
+          var wH = tubeBottom - waterY;
+          if (wH > 0) {
+            p.rect(tubeCx - tubeW / 2 + 2, waterY, tubeW - 4, wH - 2, 0, 0, 3, 3);
+          }
+          p.stroke(40, 100, 180);
+          p.strokeWeight(1.5);
+          p.line(tubeCx - tubeW / 2 + 2, waterY, tubeCx + tubeW / 2 - 2, waterY);
+
+          var effectiveL = currentL + deltaL;
+          var nMode = Math.round(effectiveL / (lambda / 4));
+          if (nMode % 2 === 0) nMode = Math.max(1, nMode - 1);
+          if (nMode < 1) nMode = 1;
+          var resonantL = nMode * lambda / 4 - deltaL;
+          var isResonance = Math.abs(currentL - resonantL) < 0.8;
+          var ampMax = isResonance ? 20 : 3;
+          var airLen = currentL * scale;
+
+          p.stroke(220, 60, 50);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          var steps = 120;
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var yPos = tubeTop + frac * airLen;
+            var disp = Math.cos(nMode * Math.PI * frac / 2) * Math.cos(time * 4) * ampMax;
+            p.vertex(tubeCx + disp, yPos);
+          }
+          p.endShape();
+
+          if (isResonance) {
+            p.stroke(220, 60, 50, 60);
+            p.strokeWeight(1.2);
+            p.noFill();
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var yPos = tubeTop + frac * airLen;
+              var env = Math.cos(nMode * Math.PI * frac / 2) * ampMax;
+              p.vertex(tubeCx + env, yPos);
+            }
+            p.endShape();
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var yPos = tubeTop + frac * airLen;
+              var env = -Math.cos(nMode * Math.PI * frac / 2) * ampMax;
+              p.vertex(tubeCx + env, yPos);
+            }
+            p.endShape();
+          }
+
+          var forkTipX = tubeCx - 18;
+          var forkTipY = tubeTop - 32;
+          drawTuningFork(p, forkTipX, forkTipY, 1.0);
+
+          var forkEndX = forkTipX + 28 + 5 + 34;
+          p.noStroke();
+          p.fill(80);
+          p.textSize(12);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('\u304a\u3093\u3055 (f = 600 Hz)', forkEndX + 8, forkTipY);
+
+          p.noStroke();
+          p.fill(30);
+          p.textSize(12);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u7ba1\u53e3\uff08\u958b\u53e3\u7aef\uff09', tubeCx - tubeW / 2 - 8, tubeTop);
+
+          p.fill(30);
+          p.textSize(12);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u6c34\u9762\uff08\u9589\u7aef\uff09', tubeCx - tubeW / 2 - 8, waterY);
+
+          var arrowX = tubeCx + tubeW / 2 + 20;
+          if (waterY - tubeTop > 30) {
+            p.stroke(30, 100, 200);
+            p.strokeWeight(1.5);
+            p.line(arrowX, tubeTop + 4, arrowX, waterY - 4);
+            p.line(arrowX, tubeTop + 4, arrowX - 4, tubeTop + 12);
+            p.line(arrowX, tubeTop + 4, arrowX + 4, tubeTop + 12);
+            p.line(arrowX, waterY - 4, arrowX - 4, waterY - 12);
+            p.line(arrowX, waterY - 4, arrowX + 4, waterY - 12);
+            p.noStroke();
+            p.fill(30, 80, 180);
+            p.textSize(13);
+            p.textStyle(p.ITALIC);
+            p.textAlign(p.LEFT, p.CENTER);
+            var labelY = (tubeTop + waterY) / 2;
+            if (labelY < forkTipY + 20) labelY = forkTipY + 20;
+            p.text('l = ' + Number(currentL).toFixed(1) + ' cm', arrowX + 6, labelY);
+            p.textStyle(p.NORMAL);
+          }
+
+          p.noStroke();
+          p.fill(40);
+          p.textSize(13);
+          p.textAlign(p.LEFT, p.TOP);
+          var info = '';
+          if (isResonance) {
+            if (Math.abs(currentL - l1) < 1.0) {
+              info = '\u2605 1\u56de\u76ee\u306e\u5171\u9cf4\uff08\u57fa\u672c\u632f\u52d5\u3001l\u2081 = 13.6 cm\uff09';
+            } else if (Math.abs(currentL - l2) < 1.0) {
+              info = '\u2605 2\u56de\u76ee\u306e\u5171\u9cf4\uff083\u500d\u632f\u52d5\u3001l\u2082 = 42.6 cm\uff09';
+            } else {
+              info = '\u2605 \u5171\u9cf4\u4e2d';
+            }
+          } else {
+            info = '\u975e\u5171\u9cf4';
+          }
+          p.text(info, 10, 10);
+
+          p.fill(80);
+          p.textSize(11);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('\u9589\u7ba1\uff1a\u7ba1\u53e3\u304c\u8179\u3001\u6c34\u9762\u304c\u7bc0', 10, 28);
+        };
+
+        p.windowResized = function () {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) 音の速さ $V$ [m/s]</h3>
+
+  <h4>考え方</h4>
+  <p>
+    円筒管の上端（管口）は<strong>開口端（腹）</strong>、水面は<strong>閉端（節）</strong>です。したがってこの管は<strong>閉管</strong>として振る舞います。
+  </p>
+  <p>
+    閉管の共鳴条件は、開口端補正 $\Delta l$ を含めて
+    $$ l + \Delta l = \frac{(2m - 1)\lambda}{4} \quad (m = 1,\,2,\,3,\,\cdots) $$
+    と書けます。ここで $l$ は管口から水面までの距離、$\lambda$ は音の波長です。
+  </p>
+  <p>
+    1回目の共鳴（$m = m_0$ とする）と2回目の共鳴（$m = m_0 + 1$）について
+  </p>
+  <ul>
+    <li><strong>1回目</strong>：$l_1 + \Delta l = \dfrac{(2m_0 - 1)\lambda}{4}$ …①</li>
+    <li><strong>2回目</strong>：$l_2 + \Delta l = \dfrac{(2m_0 + 1)\lambda}{4}$ …②</li>
+  </ul>
+  <p>
+    ② − ① をとると、$\Delta l$ が消えて
+    $$ l_2 - l_1 = \frac{\lambda}{2} $$
+  </p>
+  <p>
+    数値を代入すると
+    $$ \frac{\lambda}{2} = 42.6 - 13.6 = 29.0 \text{ cm} $$
+    $$ \lambda = 58.0 \text{ cm} = 0.580 \text{ m} $$
+  </p>
+  <p>
+    波の基本公式 $V = f\lambda$ より
+    $$ V = 6.00 \times 10^2 \times 0.580 = 3.48 \times 10^2 \text{ m/s} $$
+  </p>
+
+  <h4>共鳴位置と半波長の関係（図解）</h4>
+  <div id="sim-resonance-diff-18" class="sim-embed" style="min-height: 380px;"></div>
+  <script>
+    (function () {
+      var targetId = 'sim-resonance-diff-18';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function (p) {
+        p.setup = function () {
+          var w = el.clientWidth;
+          var h = Math.max(360, el.clientHeight);
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function () {
+          p.background(255);
+          var w = p.width;
+          var h = p.height;
+          var tubeW = 46;
+          var cx1 = w * 0.22;
+          var cx2 = w * 0.52;
+          var tubeTop = 60;
+          var scale = 4.2;
+          var l1 = 13.6;
+          var l2 = 42.6;
+          var lambdaHalf = l2 - l1;
+
+          p.fill(40);
+          p.noStroke();
+          p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.textStyle(p.BOLD);
+          p.text('1\u56de\u76ee\u306e\u5171\u9cf4', cx1, tubeTop - 10);
+          p.text('2\u56de\u76ee\u306e\u5171\u9cf4', cx2, tubeTop - 10);
+          p.textStyle(p.NORMAL);
+
+          for (var t = 0; t < 2; t++) {
+            var cx = (t === 0) ? cx1 : cx2;
+            var lVal = (t === 0) ? l1 : l2;
+            var tubeH = lVal * scale + 30;
+            var waterY = tubeTop + lVal * scale;
+
+            p.fill(240, 242, 248);
+            p.stroke(160);
+            p.strokeWeight(1.5);
+            p.rect(cx - tubeW / 2, tubeTop, tubeW, tubeH, 0, 0, 3, 3);
+
+            p.noStroke();
+            p.fill(100, 160, 220, 100);
+            p.rect(cx - tubeW / 2 + 2, waterY, tubeW - 4, tubeH - (waterY - tubeTop) - 2, 0, 0, 2, 2);
+
+            p.stroke(40, 100, 180);
+            p.strokeWeight(1.5);
+            p.line(cx - tubeW / 2 + 2, waterY, cx + tubeW / 2 - 2, waterY);
+
+            var nMode = (t === 0) ? 1 : 3;
+            var amp = 13;
+            var airLen = lVal * scale;
+            p.stroke(220, 60, 50);
+            p.strokeWeight(2);
+            p.noFill();
+            p.beginShape();
+            var steps = 80;
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var yPos = tubeTop + frac * airLen;
+              var disp = Math.cos(nMode * Math.PI * frac / 2) * amp;
+              p.vertex(cx + disp, yPos);
+            }
+            p.endShape();
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var yPos = tubeTop + frac * airLen;
+              var disp = -Math.cos(nMode * Math.PI * frac / 2) * amp;
+              p.vertex(cx + disp, yPos);
+            }
+            p.endShape();
+
+            var arrowX = cx + tubeW / 2 + 12;
+            p.stroke(30, 100, 200);
+            p.strokeWeight(1.2);
+            p.line(arrowX, tubeTop + 2, arrowX, waterY - 2);
+            p.line(arrowX, tubeTop + 2, arrowX - 3, tubeTop + 8);
+            p.line(arrowX, tubeTop + 2, arrowX + 3, tubeTop + 8);
+            p.line(arrowX, waterY - 2, arrowX - 3, waterY - 8);
+            p.line(arrowX, waterY - 2, arrowX + 3, waterY - 8);
+            p.noStroke();
+            p.fill(30, 80, 180);
+            p.textSize(11);
+            p.textAlign(p.LEFT, p.CENTER);
+            var lLabel = (t === 0) ? 'l\u2081=13.6' : 'l\u2082=42.6';
+            p.text(lLabel, arrowX + 4, (tubeTop + waterY) / 2);
+
+            p.fill(220, 60, 50);
+            p.textSize(12);
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text('\u8179', cx - tubeW / 2 - 6, tubeTop + 4);
+            p.textAlign(p.RIGHT, p.CENTER);
+            p.text('\u7bc0', cx - tubeW / 2 - 6, waterY);
+          }
+
+          var bracketX = w * 0.78;
+          var y1bot = tubeTop + l1 * scale;
+          var y2bot = tubeTop + l2 * scale;
+          p.stroke(200, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(bracketX - 6, y1bot, bracketX, y1bot);
+          p.line(bracketX, y1bot, bracketX, y2bot);
+          p.line(bracketX - 6, y2bot, bracketX, y2bot);
+          p.noStroke();
+          p.fill(200, 50, 40);
+          p.textSize(13);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('l\u2082 \u2212 l\u2081 = \u03bb/2', bracketX + 8, (y1bot + y2bot) / 2 - 10);
+          p.text('= 29.0 cm', bracketX + 8, (y1bot + y2bot) / 2 + 10);
+
+          p.stroke(200, 60, 50, 80);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([4, 4]);
+          p.line(cx1 + tubeW / 2 + 30, y1bot, bracketX - 8, y1bot);
+          p.drawingContext.setLineDash([]);
+        };
+
+        p.windowResized = function () {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え (1)：</strong><br>
+    $V = 3.48 \times 10^2$ m/s
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 開口端補正 $\Delta l$ [cm]</h3>
+
+  <h4>考え方</h4>
+  <p>
+    <strong>開口端補正</strong>とは、管口の外側に腹の位置が少しはみ出すことによる補正量です。開口端の腹は、管口ちょうどではなく管口の<span class="highlight">外側に $\Delta l$ だけずれた位置</span>にあります。
+  </p>
+  <p>
+    1回目の共鳴では、管口から水面までに<strong>$\dfrac{\lambda}{4}$</strong> の定常波（開口端＝腹、閉端＝節）がぴったり収まっています。このとき、有効な気柱の長さは管口から水面までの距離 $l_1$ に開口端補正 $\Delta l$ を加えたものです。
+    $$ l_1 + \Delta l = \frac{\lambda}{4} $$
+  </p>
+  <p>
+    したがって
+    $$ \Delta l = \frac{\lambda}{4} - l_1 $$
+  </p>
+  <p>
+    (1) で求めた $\lambda = 58.0$ cm を代入すると
+    $$ \Delta l = \frac{58.0}{4} - 13.6 = 14.5 - 13.6 = 0.9 \text{ cm} $$
+  </p>
+
+  <h4>開口端補正のイメージ（図解）</h4>
+  <div id="sim-end-correction-18" class="sim-embed" style="min-height: 520px;"></div>
+  <script>
+    (function () {
+      var targetId = 'sim-end-correction-18';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function (p) {
+        p.setup = function () {
+          var w = el.clientWidth;
+          var h = Math.max(500, el.clientHeight);
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function () {
+          p.background(255);
+          var w = p.width;
+          var h = p.height;
+          var tubeW = 72;
+          var cx = w / 2;
+          var scale = 6.2;
+          var l1 = 13.6;
+          var lambda = 58.0;
+          var deltaL = 0.9;
+          var deltaLpx = deltaL * scale;
+          var lambdaQ = lambda / 4;
+          var tubeH = l1 * scale + 45;
+          var figHeight = deltaLpx + tubeH + 55;
+          var tubeTop = (h - figHeight) / 2 + deltaLpx + 18;
+          var waterY = tubeTop + l1 * scale;
+          var effectiveTop = tubeTop - deltaLpx;
+
+          p.fill(30);
+          p.textSize(15);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('1\u56de\u76ee\u306e\u5171\u9cf4\uff1a', 12, 12);
+          p.textSize(14);
+          p.text('l\u2081 + \u0394l = \u03bb/4', 12, 36);
+          p.text('\u0394l = \u03bb/4 \u2212 l\u2081 = 14.5 \u2212 13.6 = 0.9 cm', 12, 60);
+
+          p.fill(240, 242, 248);
+          p.stroke(160);
+          p.strokeWeight(1.8);
+          p.rect(cx - tubeW / 2, tubeTop, tubeW, tubeH, 0, 0, 4, 4);
+
+          p.noStroke();
+          p.fill(100, 160, 220, 100);
+          p.rect(cx - tubeW / 2 + 2, waterY, tubeW - 4, tubeH - l1 * scale - 2, 0, 0, 3, 3);
+
+          p.stroke(40, 100, 180);
+          p.strokeWeight(1.8);
+          p.line(cx - tubeW / 2 + 2, waterY, cx + tubeW / 2 - 2, waterY);
+
+          p.stroke(180, 60, 200, 120);
+          p.strokeWeight(1.2);
+          p.drawingContext.setLineDash([5, 5]);
+          p.line(cx - tubeW / 2 - 12, effectiveTop, cx + tubeW / 2 + 12, effectiveTop);
+          p.drawingContext.setLineDash([]);
+
+          var amp = 22;
+          var airLen = lambdaQ * scale;
+          p.stroke(220, 60, 50);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          var steps = 80;
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var yPos = effectiveTop + frac * airLen;
+            var disp = Math.cos(Math.PI * frac / 2) * amp;
+            p.vertex(cx + disp, yPos);
+          }
+          p.endShape();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var yPos = effectiveTop + frac * airLen;
+            var disp = -Math.cos(Math.PI * frac / 2) * amp;
+            p.vertex(cx + disp, yPos);
+          }
+          p.endShape();
+
+          var arrowX3 = cx - tubeW / 2 - 68;
+          p.stroke(200, 80, 50);
+          p.strokeWeight(1.8);
+          p.line(arrowX3, effectiveTop + 4, arrowX3, waterY - 4);
+          p.line(arrowX3, effectiveTop + 4, arrowX3 - 5, effectiveTop + 12);
+          p.line(arrowX3, effectiveTop + 4, arrowX3 + 5, effectiveTop + 12);
+          p.line(arrowX3, waterY - 4, arrowX3 - 5, waterY - 12);
+          p.line(arrowX3, waterY - 4, arrowX3 + 5, waterY - 12);
+          p.noStroke();
+          p.fill(160, 50, 20);
+          p.textSize(15);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u03bb/4 = 14.5 cm', arrowX3 - 10, (effectiveTop + waterY) / 2);
+
+          var arrowX1 = cx + tubeW / 2 + 26;
+          p.stroke(30, 100, 200);
+          p.strokeWeight(1.8);
+          p.line(arrowX1, tubeTop + 4, arrowX1, waterY - 4);
+          p.line(arrowX1, tubeTop + 4, arrowX1 - 5, tubeTop + 12);
+          p.line(arrowX1, tubeTop + 4, arrowX1 + 5, tubeTop + 12);
+          p.line(arrowX1, waterY - 4, arrowX1 - 5, waterY - 12);
+          p.line(arrowX1, waterY - 4, arrowX1 + 5, waterY - 12);
+          p.noStroke();
+          p.fill(20, 60, 140);
+          p.textSize(15);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('l\u2081 = 13.6 cm', arrowX1 + 10, (tubeTop + waterY) / 2);
+
+          var arrowX2 = cx + tubeW / 2 + 62;
+          p.stroke(180, 60, 200);
+          p.strokeWeight(1.8);
+          p.line(arrowX2, effectiveTop + 4, arrowX2, tubeTop - 4);
+          p.line(arrowX2, effectiveTop + 4, arrowX2 - 5, effectiveTop + 12);
+          p.line(arrowX2, effectiveTop + 4, arrowX2 + 5, effectiveTop + 12);
+          p.line(arrowX2, tubeTop - 4, arrowX2 - 5, tubeTop - 12);
+          p.line(arrowX2, tubeTop - 4, arrowX2 + 5, tubeTop - 12);
+          p.noStroke();
+          p.fill(120, 30, 160);
+          p.textSize(15);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('\u0394l = 0.9 cm', arrowX2 + 10, (effectiveTop + tubeTop) / 2);
+
+          var labelLeft = cx - tubeW / 2 - 12;
+          p.noStroke();
+          p.fill(30);
+          p.textSize(14);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u7ba1\u53e3', labelLeft, tubeTop + 8);
+          p.fill(120, 30, 160);
+          p.textSize(13);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u8179\u306e\u4f4d\u7f6e', labelLeft, effectiveTop - 8);
+          p.fill(30);
+          p.textSize(14);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('\u6c34\u9762\uff08\u7bc0\uff09', labelLeft, waterY + 5);
+        };
+
+        p.windowResized = function () {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <h4>検算：2回目の共鳴で確認</h4>
+  <p>
+    2回目の共鳴条件 $l_2 + \Delta l = \dfrac{3\lambda}{4}$ を確認してみます。
+    $$ l_2 + \Delta l = 42.6 + 0.9 = 43.5 \text{ cm} $$
+    $$ \frac{3\lambda}{4} = \frac{3 \times 58.0}{4} = 43.5 \text{ cm} $$
+    一致するので、$\Delta l = 0.9$ cm は正しいことが確認できました。
+  </p>
+
+  <div class="box-note">
+    <strong>答え (2)：</strong><br>
+    $\Delta l = 0.9$ cm
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>閉管の共鳴条件</strong>：開口端が腹、閉端（水面）が節となる定常波ができる。有効な気柱の長さは $l + \Delta l = \dfrac{(2m-1)\lambda}{4}$（$m = 1, 2, 3, \cdots$）。</li>
+    <li><strong>隣り合う共鳴の差</strong>：$l_2 - l_1 = \dfrac{\lambda}{2}$ であり、この関係は<span class="highlight">開口端補正 $\Delta l$ に無関係</span>に成り立つ。差をとることで $\Delta l$ を消去し、まず波長を求められる。</li>
+    <li><strong>開口端補正の求め方</strong>：波長が求まったら、1回目の共鳴条件 $l_1 + \Delta l = \dfrac{\lambda}{4}$ に代入して $\Delta l$ を計算する。</li>
+    <li><strong>閉管と開管の違い</strong>：閉管では奇数倍振動（$m = 1, 3, 5, \cdots$）のみ共鳴するが、開管では全整数倍で共鳴する。本問は閉管なので注意。</li>
+    <li><strong>検算の習慣</strong>：求めた $\Delta l$ を2回目の共鳴条件に代入して $\dfrac{3\lambda}{4}$ と一致するか確認するとミスを防げる。</li>
+  </ul>
+</div>

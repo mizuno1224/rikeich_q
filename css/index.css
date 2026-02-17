@@ -117,6 +117,31 @@ h1 {
   background: var(--col-primary);
   color: #fff;
 }
+.search-result-count {
+  font-size: 0.9rem;
+  color: var(--col-text-sub);
+  margin-left: 4px;
+}
+.btn-retry {
+  display: block;
+  margin: 16px auto 0;
+  padding: 10px 24px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--col-primary);
+  border: none;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+.btn-retry:hover {
+  background: var(--col-primary-dark, #1d4ed8);
+}
+.btn-retry:focus-visible {
+  outline: 2px solid var(--col-primary);
+  outline-offset: 4px;
+}
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -202,17 +227,70 @@ h1 {
   margin: 0;
 }
 .field-item {
-  margin-bottom: 15px;
-  padding-left: 10px;
+  margin-bottom: 10px;
+}
+.field-details {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.field-details[open] {
+  border-color: var(--col-primary-light);
+  background: #f8fafc;
+}
+.field-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 1rem;
+  user-select: none;
+  transition: background 0.2s;
+}
+.field-summary:hover {
+  background: #f1f5f9;
+}
+.field-summary::-webkit-details-marker,
+.field-summary::marker {
+  display: none;
+}
+.field-summary::before {
+  content: "▶";
+  font-size: 0.7rem;
+  color: var(--col-text-sub);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+.field-details[open] .field-summary::before {
+  transform: rotate(90deg);
 }
 .field-name {
   font-weight: 700;
   color: var(--col-text);
-  margin-bottom: 8px;
-  display: block;
-  font-size: 1rem;
+  flex: 1;
   border-left: 4px solid #f43f5e;
-  padding-left: 8px;
+  padding-left: 10px;
+}
+.field-count {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.field-body {
+  padding: 12px 14px 14px 18px;
+  border-top: 1px solid #f1f5f9;
+}
+.field-details[open] .field-body {
+  border-top-color: #e2e8f0;
+}
+.field-body .prob-grid {
+  margin-top: 10px;
+}
+.field-body .prob-empty {
+  margin: 10px 0 4px 0;
 }
 
 .prob-grid {

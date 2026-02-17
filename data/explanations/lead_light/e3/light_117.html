@@ -1,0 +1,883 @@
+<h2 class="prob-title-sub">117 正弦波の反射</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    ある媒質中を <strong>$x$ 軸の負の向き</strong>（左向き）に進む正弦波が、原点を<span class="highlight">固定端</span>として反射する問題です。
+    $t = 0$ s での入射波のグラフから波の基本量を読み取り、反射波との干渉で生じる<strong>定在波</strong>（定常波）の性質を求めます。
+  </p>
+  <ul>
+    <li><strong>ステップ1</strong>：グラフから振幅 $A$、波長 $\lambda$ を読み取る。山Aの移動距離と時間から波の速さ $v$ を求め、$v = f\lambda$ で振動数 $f$ と周期 $T$ を求める。</li>
+    <li><strong>ステップ2</strong>：波は「形を保ったまま」進むので、$t = 0.40$ s 後は $t = 0$ の波形を左に $vt$ だけずらしたグラフを描く。</li>
+    <li><strong>ステップ3</strong>：定在波のきまり（固定端は節、節の間隔は $\lambda/2$、腹の間隔は $\lambda/4$）を使って、節・腹の位置と $x = 1.0$ cm の $y$-$t$ グラフを求める。</li>
+  </ul>
+
+  <h4>入射波・反射波・定在波のシミュレーション</h4>
+  <p>
+    入射波（青）・反射波（赤）・合成波＝定在波（緑）をリアルタイムで確認できます。再生・停止のほか、コマ送り・コマ戻しで1コマずつ進めたり戻したりできます。チェックボックスで表示の切り替えが可能です。
+  </p>
+  <div id="sim-117-overview" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-117-overview';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var A = 1.0;
+        var lambda = 4.0;
+        var k = 2 * Math.PI / lambda;
+        var v = 5.0;
+        var omega = 2 * Math.PI * v / lambda;
+        var phi0 = -Math.PI / 2;
+        var time = 0;
+        var isPlaying = true;
+        var dtStep = 0.05;
+        var showInc = true;
+        var showRef = true;
+        var showStand = true;
+
+        var mL = 65, mR = 25, mT = 30, mB = 40;
+        var xMin = -0.5, xMax = 10;
+        var yMin = -2.8, yMax = 2.8;
+        var cW, cH;
+
+        function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
+        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        function yInc(x, t) { return A * Math.sin(k * x + omega * t + phi0); }
+        function yRef(x, t) { return -A * Math.sin(-k * x + omega * t + phi0); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(320, Math.max(240, cW * 0.45));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctr);
+
+          var playBtn = document.createElement('button');
+          playBtn.textContent = '\u25B6 / \u25A0';
+          playBtn.style.padding = '4px 12px';
+          playBtn.onclick = function() { isPlaying = !isPlaying; };
+          ctr.appendChild(playBtn);
+
+          var stepBackBtn = document.createElement('button');
+          stepBackBtn.textContent = '\u2190 \u30B3\u30DE\u623B\u3057';
+          stepBackBtn.style.padding = '4px 12px';
+          stepBackBtn.onclick = function() {
+            isPlaying = false;
+            time = Math.max(0, time - dtStep);
+          };
+          ctr.appendChild(stepBackBtn);
+
+          var stepFwdBtn = document.createElement('button');
+          stepFwdBtn.textContent = '\u30B3\u30DE\u9001\u308A \u2192';
+          stepFwdBtn.style.padding = '4px 12px';
+          stepFwdBtn.onclick = function() {
+            isPlaying = false;
+            time = time + dtStep;
+          };
+          ctr.appendChild(stepFwdBtn);
+
+          var resetBtn = document.createElement('button');
+          resetBtn.textContent = '\u30EA\u30BB\u30C3\u30C8';
+          resetBtn.style.padding = '4px 12px';
+          resetBtn.onclick = function() { time = 0; };
+          ctr.appendChild(resetBtn);
+
+          function addCb(label, color, checked, cb) {
+            var lbl = document.createElement('label');
+            lbl.style.cssText = 'display:flex;align-items:center;gap:3px;cursor:pointer;color:' + color + ';font-weight:bold;';
+            var inp = document.createElement('input');
+            inp.type = 'checkbox'; inp.checked = checked;
+            inp.onchange = function() { cb(inp.checked); };
+            lbl.appendChild(inp);
+            lbl.appendChild(document.createTextNode(label));
+            ctr.appendChild(lbl);
+          }
+          addCb('\u5165\u5C04\u6CE2', '#1976D2', true, function(v) { showInc = v; });
+          addCb('\u53CD\u5C04\u6CE2', '#D32F2F', true, function(v) { showRef = v; });
+          addCb('\u5408\u6210\u6CE2', '#2E7D32', true, function(v) { showStand = v; });
+        };
+
+        p.draw = function() {
+          if (isPlaying) time += 0.018;
+          p.background(255);
+
+          /* wall at x=0 */
+          var wallX = xPx(0);
+          p.fill(180);
+          p.noStroke();
+          p.rect(wallX - 10, mT - 5, 10, cH - mT - mB + 10);
+          p.stroke(120);
+          p.strokeWeight(1);
+          for (var yy = mT - 5; yy < cH - mB + 5; yy += 8) {
+            p.line(wallX - 10, yy, wallX, yy - 6);
+          }
+
+          /* grid */
+          p.stroke(220);
+          p.strokeWeight(0.5);
+          for (var gx = 0; gx <= 10; gx += 1) {
+            p.line(xPx(gx), mT, xPx(gx), cH - mB);
+          }
+          for (var gy = -2; gy <= 2; gy += 1) {
+            p.line(mL, yPx(gy), cW - mR, yPx(gy));
+          }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, yPx(0), cW - mR, yPx(0));
+          p.line(wallX, mT, wallX, cH - mB);
+
+          /* axis labels */
+          p.noStroke();
+          p.fill(60);
+          p.textSize(12);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lx = 0; lx <= 10; lx += 2) {
+            p.text(lx, xPx(lx), cH - mB + 4);
+          }
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('x [cm]', cW - mR, cH - 4);
+          p.textAlign(p.RIGHT, p.CENTER);
+          for (var ly = -2; ly <= 2; ly += 1) {
+            if (ly !== 0) p.text(ly, mL - 6, yPx(ly));
+          }
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y [cm]', mL + 15, mT - 4);
+
+          /* draw wave curves */
+          var steps = 300;
+          var dx = (xMax - 0) / steps;
+
+          function drawWave(fn, col, sw, dashed) {
+            p.stroke(col);
+            p.strokeWeight(sw);
+            p.noFill();
+            if (dashed) p.drawingContext.setLineDash([6, 4]);
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var xx = i * dx;
+              var yy = fn(xx);
+              p.vertex(xPx(xx), yPx(yy));
+            }
+            p.endShape();
+            if (dashed) p.drawingContext.setLineDash([]);
+          }
+
+          if (showInc) {
+            drawWave(function(x) { return yInc(x, time); }, p.color(25, 118, 210, 180), 2, true);
+          }
+          if (showRef) {
+            drawWave(function(x) { return yRef(x, time); }, p.color(211, 47, 47, 180), 2, true);
+          }
+          if (showStand) {
+            drawWave(function(x) { return yInc(x, time) + yRef(x, time); }, p.color(46, 125, 50), 3, false);
+          }
+
+          /* time display */
+          p.noStroke();
+          p.fill(80);
+          p.textSize(13);
+          p.textAlign(p.LEFT, p.TOP);
+          var tDisp = (time % (0.80 * 5)).toFixed(2);
+          p.text('t = ' + tDisp + ' s', mL + 10, mT + 4);
+
+          /* fixed end label */
+          p.fill(100);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u56FA\u5B9A\u7AEF', wallX, mT - 6);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(320, Math.max(240, cW * 0.45));
+          p.resizeCanvas(cW, cH);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<!-- ===== (1) 振幅・波長・速さ・振動数・周期 ===== -->
+<div class="card">
+  <h3>(1) 振幅・波長・速さ・振動数・周期</h3>
+
+  <h4>考え方</h4>
+  <p>
+    $t = 0$ s の入射波のグラフから、次の情報を読み取ります。
+  </p>
+
+  <div id="sim-117-q1" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-117-q1';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var mL = 65, mR = 30, mT = 35, mB = 40;
+        var xMin = -0.3, xMax = 10;
+        var yMin = -1.8, yMax = 1.8;
+        var cW, cH;
+
+        function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
+        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var k = Math.PI / 2;
+
+          /* grid */
+          p.stroke(230);
+          p.strokeWeight(0.5);
+          for (var gx = 0; gx <= 10; gx++) { p.line(xPx(gx), mT, xPx(gx), cH - mB); }
+          for (var gy = -1; gy <= 1; gy++) { p.line(mL, yPx(gy), cW - mR, yPx(gy)); }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, yPx(0), cW - mR, yPx(0));
+          p.line(xPx(0), mT, xPx(0), cH - mB);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lx = 0; lx <= 10; lx += 2) { p.text(lx, xPx(lx), cH - mB + 4); }
+          p.text('x [cm]', cW - mR, cH - 6);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('1', mL - 6, yPx(1));
+          p.text('-1', mL - 6, yPx(-1));
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y [cm]', mL + 15, mT - 4);
+
+          /* incident wave at t=0: y = -cos(kx) */
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 400; i++) {
+            var xx = i / 400 * 10;
+            var yy = -Math.cos(k * xx);
+            p.vertex(xPx(xx), yPx(yy));
+          }
+          p.endShape();
+
+          /* amplitude arrow */
+          var peakX = 2;
+          p.stroke(220, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(xPx(peakX), yPx(0), xPx(peakX), yPx(1));
+          p.fill(220, 60, 50);
+          p.triangle(xPx(peakX) - 4, yPx(0.9), xPx(peakX) + 4, yPx(0.9), xPx(peakX), yPx(1));
+          p.triangle(xPx(peakX) - 4, yPx(0.1), xPx(peakX) + 4, yPx(0.1), xPx(peakX), yPx(0));
+          p.noStroke();
+          p.textSize(13);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('A = 1.0 cm', xPx(peakX) + 8, yPx(0.5));
+
+          /* wavelength arrow */
+          var y0a = xPx(2), y0b = xPx(6);
+          var arrY = yPx(-1.4);
+          p.stroke(46, 125, 50);
+          p.strokeWeight(1.5);
+          p.line(y0a, arrY, y0b, arrY);
+          p.line(y0a, arrY, y0a + 6, arrY - 4);
+          p.line(y0a, arrY, y0a + 6, arrY + 4);
+          p.line(y0b, arrY, y0b - 6, arrY - 4);
+          p.line(y0b, arrY, y0b - 6, arrY + 4);
+          p.line(y0a, yPx(-1), y0a, arrY + 6);
+          p.line(y0b, yPx(-1), y0b, arrY + 6);
+          p.noStroke();
+          p.fill(46, 125, 50);
+          p.textSize(13);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u03BB = 4.0 cm', (y0a + y0b) / 2, arrY + 4);
+
+          /* label A */
+          p.fill(25, 118, 210);
+          p.textSize(14);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('A', xPx(6), yPx(1) - 4);
+
+          /* direction arrow */
+          p.stroke(80);
+          p.strokeWeight(1.5);
+          var arrDx = xPx(6.5);
+          var arrDy = yPx(1.5);
+          p.line(arrDx + 30, arrDy, arrDx, arrDy);
+          p.fill(80);
+          p.noStroke();
+          p.triangle(arrDx, arrDy, arrDx + 8, arrDy - 4, arrDx + 8, arrDy + 4);
+          p.textSize(11);
+          p.textAlign(p.LEFT, p.BOTTOM);
+          p.text('\u6CE2\u306E\u9032\u884C\u65B9\u5411', arrDx + 34, arrDy + 4);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    <strong>振幅</strong>：グラフの変位の最大値から
+    $$ A = 1.0 \text{ cm} $$
+  </p>
+  <p>
+    <strong>波長</strong>：山と山（または谷と谷）の間隔から
+    $$ \lambda = 4.0 \text{ cm} $$
+  </p>
+  <p>
+    <strong>速さ</strong>：山Aは $t = 0$ で $x = 6.0$ cm の位置にあり、$0.60$ s 後に $x = 3.0$ cm の位置まで進みます。移動距離は $6.0 - 3.0 = 3.0$ cm なので
+    $$ v = \frac{3.0}{0.60} = 5.0 \text{ cm/s} $$
+  </p>
+  <p>
+    <strong>振動数と周期</strong>：$v = f\lambda$ より
+    $$ f = \frac{v}{\lambda} = \frac{5.0}{4.0} = 1.25 \text{ Hz} $$
+    $$ T = \frac{1}{f} = \frac{1}{1.25} = 0.80 \text{ s} $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    振幅 $A = 1.0$ cm、波長 $\lambda = 4.0$ cm、速さ $v = 5.0$ cm/s、振動数 $f = 1.25$ Hz（$= \frac{5}{4}$ Hz）、周期 $T = 0.80$ s
+  </div>
+</div>
+
+<!-- ===== (2) t=0.40s の入射波の y-x 図 ===== -->
+<div class="card">
+  <h3>(2) $t = 0.40$ s の入射波の $y$-$x$ 図</h3>
+
+  <h4>考え方</h4>
+  <p>
+    波は「形を保ったまま」進みます。入射波は $x$ 軸の負の向き（左向き）に速さ $v = 5.0$ cm/s で進むので、$t = 0.40$ s のあいだに
+    $$ \text{進んだ距離} = v \times t = 5.0 \times 0.40 = 2.0 \text{ cm} $$
+    だけ左に動きます。だから、<span class="highlight">$t = 0$ の波形をそのまま左に $2.0$ cm ずらしたグラフ</span>が、$t = 0.40$ s の入射波です。
+  </p>
+  <p>
+    ずらすと：固定端の $x = 0$ の位置には、$t = 0$ のとき $x = 2$ にあった「山」が来ます（$y = 1$）。$x = 2$ には $t = 0$ のとき $x = 4$ にあった「谷」が来るので $y = -1$。$x = 4$ には次の「山」で $y = 1$ … というように、波長 $\lambda = 4$ cm の繰り返しになります。上の図で、灰色の破線（$t = 0$）と青い実線（$t = 0.40$ s）を比べて確認してください。
+  </p>
+
+  <div id="sim-117-q2" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-117-q2';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var mL = 65, mR = 30, mT = 30, mB = 40;
+        var xMin = -0.3, xMax = 10;
+        var yMin = -1.7, yMax = 1.7;
+        var cW, cH;
+        var k = Math.PI / 2;
+
+        function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
+        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+
+          /* grid */
+          p.stroke(230);
+          p.strokeWeight(0.5);
+          for (var gx = 0; gx <= 10; gx++) { p.line(xPx(gx), mT, xPx(gx), cH - mB); }
+          for (var gy = -1; gy <= 1; gy++) { p.line(mL, yPx(gy), cW - mR, yPx(gy)); }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, yPx(0), cW - mR, yPx(0));
+          p.line(xPx(0), mT, xPx(0), cH - mB);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lx = 0; lx <= 10; lx += 2) { p.text(lx, xPx(lx), cH - mB + 4); }
+          p.text('x [cm]', cW - mR, cH - 6);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('1', mL - 6, yPx(1));
+          p.text('-1', mL - 6, yPx(-1));
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y [cm]', mL + 15, mT - 4);
+
+          /* t=0 wave (gray dashed) */
+          p.stroke(180);
+          p.strokeWeight(1.5);
+          p.drawingContext.setLineDash([6, 4]);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 400; i++) {
+            var xx = i / 400 * 10;
+            p.vertex(xPx(xx), yPx(-Math.cos(k * xx)));
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          /* t=0.40s wave (blue solid) */
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          for (var j = 0; j <= 400; j++) {
+            var xx2 = j / 400 * 10;
+            p.vertex(xPx(xx2), yPx(Math.cos(k * xx2)));
+          }
+          p.endShape();
+
+          /* legend */
+          p.noStroke();
+          p.textSize(12);
+          p.textAlign(p.LEFT, p.CENTER);
+          var legX = xPx(6.5), legY = yPx(1.3);
+          p.stroke(180);
+          p.strokeWeight(1.5);
+          p.drawingContext.setLineDash([6, 4]);
+          p.line(legX, legY, legX + 30, legY);
+          p.drawingContext.setLineDash([]);
+          p.noStroke();
+          p.fill(120);
+          p.text(' t = 0', legX + 34, legY);
+
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2.5);
+          p.line(legX, legY + 20, legX + 30, legY + 20);
+          p.noStroke();
+          p.fill(25, 118, 210);
+          p.text(' t = 0.40 s', legX + 34, legY + 20);
+
+          /* shift arrow */
+          var arrY2 = yPx(-1.35);
+          var x0 = xPx(6), x1 = xPx(4);
+          p.stroke(220, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(x0, arrY2, x1, arrY2);
+          p.fill(220, 60, 50);
+          p.noStroke();
+          p.triangle(x1, arrY2, x1 + 7, arrY2 - 4, x1 + 7, arrY2 + 4);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('2.0 cm \u5DE6\u3078\u79FB\u52D5', (x0 + x1) / 2, arrY2 + 5);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $t = 0$ の波形を左に $2.0$ cm ずらしたグラフ。<br>
+    $x = 0$ で $y = 1$（山）、$x = 2$ で $y = -1$（谷）、$x = 4$ で $y = 1$（山）…（上の図参照）
+  </div>
+
+  <h4>別解：三角関数で表すと</h4>
+  <p>
+    $t = 0$ の入射波を三角関数で表すと $y = -\cos\!\left(\dfrac{\pi}{2}x\right)$ なので、$t = 0.40$ s では波形が左に $2.0$ cm ずれた形になり $y = \cos\!\left(\dfrac{\pi}{2}x\right)$ となります。
+  </p>
+</div>
+
+<!-- ===== (3) 定在波 ===== -->
+<div class="card">
+  <h3>(3) 入射波と反射波の干渉による定在波</h3>
+  <p>
+    原点（$x = 0$）は<strong>固定端</strong>なので、ここでは媒質が動けず、<span class="highlight">変位は常に $0$</span> です。つまり固定端は<strong>節</strong>です。入射波と反射波が重なり合うと<strong>定在波</strong>（定常波）ができ、節と腹が一定の位置に並びます。
+  </p>
+  <p>
+    物理基礎でよく使うきまりは次の2つです。<br>
+    ・<strong>固定端は必ず節</strong>になる。<br>
+    ・<strong>隣り合う節どうしの間隔</strong>は $\dfrac{\lambda}{2}$、<strong>節と腹の間隔</strong>は $\dfrac{\lambda}{4}$ である。
+  </p>
+  <p>
+    この問題では $\lambda = 4.0$ cm なので、$\dfrac{\lambda}{2} = 2.0$ cm、$\dfrac{\lambda}{4} = 1.0$ cm です。固定端 $x = 0$ が節だから、次の節は $x = 2.0$ cm、その次は $x = 4.0$ cm …。腹は節と節のまん中なので、$x = 1.0$ cm、$x = 3.0$ cm … となります。
+  </p>
+
+  <h4>別解：三角関数で定在波の式を導く</h4>
+  <p>
+    入射波と反射波を三角関数で表し、重ね合わせると合成波は $y = 2\sin\!\left(\dfrac{\pi}{2}x\right)\sin\!\left(\dfrac{5\pi}{2}t\right)$ となります。この式から、節は $\sin\!\left(\dfrac{\pi}{2}x\right) = 0$ となる $x = 0, 2, 4, \ldots$、腹は振幅が最大になる $x = 1, 3, 5, \ldots$ と求まります。
+  </p>
+</div>
+
+<div class="card">
+  <h3>(3)(a) $x = 1.0$ cm における $y$-$t$ グラフ</h3>
+
+  <h4>考え方</h4>
+  <p>
+    $x = 1.0$ cm は定在波の<strong>腹</strong>です。腹では、入射波と反射波が「山は山、谷は谷」で重なるため、振れ幅は入射波だけのときの <span class="highlight">2倍</span> になります。振幅は $2 \times 1.0 = 2.0$ cm です。振動の周期は、もとの波の周期と同じ $T = 0.80$ s です。
+  </p>
+  <p>
+    腹の媒質は、時間とともに $y = 0 \to +2 \to 0 \to -2 \to 0$ とくり返し振動します。周期 $0.80$ s のうち、$t = 0$ で $y = 0$、$t = 0.20$ s（$T/4$ 後）で $y = +2.0$ cm の最大、$t = 0.40$ s（$T/2$ 後）で $y = 0$、$t = 0.60$ s（$3T/4$ 後）で $y = -2.0$ cm の最小、$t = 0.80$ s（$T$ 後）で $y = 0$ にもどります。つまり、<strong>振幅 $2.0$ cm・周期 $0.80$ s の正弦的な $y$-$t$ グラフ</strong>を描けばよいです（下の図参照）。
+  </p>
+
+  <div id="sim-117-q3a" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-117-q3a';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var mL = 65, mR = 30, mT = 30, mB = 40;
+        var tMin = -0.05, tMax = 2.0;
+        var yMin = -2.8, yMax = 2.8;
+        var cW, cH;
+
+        function tPx(t) { return mL + (t - tMin) / (tMax - tMin) * (cW - mL - mR); }
+        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var omega = 5 * Math.PI / 2;
+          var T = 0.80;
+
+          /* grid */
+          p.stroke(230);
+          p.strokeWeight(0.5);
+          for (var gt = 0; gt <= 2.0; gt += 0.2) { p.line(tPx(gt), mT, tPx(gt), cH - mB); }
+          for (var gy = -2; gy <= 2; gy++) { p.line(mL, yPx(gy), cW - mR, yPx(gy)); }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, yPx(0), cW - mR, yPx(0));
+          p.line(tPx(0), mT, tPx(0), cH - mB);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lt = 0; lt <= 2.0; lt += 0.40) {
+            p.text(lt.toFixed(2), tPx(lt), cH - mB + 4);
+          }
+          p.text('t [s]', cW - mR, cH - 6);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('2', mL - 6, yPx(2));
+          p.text('-2', mL - 6, yPx(-2));
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y [cm]', mL + 15, mT - 4);
+
+          /* y = 2 sin(5pi/2 * t) */
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 500; i++) {
+            var tt = i / 500 * 2.0;
+            var yy = 2 * Math.sin(omega * tt);
+            p.vertex(tPx(tt), yPx(yy));
+          }
+          p.endShape();
+
+          /* key points */
+          p.fill(220, 60, 50);
+          p.noStroke();
+          var pts = [
+            [0, 0], [0.20, 2], [0.40, 0], [0.60, -2], [0.80, 0],
+            [1.00, 2], [1.20, 0], [1.40, -2], [1.60, 0], [1.80, 2], [2.00, 0]
+          ];
+          for (var j = 0; j < pts.length; j++) {
+            p.ellipse(tPx(pts[j][0]), yPx(pts[j][1]), 6, 6);
+          }
+
+          /* label */
+          p.fill(25, 118, 210);
+          p.textSize(12);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('x = 1.0 cm \u306E\u5909\u4F4D', tPx(0.05), mT + 6);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(280, Math.max(200, cW * 0.4));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    振幅 $2.0$ cm、周期 $0.80$ s の $y$-$t$ グラフ（$t = 0$ で $y = 0$ から始まり、なめらかに振動する形）。上の図参照。
+  </div>
+
+  <h4>別解：三角関数で表すと</h4>
+  <p>
+    定在波の式に $x = 1.0$ を代入すると $y = 2\sin\!\left(\dfrac{5\pi}{2}t\right)$ となり、振幅 $2.0$ cm・周期 $0.80$ s であることが式からも確認できます。
+  </p>
+</div>
+
+<div class="card">
+  <h3>(3)(b) 節と腹の位置（$x = 0$ ～ $4.0$ cm）</h3>
+
+  <h4>考え方</h4>
+  <p>
+    定在波では、<strong>固定端は必ず節</strong>です。節と節の間隔は $\dfrac{\lambda}{2}$、節と腹の間隔は $\dfrac{\lambda}{4}$ というきまりを使います。
+  </p>
+  <p>
+    この問題では $\lambda = 4.0$ cm なので、$\dfrac{\lambda}{2} = 2.0$ cm、$\dfrac{\lambda}{4} = 1.0$ cm です。固定端 $x = 0$ が節だから、$x = 0$ から $2.0$ cm ごとに節が並び、<strong>節の位置</strong>は $x = 0,\ 2.0,\ 4.0$ [cm] です。腹は節と節のまん中（節から $\dfrac{\lambda}{4} = 1.0$ cm の位置）なので、<strong>腹の位置</strong>は $x = 1.0,\ 3.0$ [cm] です。
+  </p>
+
+  <div id="sim-117-q3b" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-117-q3b';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var mL = 65, mR = 30, mT = 45, mB = 55;
+        var xMin = -0.5, xMax = 5;
+        var yMin = -2.8, yMax = 2.8;
+        var cW, cH;
+        var time = 0;
+        var isPlaying = true;
+
+        function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
+        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(320, Math.max(250, cW * 0.5));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctr);
+
+          var playBtn = document.createElement('button');
+          playBtn.textContent = '\u25B6 / \u25A0';
+          playBtn.style.padding = '4px 12px';
+          playBtn.onclick = function() { isPlaying = !isPlaying; };
+          ctr.appendChild(playBtn);
+
+          var resetBtn = document.createElement('button');
+          resetBtn.textContent = '\u30EA\u30BB\u30C3\u30C8';
+          resetBtn.style.padding = '4px 12px';
+          resetBtn.onclick = function() { time = 0; };
+          ctr.appendChild(resetBtn);
+        };
+
+        p.draw = function() {
+          if (isPlaying) time += 0.018;
+          p.background(255);
+          var k = Math.PI / 2;
+          var omega = 5 * Math.PI / 2;
+
+          /* wall at x=0 */
+          var wallX = xPx(0);
+          p.fill(180);
+          p.noStroke();
+          p.rect(wallX - 10, mT - 5, 10, cH - mT - mB + 10);
+          p.stroke(120);
+          p.strokeWeight(1);
+          for (var yy = mT - 5; yy < cH - mB + 5; yy += 8) {
+            p.line(wallX - 10, yy, wallX, yy - 6);
+          }
+
+          /* grid */
+          p.stroke(230);
+          p.strokeWeight(0.5);
+          for (var gx = 0; gx <= 5; gx++) { p.line(xPx(gx), mT, xPx(gx), cH - mB); }
+          for (var gy = -2; gy <= 2; gy++) { p.line(mL, yPx(gy), cW - mR, yPx(gy)); }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, yPx(0), cW - mR, yPx(0));
+          p.line(wallX, mT, wallX, cH - mB);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lx = 0; lx <= 5; lx++) { p.text(lx, xPx(lx), cH - mB + 4); }
+          p.text('x [cm]', cW - mR, cH - 10);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('2', mL - 6, yPx(2));
+          p.text('-2', mL - 6, yPx(-2));
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('y [cm]', mL + 15, mT - 4);
+
+          /* envelope (dashed) */
+          p.stroke(150, 150, 150, 120);
+          p.strokeWeight(1.2);
+          p.drawingContext.setLineDash([4, 3]);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= 200; i++) {
+            var xx = i / 200 * 5;
+            p.vertex(xPx(xx), yPx(2 * Math.sin(k * xx)));
+          }
+          p.endShape();
+          p.beginShape();
+          for (var i2 = 0; i2 <= 200; i2++) {
+            var xx2 = i2 / 200 * 5;
+            p.vertex(xPx(xx2), yPx(-2 * Math.sin(k * xx2)));
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          /* standing wave */
+          p.stroke(46, 125, 50);
+          p.strokeWeight(3);
+          p.noFill();
+          p.beginShape();
+          for (var j = 0; j <= 200; j++) {
+            var xx3 = j / 200 * 5;
+            var disp = 2 * Math.sin(k * xx3) * Math.sin(omega * time);
+            p.vertex(xPx(xx3), yPx(disp));
+          }
+          p.endShape();
+
+          /* node markers */
+          var nodes = [0, 2, 4];
+          p.fill(220, 60, 50);
+          p.stroke(220, 60, 50);
+          p.strokeWeight(2);
+          for (var ni = 0; ni < nodes.length; ni++) {
+            p.ellipse(xPx(nodes[ni]), yPx(0), 10, 10);
+          }
+
+          /* antinode markers */
+          var antinodes = [1, 3];
+          p.noFill();
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2);
+          for (var ai = 0; ai < antinodes.length; ai++) {
+            p.ellipse(xPx(antinodes[ai]), yPx(0), 12, 12);
+          }
+
+          /* labels */
+          p.noStroke();
+          p.textSize(12);
+          p.textAlign(p.CENTER, p.TOP);
+          var labelY = cH - mB + 18;
+          p.fill(220, 60, 50);
+          for (var nj = 0; nj < nodes.length; nj++) {
+            p.text('\u7BC0', xPx(nodes[nj]), labelY);
+          }
+          p.fill(25, 118, 210);
+          for (var aj = 0; aj < antinodes.length; aj++) {
+            p.text('\u8179', xPx(antinodes[aj]), labelY);
+          }
+
+          /* fixed end label */
+          p.fill(100);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u56FA\u5B9A\u7AEF', wallX, mT - 6);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(320, Math.max(250, cW * 0.5));
+          p.resizeCanvas(cW, cH);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    <strong>節</strong>の位置（$x$ 座標）：$x = 0,\ 2.0,\ 4.0$ [cm]<br>
+    <strong>腹</strong>の位置（$x$ 座標）：$x = 1.0,\ 3.0$ [cm]
+  </div>
+
+  <h4>別解：三角関数の式から求める</h4>
+  <p>
+    定在波を $y = 2\sin\!\left(\dfrac{\pi}{2}x\right)\sin\!\left(\dfrac{5\pi}{2}t\right)$ と表すと、節は $\sin\!\left(\dfrac{\pi}{2}x\right) = 0$ より $x = 2n$（$n = 0, 1, 2, \ldots$）、腹は振幅が最大になる $x = 1 + 2n$ と求まります。
+  </p>
+
+  <h4>補足：なぜ固定端は必ず節になるのか</h4>
+  <p>
+    固定端では、壁に固定されているので媒質が動けません。つまり<strong>変位はいつでも $0$</strong>。変位が常に $0$ の点が「節」なので、固定端は必ず節になります。逆に、端が自由に動ける「自由端」では、そこが腹になります。
+  </p>
+  <p>
+    定在波では、<span class="highlight">隣り合う節の間隔は $\dfrac{\lambda}{2}$、節と腹の間隔は $\dfrac{\lambda}{4}$</span> と覚えておくと、グラフや図から節・腹の位置をすぐに書けます。
+  </p>
+</div>
+
+<!-- ===== 解法のポイント ===== -->
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>波の基本量</strong>：$v = f\lambda$、$T = \dfrac{1}{f}$。グラフから振幅 $A$ と波長 $\lambda$ を読み、「山が進んだ距離÷かかった時間」で速さ $v$ を求めれば、振動数 $f$ と周期 $T$ も出る。</li>
+    <li><strong>波形のずれ</strong>：波は形を保ったまま進むので、ある時刻の $y$-$x$ グラフは、$t = 0$ のグラフを進行方向に $vt$ だけずらせばよい。</li>
+    <li><strong>固定端と定在波</strong>：固定端は媒質が動かないので<strong>必ず節</strong>。節の間隔は $\dfrac{\lambda}{2}$、節と腹の間隔は $\dfrac{\lambda}{4}$ で、ここから節・腹の位置を求める。</li>
+    <li><strong>腹の振れ幅</strong>：定在波の腹では、入射波と反射波が同じ向きに重なるため、振れ幅は入射波だけのときの <strong>2倍</strong>（$2A$）になる。</li>
+  </ul>
+</div>

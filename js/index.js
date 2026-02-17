@@ -16,32 +16,68 @@ document.addEventListener("DOMContentLoaded", () => {
     tabContainer.after(subTabContainer);
   }
   const contentArea = document.getElementById("content-area");
-  
+
+  if (isTeacherMode) {
+    var footerInner = document.querySelector(".site-footer .site-footer-inner");
+    if (footerInner && footerInner.firstChild) {
+      var hubLink = document.createElement("a");
+      hubLink.href = "hub.html";
+      hubLink.textContent = "ハブ";
+      var hubSep = document.createElement("span");
+      hubSep.className = "site-footer-sep";
+      hubSep.textContent = "|";
+      footerInner.insertBefore(hubLink, footerInner.firstChild);
+      footerInner.insertBefore(hubSep, hubLink.nextSibling);
+    }
+  }
+
   initQRCode();
 
   let manifest = [];
   const EXAM_TYPES = ["exam_year", "exam_univ"];
 
-  const loader = showLoading("教材リストを読み込み中...");
-  fetchWithRetry("data/manifest.json")
-    .then((res) => res.json())
-    .then((data) => {
-      manifest = data;
-      initTabs();
-      if (manifest.length > 0) {
-        const firstTab = tabContainer.querySelector(".tab-btn:not([data-is-exam])");
-        if (firstTab) {
-          firstTab.classList.add("active");
-          firstTab.setAttribute("aria-current", "page");
+  function loadManifestAndInit() {
+    return fetchWithRetry("data/manifest.json")
+      .then((res) => res.json())
+      .then((data) => {
+        manifest = data;
+        initTabs();
+        if (manifest.length > 0) {
+          const firstTab = tabContainer.querySelector(".tab-btn:not([data-is-exam])");
+          if (firstTab) {
+            firstTab.classList.add("active");
+            firstTab.setAttribute("aria-current", "page");
+          }
+          loadMaterial(0);
         }
-        loadMaterial(0);
-      }
-      initSearch();
-      initBookmarksSection();
-    })
+        initSearch();
+        initBookmarksSection();
+      });
+  }
+
+  function showManifestErrorAndBindRetry() {
+    contentArea.innerHTML =
+      '<p class="empty-msg">教材リストの読み込みに失敗しました。</p>' +
+      '<button type="button" class="btn-retry" id="retry-manifest">再試行</button>';
+    const retryBtn = document.getElementById("retry-manifest");
+    if (retryBtn) {
+      retryBtn.onclick = function () {
+        const l = showLoading("教材リストを読み込み中...");
+        loadManifestAndInit()
+          .catch((e) => {
+            ErrorHandler.handle(e, "manifest");
+            showManifestErrorAndBindRetry();
+          })
+          .finally(() => hideLoading(l));
+      };
+    }
+  }
+
+  const loader = showLoading("教材リストを読み込み中...");
+  loadManifestAndInit()
     .catch((err) => {
       ErrorHandler.handle(err, "manifest");
-      contentArea.innerHTML = '<p class="empty-msg">教材リストの読み込みに失敗しました。</p>';
+      showManifestErrorAndBindRetry();
     })
     .finally(() => hideLoading(loader));
 
@@ -147,7 +183,17 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((err) => {
         ErrorHandler.handle(err, "loadMaterial");
-        contentArea.innerHTML = '<p class="empty-msg">教材の読み込みに失敗しました。</p>';
+        contentArea.innerHTML =
+          '<p class="empty-msg">教材の読み込みに失敗しました。</p>' +
+          '<button type="button" class="btn-retry" id="retry-material" data-index="' +
+          index +
+          '">再試行</button>';
+        const retryBtn = document.getElementById("retry-material");
+        if (retryBtn) {
+          retryBtn.onclick = function () {
+            loadMaterial(parseInt(retryBtn.getAttribute("data-index"), 10));
+          };
+        }
       })
       .finally(() => hideLoading(loadingEl));
   }
@@ -157,31 +203,35 @@ document.addEventListener("DOMContentLoaded", () => {
     let html = `<div class="subject-grid">`;
     if (material.subjects) {
       material.subjects.forEach((subject) => {
-        const hasProblems =
-          subject.fields &&
-          subject.fields.some((f) => f.problems && f.problems.length > 0);
+        const hasFields = subject.fields && subject.fields.length > 0;
+        if (!hasFields) return;
 
-        if (hasProblems) {
-          html += `<div class="subject-card">`;
-          html += `<h3 class="subject-name">${esc(subject.subjectName)}</h3>`;
-          html += `<ul class="field-list">`;
+        html += `<div class="subject-card">`;
+        html += `<h3 class="subject-name">${esc(subject.subjectName)}</h3>`;
+        html += `<ul class="field-list">`;
 
-          subject.fields.forEach((field) => {
-            if (field.problems && field.problems.length > 0) {
-              html += `<li class="field-item">`;
-              html += `<span class="field-name">${esc(field.fieldName)}</span>`;
-              html += `<div class="prob-grid">`;
-              field.problems.forEach((p) => {
-                const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}${isTeacherMode ? "&admin=1" : ""}`;
-                const title = esc(p.title);
-                const path = p.explanationPath || "";
-                html += `<a href="${targetUrl}" class="prob-link" target="_blank" data-search-text="${esc(path + " " + p.title)}"><span>${title}</span></a>`;
-              });
-              html += `</div></li>`;
-            }
-          });
-          html += `</ul></div>`;
-        }
+        subject.fields.forEach((field) => {
+          const problems = field.problems || [];
+          const isEmpty = problems.length === 0;
+          html += `<li class="field-item" data-empty="${isEmpty}">`;
+          html += `<details class="field-details">`;
+          html += `<summary class="field-summary"><span class="field-name">${esc(field.fieldName)}</span><span class="field-count">${problems.length}件</span></summary>`;
+          html += `<div class="field-body">`;
+          if (isEmpty) {
+            html += `<p class="prob-empty">問題はまだ登録されていません</p>`;
+          } else {
+            html += `<div class="prob-grid">`;
+            problems.forEach((p) => {
+              const targetUrl = `viewer.html?path=${encodeURIComponent(p.explanationPath)}${isTeacherMode ? "&admin=1" : ""}`;
+              const title = esc(p.title);
+              const path = p.explanationPath || "";
+              html += `<a href="${targetUrl}" class="prob-link" target="_blank" data-search-text="${esc(path + " " + p.title)}"><span>${title}</span></a>`;
+            });
+            html += `</div>`;
+          }
+          html += `</div></details></li>`;
+        });
+        html += `</ul></div>`;
       });
     }
     html += `</div>`;
@@ -212,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function filterProblems(query) {
     const links = document.querySelectorAll("#content-area .prob-link");
-    const lower = query.toLowerCase();
+    const lower = query.trim().toLowerCase();
 
     links.forEach((link) => {
       const searchText = (link.getAttribute("data-search-text") || link.textContent || "").toLowerCase();
@@ -222,13 +272,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.querySelectorAll("#content-area .field-item").forEach((field) => {
-      const visible = field.querySelectorAll(".prob-link:not([style*='display: none'])").length > 0;
+      const probLinks = field.querySelectorAll(".prob-link");
+      const hasVisibleLink = probLinks.length > 0 && Array.from(probLinks).some((a) => a.style.display !== "none");
+      const visible = !lower || hasVisibleLink;
       field.style.display = visible ? "" : "none";
+      const details = field.querySelector(".field-details");
+      if (details && lower && hasVisibleLink) details.setAttribute("open", "");
     });
     document.querySelectorAll("#content-area .subject-card").forEach((card) => {
       const visible = card.querySelectorAll(".field-item:not([style*='display: none'])").length > 0;
       card.style.display = visible ? "" : "none";
     });
+
+    var countEl = document.getElementById("search-result-count");
+    if (countEl) {
+      var visibleCount = 0;
+      links.forEach(function (link) {
+        if (link.style.display !== "none") visibleCount++;
+      });
+      countEl.textContent = lower ? visibleCount + " 件" : "";
+    }
   }
 
   function initBookmarksSection() {

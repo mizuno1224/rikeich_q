@@ -24,6 +24,18 @@
         { "fieldName": "第6章 熱とエネルギー", "folderId": "06", "problems": [] },
         { "fieldName": "第7章 波の性質", "folderId": "07", "problems": [] },
         { "fieldName": "第8章 音の伝わり方と発音体の振動", "folderId": "08", "problems": [] },
+        {
+          "fieldName": "第3編 編末問題",
+          "folderId": "e3",
+          "problems": [
+            {
+              "id": "light_117",
+              "title": "117 正弦波の反射",
+              "desc": "固定端反射・定在波の節と腹",
+              "explanationPath": "data/explanations/lead_light/e3/light_117.html"
+            }
+          ]
+        },
         { "fieldName": "第9章 物質と電気抵抗", "folderId": "09", "problems": [] },
         { "fieldName": "第10章 交流と電磁波", "folderId": "10", "problems": [] },
         { "fieldName": "第11章 エネルギーの利用", "folderId": "11", "problems": [] }

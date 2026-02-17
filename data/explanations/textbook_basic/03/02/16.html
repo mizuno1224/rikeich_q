@@ -1,0 +1,335 @@
+<h2 class="prob-title-sub">16 弦の振動</h2>
+
+<div class="card">
+  <h3>解法の指針</h3>
+  <p>
+    この問題は，弦の<strong>共振</strong>実験から，弦を伝わる横波の<strong>波長</strong>と<strong>速さ</strong>を求めるものです。
+    <br>おんさAとこまBの間の弦の長さ $R$ を変えながら共振する長さを読み取り，定常波の条件を使います。
+  </p>
+  <ul>
+    <li><strong>弦の共振条件</strong>：弦の両端（おんさ側・こまB側）が固定端なので，弦の長さ $L$ が半波長 $\frac{\lambda}{2}$ の整数倍のときに共振する。すなわち $L = n\cdot\frac{\lambda}{2}$（$n=1,2,3,\cdots$）。</li>
+    <li><strong>隣り合う共振</strong>：$R=x$ で1回目，$R=y$ で2回目に共振したとき，その長さの差は <span class="highlight">$\frac{\lambda}{2}$</span> である。</li>
+    <li><strong>波の速さ</strong>：振動数 $f$ と波長 $\lambda$ の関係 $v = f\lambda$ を用いる。</li>
+  </ul>
+
+  <h4>実験の様子（シミュレーション）</h4>
+  <p>
+    おんさA・こまB・滑車Cと弦・おもりの配置，および AB 間の長さ $R$ を変えたときの定常波を再現しています。BをAから離していくと，$n=3$（3倍振動）で1回目の共振，$n=4$（4倍振動）で2回目の共振が起こります。スライダーで $R$ を変え，共振時の振動の様子を確認してください。
+  </p>
+  <div id="sim-string-resonance" class="sim-embed" style="height: 380px; margin-bottom: 60px; overflow: visible;"></div>
+  <script>
+    (function () {
+      const targetId = 'sim-string-resonance';
+      const el = document.getElementById(targetId);
+      if (!el) return;
+
+      const sketch = (p) => {
+        const lambda = 0.30;
+        const x_res = 3 * lambda / 2;   // 1回目共振: n=3, R=x=0.45
+        const y_res = 4 * lambda / 2;   // 2回目共振: n=4, R=y=0.60
+        let R = x_res;
+        let time = 0;
+        let isPlaying = true;
+        let inputR, labelR;
+
+        p.setup = () => {
+          const w = el.clientWidth;
+          const h = el.clientHeight;
+          p.createCanvas(w, h).parent(el);
+          p.textFont('sans-serif');
+
+          const ctrWrap = document.createElement('div');
+          ctrWrap.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctrWrap);
+
+          const playBtn = document.createElement('button');
+          playBtn.textContent = '▶ / ■';
+          playBtn.style.padding = '4px 12px';
+          playBtn.onclick = () => { isPlaying = !isPlaying; };
+          ctrWrap.appendChild(playBtn);
+
+          labelR = document.createElement('span');
+          labelR.style.cssText = 'min-width:110px;font-family:monospace;';
+          ctrWrap.appendChild(labelR);
+
+          inputR = document.createElement('input');
+          inputR.type = 'range'; inputR.min = 10; inputR.max = 75; inputR.value = Math.round(x_res * 100);
+          inputR.style.flex = '1'; inputR.style.minWidth = '80px';
+          inputR.oninput = () => { R = inputR.value / 100; syncLabel(); };
+          ctrWrap.appendChild(inputR);
+
+          function mkPreset(txt, val) {
+            var b = document.createElement('button');
+            b.textContent = txt; b.style.padding = '4px 8px';
+            b.onclick = () => { R = val; inputR.value = Math.round(val * 100); syncLabel(); };
+            ctrWrap.appendChild(b);
+          }
+          mkPreset('1回目共振 (R=x)', x_res);
+          mkPreset('2回目共振 (R=y)', y_res);
+          syncLabel();
+        };
+
+        function syncLabel() { labelR.textContent = 'R = ' + R.toFixed(2) + ' m'; }
+
+        function drawTuningFork(p, tipX, tipY, sc) {
+          // U字型おんさ: 右向きに先端が開き、上側の先端が tipX,tipY に来る
+          var prongW = 4 * sc, prongH = 32 * sc;
+          var gap = 14 * sc;       // 上下先端間の内側距離
+          var baseW = 5 * sc;      // U字ベースの幅
+          var handleW = 10 * sc, handleH = 36 * sc;
+
+          p.push();
+          p.fill(110, 110, 115);
+          p.stroke(70); p.strokeWeight(1.2);
+
+          // 上の先端（tipX, tipY が上先端の右端）
+          var topY = tipY;
+          var botY = tipY + gap + prongW;
+
+          // 上プロング
+          p.rect(tipX - prongH, topY - prongW / 2, prongH, prongW, 1);
+          // 下プロング
+          p.rect(tipX - prongH, botY - prongW / 2, prongH, prongW, 1);
+
+          // 先端の丸み
+          p.noStroke();
+          p.ellipse(tipX, topY, prongW * 1.3, prongW * 1.3);
+          p.ellipse(tipX, botY, prongW * 1.3, prongW * 1.3);
+
+          // U字ベース（左端）
+          p.stroke(70); p.strokeWeight(1.2);
+          var baseX = tipX - prongH;
+          p.rect(baseX - baseW, topY - prongW / 2, baseW, botY - topY + prongW, 0);
+
+          // ハンドル（左向き）
+          var handleCy = (topY + botY) / 2;
+          p.rect(baseX - baseW - handleH, handleCy - handleW / 2, handleH, handleW, 2);
+
+          p.pop();
+        }
+
+        function drawPulley(p, cx, cy, r) {
+          // 台座ブラケット（右壁に固定された金具）
+          p.fill(90, 90, 95);
+          p.stroke(60); p.strokeWeight(1.5);
+          p.rect(cx - 2, cy - r - 8, 14, r * 2 + 16, 2);
+
+          // 軸
+          p.fill(70);
+          p.ellipse(cx, cy, 6, 6);
+
+          // 溝付き滑車ホイール
+          p.fill(200, 200, 205);
+          p.stroke(100); p.strokeWeight(2);
+          p.ellipse(cx, cy, r * 2, r * 2);
+          p.fill(170, 170, 175);
+          p.noStroke();
+          p.ellipse(cx, cy, r * 1.4, r * 1.4);
+          p.fill(200, 200, 205);
+          p.ellipse(cx, cy, r * 0.6, r * 0.6);
+        }
+
+        function drawWeight(p, cx, cy, r) {
+          // 球形おもり
+          p.noStroke();
+          p.fill(0, 0, 0, 30);
+          p.ellipse(cx + 2, cy + 2, r * 2.1, r * 2.1);
+          p.fill(120, 120, 130);
+          p.stroke(80); p.strokeWeight(1);
+          p.ellipse(cx, cy, r * 2, r * 2);
+          p.noStroke();
+          p.fill(200, 200, 210, 100);
+          p.ellipse(cx - r * 0.25, cy - r * 0.3, r * 0.8, r * 0.6);
+          p.stroke(90, 90, 100); p.strokeWeight(0.8);
+          for (var i = -2; i <= 2; i++) {
+            var yy = cy + i * r * 0.3;
+            var dx = Math.sqrt(Math.max(0, r * r - (i * r * 0.3) * (i * r * 0.3)));
+            p.line(cx - dx * 0.7, yy, cx + dx * 0.7, yy);
+          }
+        }
+
+        p.draw = () => {
+          if (isPlaying) time += 0.06;
+          p.background(255);
+
+          var w = p.width, h = p.height;
+          var stringY = h * 0.36;      // 弦の水平ライン
+          var mL = 110, mR = 40;
+          var aX = mL;                  // おんさ先端（弦の左端）
+          var cX = w - mR;             // 右壁
+          var pulR = 16;
+          var pulCx = cX - 4;
+          var pulCy = stringY;          // 滑車中心を弦と同じ高さ → BC水平
+
+          // --- AB間のスケール ---
+          var availLen = pulCx - pulR - aX - 20;
+          var R_px = R / 0.80 * availLen;
+          R_px = Math.min(R_px, availLen);
+          var bX = aX + R_px;
+
+          // === 台座の壁（右端） ===
+          p.fill(220); p.stroke(160); p.strokeWeight(1);
+          p.rect(cX - 6, stringY - pulR - 30, 16, pulR * 2 + 90);
+          p.stroke(180); p.strokeWeight(0.7);
+          for (var yy = stringY - pulR - 28; yy < stringY + pulR + 58; yy += 6) {
+            p.line(cX - 4, yy, cX + 8, yy - 8);
+          }
+
+          // === 滑車C ===
+          drawPulley(p, pulCx, pulCy, pulR);
+
+          // === 糸: B → 滑車左端(水平) → 滑車弧 → おもり ===
+          // B→滑車（水平に張った弦）
+          var tangentLx = pulCx - pulR;
+          p.stroke(50); p.strokeWeight(1.5);
+          p.line(bX, stringY, tangentLx, stringY);
+          // 滑車上を通る弧（左端→下端の90°）
+          p.noFill(); p.stroke(50); p.strokeWeight(1.5);
+          p.arc(pulCx, pulCy, pulR * 2, pulR * 2, p.PI, p.PI + p.HALF_PI);
+          // 滑車下端→おもりへ垂直に下る糸
+          var ropeX = pulCx;
+          var ropeTopY = pulCy + pulR;
+          var massR = 16;
+          var massCy = ropeTopY + 50;
+          p.line(ropeX, ropeTopY, ropeX, massCy - massR);
+
+          // === おもり ===
+          drawWeight(p, ropeX, massCy, massR);
+
+          // === おんさA (U字型) ===
+          // 上側の先端が弦(stringY)に接続
+          drawTuningFork(p, aX, stringY, 1.0);
+
+          // === 弦 AB 間（定常波）===
+          var n = Math.round(2 * R / lambda);
+          var nSafe = Math.max(1, Math.min(n, 8));
+          var isResonance = Math.abs(R - nSafe * lambda / 2) < 0.012;
+          var ampMax = isResonance ? 18 : 4;
+
+          p.stroke(30, 70, 160); p.strokeWeight(2.5); p.noFill();
+          p.beginShape();
+          var steps = 160;
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var xx = aX + frac * R_px;
+            var disp = Math.sin(nSafe * Math.PI * frac) * Math.cos(time * 4) * ampMax;
+            p.vertex(xx, stringY - disp);
+          }
+          p.endShape();
+
+          // === こまB (三角のこま) ===
+          p.fill(80, 75, 70); p.stroke(50); p.strokeWeight(1.2);
+          p.triangle(bX - 9, stringY, bX + 9, stringY, bX, stringY + 16);
+          p.stroke(60); p.strokeWeight(1.5);
+          p.line(bX - 12, stringY + 16, bX + 12, stringY + 16);
+
+          // === ラベル ===
+          p.noStroke(); p.fill(30);
+          p.textSize(15); p.textAlign(p.CENTER, p.TOP);
+          p.text('A', aX, stringY + 24);
+          p.text('B', bX, stringY + 24);
+          p.text('C', pulCx + pulR + 8, stringY - 8);
+
+          // === R 矢印 ===
+          var arrowY = stringY + 54;
+          p.stroke(200, 60, 50); p.strokeWeight(1.5);
+          p.line(aX, arrowY, bX, arrowY);
+          p.line(aX, arrowY, aX + 8, arrowY - 4);
+          p.line(aX, arrowY, aX + 8, arrowY + 4);
+          p.line(bX, arrowY, bX - 8, arrowY - 4);
+          p.line(bX, arrowY, bX - 8, arrowY + 4);
+          p.noStroke(); p.fill(180, 50, 40);
+          p.textSize(16); p.textAlign(p.CENTER, p.BOTTOM);
+          p.textStyle(p.ITALIC);
+          p.text('R', (aX + bX) / 2, arrowY - 4);
+          p.textStyle(p.NORMAL);
+
+          // === 情報表示 ===
+          p.fill(40); p.textSize(13); p.textAlign(p.LEFT, p.TOP);
+          var info = 'n = ' + nSafe;
+          if (isResonance) {
+            info += '　★ 共振中';
+            if (Math.abs(R - x_res) < 0.015) info += '（R = x：1回目共振・3倍振動）';
+            else if (Math.abs(R - y_res) < 0.015) info += '（R = y：2回目共振・4倍振動）';
+          } else {
+            info += '　（非共振）';
+          }
+          p.text(info, 10, 10);
+
+          // 振動数ラベル
+          p.fill(80); p.textSize(12);
+          p.text('振動数 f [Hz]', aX - 80, stringY - 30);
+        };
+
+        p.windowResized = () => {
+          var parent = document.getElementById(targetId);
+          if (parent) p.resizeCanvas(parent.clientWidth, parent.clientHeight);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+</div>
+
+<div class="card">
+  <h3>(1) 弦を伝わる横波の波長 $\lambda$ [m]</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    AB間の弦の長さを $R$ とします。おんさAとこまBはともに弦を固定するので，AB間は「両端固定」の弦です。
+    <br>両端固定の弦にできる定常波では，弦の長さ $L$ が半波長の整数倍のとき共振します。
+    $$ L = n\cdot\frac{\lambda}{2} \quad (n=1,\,2,\,3,\,\cdots) $$
+  </p>
+  <p>
+    したがって，
+  </p>
+  <p>
+    BをAからCへ向かってゆっくり移動させると，最初に共振するのは <strong>ある整数 $n$</strong> のときで，$R=x$ です。
+    さらに B を C 側へ移動させて次に共振するのは $n+1$ のとき，$R=y$ です。
+  </p>
+  <ul>
+    <li><strong>1回目の共振</strong>（$R=x$）：$x = n\cdot\frac{\lambda}{2}$</li>
+    <li><strong>2回目の共振</strong>（$R=y$）：$y = (n+1)\cdot\frac{\lambda}{2}$</li>
+  </ul>
+  <p>
+    2回目と1回目の長さの差をとると，$n$ の値によらず
+    $$ y - x = (n+1)\cdot\frac{\lambda}{2} - n\cdot\frac{\lambda}{2} = \frac{\lambda}{2} $$
+    よって，波長は
+    $$ \lambda = 2(y - x) $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え (1)：</strong><br>
+    $\lambda = 2(y-x)\,\mathrm{[m]}$
+  </div>
+</div>
+
+<div class="card">
+  <h3>(2) 弦を伝わる波の速さ $v$ [m/s]</h3>
+  
+  <h4>考え方</h4>
+  <p>
+    問題文より，おんさと弦は同じ振動数 $f$ [Hz] で振動しています。波の基本公式
+    $$ v = f\lambda $$
+    に，(1)で求めた $\lambda = 2(y-x)$ を代入すると，
+    $$ v = f \times 2(y-x) = 2f(y-x) $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え (2)：</strong><br>
+    $v = 2f(y-x)\,\mathrm{[m/s]}$
+  </div>
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>弦の共振と定常波のまとめ</h3>
+  <ul>
+    <li><strong>両端固定の弦</strong>：長さ $L$ が $L = n\cdot\frac{\lambda}{2}$（$n=1,2,3,\cdots$）のとき共振する。</li>
+    <li><strong>隣り合う共振の長さの差</strong>：$\frac{\lambda}{2}$ なので，波長は $\lambda = 2\times(\text{隣り合う共振の長さの差})$ で求まる。</li>
+    <li><strong>波の速さ</strong>：$v = f\lambda$（振動数 $\times$ 波長）で，媒質や張力によって決まる速さと，振動数・波長の関係を結びつける。</li>
+  </ul>
+</div>
