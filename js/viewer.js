@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
   var headerTop = document.querySelector('.prob-header-top');
   var headerTopRow = headerTop ? headerTop.querySelector('.header-top-row') : null;
   var scrollThreshold = 100; // 100pxスクロールしたらタイトルを隠す
-  var compactBackBtn = null;
   
   function handleScroll() {
     if (!headerTop || !headerTopRow) return;
@@ -57,40 +56,8 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (isScrolled) {
       headerTop.classList.add('header-scrolled');
-      // コンパクトな戻るボタンを追加
-      if (!compactBackBtn) {
-        var tabBar = headerTop.querySelector('.card-tabs-bar');
-        if (tabBar && !tabBar.querySelector('.compact-back-btn')) {
-          compactBackBtn = document.createElement('button');
-          compactBackBtn.className = 'compact-back-btn';
-          compactBackBtn.innerHTML = '←';
-          compactBackBtn.setAttribute('aria-label', '一覧に戻る');
-          compactBackBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            // 戻るボタンのロジックを直接実行
-            var previousUrl = sessionStorage.getItem('previousPageUrl');
-            if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
-              sessionStorage.setItem('previousPageUrl', document.referrer);
-              window.history.back();
-            } else if (previousUrl && previousUrl !== window.location.href) {
-              window.location.href = previousUrl;
-            } else {
-              const path = window.location.pathname || "";
-              const indexPath = path.replace(/[^/]*$/, "index.html");
-              window.location.href = indexPath || "index.html";
-            }
-          });
-          tabBar.appendChild(compactBackBtn);
-        }
-      }
     } else {
       headerTop.classList.remove('header-scrolled');
-      // コンパクトな戻るボタンを削除
-      if (compactBackBtn && compactBackBtn.parentNode) {
-        compactBackBtn.parentNode.removeChild(compactBackBtn);
-        compactBackBtn = null;
-      }
     }
   }
   
@@ -1240,6 +1207,28 @@ function setupCardTabs(container) {
   tabBar.setAttribute('role', 'tablist');
   tabBar.setAttribute('aria-label', '解説セクション');
 
+  // 戻るボタンを最初からタブの一番左に表示
+  var tabBackBtn = document.createElement('button');
+  tabBackBtn.className = 'compact-back-btn';
+  tabBackBtn.innerHTML = '←';
+  tabBackBtn.setAttribute('aria-label', '一覧に戻る');
+  tabBackBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var previousUrl = sessionStorage.getItem('previousPageUrl');
+    if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
+      sessionStorage.setItem('previousPageUrl', document.referrer);
+      window.history.back();
+    } else if (previousUrl && previousUrl !== window.location.href) {
+      window.location.href = previousUrl;
+    } else {
+      var path = window.location.pathname || '';
+      var indexPath = path.replace(/[^/]*$/, 'index.html');
+      window.location.href = indexPath || 'index.html';
+    }
+  });
+  tabBar.appendChild(tabBackBtn);
+
   var tabButtons = [];
 
   // MathJaxマークアップを除去または簡略化する関数
@@ -1347,27 +1336,6 @@ function setupCardTabs(container) {
       headerTop.appendChild(tabBar);
     }
     
-    // スクロール時にタブバー内の戻るボタンエリアをクリック可能にする
-    tabBar.addEventListener('click', function(e) {
-      // タブバーの左側（戻るボタンエリア）をクリックした場合
-      var rect = tabBar.getBoundingClientRect();
-      if (e.clientX < rect.left + 60) {
-        e.preventDefault();
-        e.stopPropagation();
-        // 戻るボタンのロジックを直接実行
-        var previousUrl = sessionStorage.getItem('previousPageUrl');
-        if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
-          sessionStorage.setItem('previousPageUrl', document.referrer);
-          window.history.back();
-        } else if (previousUrl && previousUrl !== window.location.href) {
-          window.location.href = previousUrl;
-        } else {
-          const path = window.location.pathname || "";
-          const indexPath = path.replace(/[^/]*$/, "index.html");
-          window.location.href = indexPath || "index.html";
-        }
-      }
-    });
   } else {
     // フォールバック：タイトルの直後にタブバーを挿入
     var title = container.querySelector('.prob-title-sub');

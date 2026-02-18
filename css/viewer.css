@@ -231,18 +231,14 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   transition: min-height 0.2s ease;
 }
 
-/* スクロール時にタイトル行をなめらかに隠す（フェード＋スライド） */
+/* スクロール時にタイトル行を隠す（アニメ短くしてタブのぶれを防ぐ） */
 .prob-header-top > .header-top-row {
   max-height: 70px;
   opacity: 1;
-  transform: translateY(0);
-  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
-              padding 0.35s ease,
-              margin 0.35s ease;
+  transform: translateZ(0); /* レイヤー化で下のタブバーとの同時描画ずれを防ぐ */
+  transition: max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.2s ease,
+              visibility 0.2s step-end;
 }
 
 .prob-header-top.header-scrolled > .header-top-row {
@@ -250,33 +246,27 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   height: 0;
   min-height: 0;
   opacity: 0;
-  transform: translateY(-12px);
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
   padding-top: 0;
   padding-bottom: 0;
   margin: 0;
-  visibility: hidden;
-  pointer-events: none;
 }
 
 .prob-header-top.header-scrolled {
   min-height: auto;
-  transition: min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: min-height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* スクロール時にタブバーの左側に戻るボタンエリアを確保 */
-.prob-header-top.header-scrolled > .card-tabs-bar {
-  padding-left: 60px;
-  position: relative;
-}
-
-/* コンパクトな戻るボタンのスタイル */
-.compact-back-btn {
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+/* タブバー内の戻るボタン（常に一番左に表示・フレックス項目） */
+.prob-header-top > .card-tabs-bar .compact-back-btn {
+  flex-shrink: 0;
+  position: static;
   width: 36px;
   height: 36px;
+  margin-right: 8px;
+  margin-left: 0;
   border-radius: 50%;
   background: #f1f5f9;
   color: var(--col-text-sub);
@@ -286,10 +276,14 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10;
   transition: all 0.2s;
   font-size: 1.2rem;
   line-height: 1;
+}
+
+/* タイトル行の戻るボタンはタブバーがあるとき非表示（タブ左に表示するため） */
+.prob-header-top:has(.card-tabs-bar) .header-top-row .btn-back-circle {
+  display: none;
 }
 
 .compact-back-btn:hover {
@@ -334,6 +328,11 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   display: flex;
   justify-content: flex-start; /* 左端のタブが確実に表示される */
   position: relative;
+  min-height: 52px;
+  box-sizing: border-box;
+  /* スクロール時のタイトル行アニメ中にタブ表記がぶれないようレイヤー化 */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* 解説画面下・左右に固定のタブ移動ボタン（複数タブ時のみ表示） */
