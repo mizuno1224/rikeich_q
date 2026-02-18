@@ -372,6 +372,48 @@ function ensureFirebase() {
 }
 
 /**
+ * パスから問題データを検索する
+ */
+async function findProblemByPath(path) {
+  try {
+    // manifest.jsonを読み込む
+    const manifestRes = await fetchWithRetry("data/manifest.json");
+    const manifest = await manifestRes.json();
+    
+    // 各教材のJSONを読み込んで検索
+    for (const material of manifest) {
+      try {
+        const materialRes = await fetchWithRetry(material.path);
+        const materialData = await materialRes.json();
+        
+        if (!materialData.subjects) continue;
+        
+        for (const subject of materialData.subjects) {
+          if (!subject.fields) continue;
+          
+          for (const field of subject.fields) {
+            if (!field.problems) continue;
+            
+            const problem = field.problems.find(p => p.explanationPath === path);
+            if (problem) {
+              return problem;
+            }
+          }
+        }
+      } catch (e) {
+        // 教材の読み込みに失敗した場合はスキップ
+        console.warn("Failed to load material:", material.path, e);
+      }
+    }
+    
+    return null;
+  } catch (e) {
+    console.warn("Failed to search problem:", e);
+    return null;
+  }
+}
+
+/**
  * パスから直接HTMLを読み込む (New)
  */
 function loadExplanationByPath(path) {
@@ -383,22 +425,40 @@ function loadExplanationByPath(path) {
   updateBookmarkButton(path);
 
   const loader = showLoading("解説を読み込み中...");
+  
+  // 教員モードかどうかを確認
+  const params = new URLSearchParams(window.location.search);
+  const isAdminMode = params.get("admin") === "1";
 
-  fetchWithRetry(path)
-    .then((res) => {
-      if (!res.ok) throw new Error("Explanation file not found: " + path);
-      return res.text();
-    })
-    .then((html) => {
-      return new Promise((resolve) => {
-        whenReadyToRender(html, () => {
-          renderExplanation(textTarget, html);
-          const heading = textTarget.querySelector("h2, h3");
-          if (heading) updateTitle(heading.textContent);
-          updateBookmarkButton(path);
-          resolve();
+  // 問題データを検索して公開設定を確認
+  findProblemByPath(path)
+    .then((problem) => {
+      // 問題が見つかり、非公開で、かつ教員モードでない場合はアクセス拒否
+      if (problem && problem.isPublic === false && !isAdminMode) {
+        hideLoading(loader);
+        showError(
+          "この解説は非公開に設定されています。<br><span style=\"font-size:0.8em\">教員ページからアクセスしてください。</span>",
+        );
+        return;
+      }
+      
+      // 通常の読み込み処理
+      return fetchWithRetry(path)
+        .then((res) => {
+          if (!res.ok) throw new Error("Explanation file not found: " + path);
+          return res.text();
+        })
+        .then((html) => {
+          return new Promise((resolve) => {
+            whenReadyToRender(html, () => {
+              renderExplanation(textTarget, html);
+              const heading = textTarget.querySelector("h2, h3");
+              if (heading) updateTitle(heading.textContent);
+              updateBookmarkButton(path);
+              resolve();
+            });
+          });
         });
-      });
     })
     .catch((err) => {
       ErrorHandler.handle(err, "loadExplanationByPath");
@@ -1064,7 +1124,15 @@ function initAudioControls() {
  */
 function setupCardTabs(container) {
   var cards = Array.from(container.querySelectorAll('.card'));
-  var pointBox = container.querySelector('.box-alert');
+  // .card の外にある直属の .box-alert のみをタブに含める（.card 内の Point は除外）
+  var pointBox = null;
+  var allAlerts = Array.from(container.querySelectorAll('.box-alert'));
+  for (var i = 0; i < allAlerts.length; i++) {
+    if (!allAlerts[i].closest('.card')) {
+      pointBox = allAlerts[i];
+      break;
+    }
+  }
 
   if (cards.length < 2 && !pointBox) return;
 

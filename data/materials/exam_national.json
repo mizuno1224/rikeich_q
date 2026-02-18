@@ -90,6 +90,18 @@
       "folderName": "tsukuba",
       "fields": [
         {
+          "fieldName": "2019年度",
+          "folderId": "2019",
+          "problems": [
+            {
+              "id": "2019_zenki_2",
+              "title": "前期 大問2",
+              "desc": "コンデンサー回路と誘電体",
+              "explanationPath": "data/explanations/exam_national/tsukuba/2019/2019_zenki_2.html"
+            }
+          ]
+        },
+        {
           "fieldName": "2024年度",
           "folderId": "2024",
           "problems": [

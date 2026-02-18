@@ -308,11 +308,51 @@ async function openEditor(problem) {
   );
   pathGroup.style.width = "100%";
 
+  // 公開/非公開設定
+  const publicGroup = document.createElement("div");
+  publicGroup.className = "form-group";
+  publicGroup.style.width = "100%";
+  publicGroup.innerHTML = `<label>公開設定</label>`;
+  
+  const publicToggle = document.createElement("div");
+  publicToggle.style.cssText = "display:flex; align-items:center; gap:10px; margin-top:5px;";
+  
+  const toggleBtn = document.createElement("button");
+  toggleBtn.type = "button";
+  const isPublic = problem.isPublic !== false; // デフォルトは公開
+  toggleBtn.textContent = isPublic ? "🔓 公開中" : "🔒 非公開";
+  toggleBtn.style.cssText = isPublic 
+    ? "padding:8px 16px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"
+    : "padding:8px 16px; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;";
+  
+  toggleBtn.onclick = () => {
+    problem.isPublic = !problem.isPublic;
+    const newIsPublic = problem.isPublic !== false;
+    toggleBtn.textContent = newIsPublic ? "🔓 公開中" : "🔒 非公開";
+    toggleBtn.style.cssText = newIsPublic
+      ? "padding:8px 16px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;"
+      : "padding:8px 16px; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;";
+    updateJson();
+    saveAll();
+    showToast(newIsPublic ? "公開に設定しました" : "非公開に設定しました");
+  };
+  
+  const publicDesc = document.createElement("span");
+  publicDesc.style.cssText = "font-size:0.85rem; color:#64748b;";
+  publicDesc.textContent = isPublic 
+    ? "生徒ページに表示されます" 
+    : "生徒ページには表示されません（教員ページのみ）";
+  
+  publicToggle.appendChild(toggleBtn);
+  publicToggle.appendChild(publicDesc);
+  publicGroup.appendChild(publicToggle);
+
   infoSec.appendChild(row1);
   infoSec.appendChild(titleGroup);
   infoSec.appendChild(descGroup);
   infoSec.appendChild(row2);
   infoSec.appendChild(pathGroup);
+  infoSec.appendChild(publicGroup);
 
   // === 2. JSONソース編集エリア ===
   const jsonSec = document.createElement("div");

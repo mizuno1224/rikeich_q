@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>筑波大学 2019年 前期 大問2：コンデンサー回路と誘電体</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+  <style>
+    .circuit-svg, .diagram-svg { max-width: 520px; width: 100%; height: auto; display: block; margin: 16px auto; }
+    .chart-wrap { width: 100%; max-width: 540px; margin: 16px auto; }
+    .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: #fdfdfe; border: 1px solid #e2e8f0; }
+    .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+    .side-by-side { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+    .side-by-side > div { flex: 1; min-width: 180px; max-width: 240px; text-align: center; }
+    .state-label { font-size: 0.92em; font-weight: bold; color: #334155; margin-bottom: 6px; }
+    .state-values { font-size: 0.85em; color: #475569; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問2：コンデンサー回路と誘電体</h2>
+
+      <!-- ===== 解法の指針 ===== -->
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>
+          2つの電池 $E$、2つのコンデンサー $C_1,\,C_2$（$C_1 < C_2$）、抵抗 $R$、3つのスイッチ $S_1,\,S_2,\,S_3$ からなる回路です。スイッチの開閉により回路構成が変わり、<strong>直列接続</strong>や<strong>並列接続</strong>の状態が切り替わります。後半では<span class="highlight">誘電体の挿入・取り出し</span>に伴う電荷・エネルギーの変化を扱います。
+        </p>
+        <h4>問題の構成</h4>
+        <ul>
+          <li><strong>問1</strong>：$S_1,\,S_3$ を閉じて直列充電 → $C_1$ の電位差と電荷</li>
+          <li><strong>問2</strong>：さらに $S_2$ を閉じて電荷再分配 → $S_2$ を流れる電流の向きと電気量</li>
+          <li><strong>問3</strong>：$S_2,\,S_3$ で $C_2$ を充電後、誘電体 D を挿入中の電流</li>
+          <li><strong>問4</strong>：$S_2$ を開いて D を取り去るときの仕事</li>
+          <li><strong>問5</strong>：D 除去後に $S_1$ を閉じたときの電位差とグラフ</li>
+        </ul>
+        <div class="box-note">
+          <strong>全体を貫くポイント</strong><br>
+          <ul style="margin:8px 0 0 0; padding-left:1.2em;">
+            <li><strong>電荷保存則</strong>：孤立した導体部分（S₂ が開いた状態の c 点周辺など）では、接続された極板の電荷の合計が保存される。</li>
+            <li><strong>キルヒホッフの電圧則</strong>：閉回路を一周したときの電圧の総和は 0。十分時間後は電流が 0 なので、抵抗の電圧降下も 0 になる。</li>
+            <li><strong>誘電体挿入時</strong>：電圧一定なら $Q = CV$ で電荷が増え、電荷一定なら $V = Q/C$ で電圧が下がる。</li>
+            <li><strong>外力の仕事</strong>：電荷一定のとき、コンデンサーのエネルギー変化がそのまま外力の仕事になる。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===== 問1 ===== -->
+      <div class="card">
+        <h3>問1：$S_1$ と $S_3$ を閉じたときの $C_1$ の電位差と電荷</h3>
+
+        <h4>回路の状態</h4>
+        <p>
+          $S_1$ と $S_3$ を閉じ、$S_2$ は開いたままです。電流が流れるループは1つだけです。
+        </p>
+
+        <svg class="circuit-svg" viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr1" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+              <polygon points="0 0, 7 2.5, 0 5" fill="#334155"/>
+            </marker>
+          </defs>
+          <!-- Top rail: a → R → S₁(closed) → b -->
+          <line x1="60" y1="40" x2="140" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <rect x="140" y="28" width="60" height="24" rx="4" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="170" y="45" text-anchor="middle" font-size="14" fill="#3b82f6" font-weight="bold">R</text>
+          <line x1="200" y1="40" x2="260" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <!-- S₁ closed -->
+          <line x1="260" y1="40" x2="300" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <circle cx="260" cy="40" r="3" fill="#3b82f6"/>
+          <circle cx="300" cy="40" r="3" fill="#3b82f6"/>
+          <text x="280" y="28" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">S₁</text>
+          <line x1="300" y1="40" x2="420" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <!-- Labels a, b -->
+          <text x="46" y="44" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">a</text>
+          <text x="434" y="44" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">b</text>
+
+          <!-- Right upper: b → C₁ → c -->
+          <line x1="420" y1="40" x2="420" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="118" x2="440" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="132" x2="440" y2="132" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="455" y="129" text-anchor="start" font-size="14" fill="#3b82f6" font-weight="bold">C₁</text>
+          <line x1="420" y1="132" x2="420" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="434" y="198" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">c</text>
+
+          <!-- Middle: f —S₂(open)— c -->
+          <line x1="60" y1="190" x2="160" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="160" cy="190" r="3" fill="#94a3b8"/>
+          <line x1="160" y1="190" x2="195" y2="178" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="200" cy="190" r="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="180" y="170" text-anchor="middle" font-size="13" fill="#94a3b8">S₂</text>
+          <line x1="203" y1="190" x2="420" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="46" y="194" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">f</text>
+
+          <!-- Left upper: a — E — f -->
+          <line x1="60" y1="40" x2="60" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="95" x2="75" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="105" x2="70" y2="105" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="30" y="104" text-anchor="end" font-size="14" fill="#3b82f6" font-weight="bold">E</text>
+          <line x1="60" y1="105" x2="60" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- Right lower: c → C₂ → d -->
+          <line x1="420" y1="190" x2="420" y2="268" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="268" x2="440" y2="268" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="282" x2="440" y2="282" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="455" y="279" text-anchor="start" font-size="14" fill="#3b82f6" font-weight="bold">C₂</text>
+          <line x1="420" y1="282" x2="420" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="434" y="348" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">d</text>
+
+          <!-- Bottom: e → S₃(closed) → d -->
+          <line x1="60" y1="340" x2="160" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="160" y1="340" x2="200" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <circle cx="160" cy="340" r="3" fill="#3b82f6"/>
+          <circle cx="200" cy="340" r="3" fill="#3b82f6"/>
+          <text x="180" y="328" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">S₃</text>
+          <line x1="200" y1="340" x2="420" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="46" y="344" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">e</text>
+
+          <!-- Left lower: f — E — e -->
+          <line x1="60" y1="190" x2="60" y2="245" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="245" x2="75" y2="245" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="255" x2="70" y2="255" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="30" y="254" text-anchor="end" font-size="14" fill="#3b82f6" font-weight="bold">E</text>
+          <line x1="60" y1="255" x2="60" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- Current arrow -->
+          <path d="M 370,40 L 375,32 L 380,40" fill="none" stroke="#ef4444" stroke-width="2"/>
+          <line x1="375" y1="32" x2="375" y2="55" stroke="#ef4444" stroke-width="2"/>
+          <text x="375" y="68" text-anchor="middle" font-size="12" fill="#ef4444" font-weight="bold">I</text>
+        </svg>
+        <p style="text-align:center; font-size:0.88em; color:#64748b;">青線が電流の流れるループ（$S_2$ は開・灰色）</p>
+
+        <p>
+          ループ：$\text{a} \to R \to S_1 \to \text{b} \to C_1 \to \text{c} \to C_2 \to \text{d} \to S_3 \to \text{e} \to E \to \text{f} \to E \to \text{a}$
+        </p>
+        <p>
+          2つの電池が<strong>直列</strong>で合計起電力 $2E$ を供給し、$C_1$ と $C_2$ が<strong>直列</strong>に接続されます。十分時間が経つと電流は 0 になり、$R$ での電圧降下も 0 です。
+        </p>
+
+        <h4>解法</h4>
+        <p>
+          直列コンデンサーには同じ電荷 $Q$ が蓄えられます。キルヒホッフの電圧則より：
+          $$ \frac{Q}{C_1} + \frac{Q}{C_2} = 2E $$
+          $$ Q\,\frac{C_1 + C_2}{C_1 C_2} = 2E $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え</strong><br>
+          $C_1$ に蓄えられる電気量：
+          $$ Q = \frac{2E\,C_1 C_2}{C_1 + C_2} $$
+          $C_1$ の極板間電位差：
+          $$ V_1 = \frac{Q}{C_1} = \frac{2E\,C_2}{C_1 + C_2} $$
+        </div>
+
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>直列コンデンサーでは<strong>各極板に蓄えられる電荷は等しい</strong>。合成容量 $\dfrac{C_1 C_2}{C_1 + C_2}$ を用いると $Q = (\text{合成容量}) \times 2E$ ですぐに求まります。</p>
+        </div>
+      </div>
+
+      <!-- ===== 問2 ===== -->
+      <div class="card">
+        <h3>問2：さらに $S_2$ を閉じたときの電流の向きと電気量</h3>
+
+        <h4>回路の状態</h4>
+        <p>
+          $S_2$ を閉じると、$\text{f}$ 点と $\text{c}$ 点が導線でつながり、回路は<strong>上側ループ</strong>と<strong>下側ループ</strong>の2つに分かれます。
+        </p>
+
+        <svg class="circuit-svg" viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg">
+          <!-- Top rail: a → R → S₁(closed) → b  (upper loop = red-blue) -->
+          <line x1="60" y1="40" x2="140" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <rect x="140" y="28" width="60" height="24" rx="4" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="170" y="45" text-anchor="middle" font-size="14" fill="#3b82f6" font-weight="bold">R</text>
+          <line x1="200" y1="40" x2="260" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="260" y1="40" x2="300" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <circle cx="260" cy="40" r="3" fill="#3b82f6"/>
+          <circle cx="300" cy="40" r="3" fill="#3b82f6"/>
+          <text x="280" y="28" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">S₁</text>
+          <line x1="300" y1="40" x2="420" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="46" y="44" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">a</text>
+          <text x="434" y="44" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">b</text>
+
+          <!-- Right upper: b → C₁ → c (upper loop) -->
+          <line x1="420" y1="40" x2="420" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="118" x2="440" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="132" x2="440" y2="132" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="455" y="129" text-anchor="start" font-size="14" fill="#3b82f6" font-weight="bold">C₁</text>
+          <line x1="420" y1="132" x2="420" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="434" y="198" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">c</text>
+
+          <!-- Middle: f → S₂(closed) → c  (shared by both loops) -->
+          <line x1="60" y1="190" x2="160" y2="190" stroke="#8b5cf6" stroke-width="2.5"/>
+          <line x1="160" y1="190" x2="200" y2="190" stroke="#8b5cf6" stroke-width="2.5"/>
+          <circle cx="160" cy="190" r="3" fill="#8b5cf6"/>
+          <circle cx="200" cy="190" r="3" fill="#8b5cf6"/>
+          <text x="180" y="178" text-anchor="middle" font-size="13" fill="#8b5cf6" font-weight="bold">S₂</text>
+          <line x1="200" y1="190" x2="420" y2="190" stroke="#8b5cf6" stroke-width="2.5"/>
+          <text x="46" y="194" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">f</text>
+
+          <!-- Left upper: a — E — f (upper loop) -->
+          <line x1="60" y1="40" x2="60" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="95" x2="75" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="105" x2="70" y2="105" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="30" y="104" text-anchor="end" font-size="14" fill="#3b82f6" font-weight="bold">E</text>
+          <line x1="60" y1="105" x2="60" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- Right lower: c → C₂ → d (lower loop = green) -->
+          <line x1="420" y1="190" x2="420" y2="268" stroke="#10b981" stroke-width="2.5"/>
+          <line x1="400" y1="268" x2="440" y2="268" stroke="#10b981" stroke-width="2.5"/>
+          <line x1="400" y1="282" x2="440" y2="282" stroke="#10b981" stroke-width="2.5"/>
+          <text x="455" y="279" text-anchor="start" font-size="14" fill="#10b981" font-weight="bold">C₂</text>
+          <line x1="420" y1="282" x2="420" y2="340" stroke="#10b981" stroke-width="2.5"/>
+          <text x="434" y="348" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">d</text>
+
+          <!-- Bottom: e → S₃(closed) → d (lower loop) -->
+          <line x1="60" y1="340" x2="160" y2="340" stroke="#10b981" stroke-width="2.5"/>
+          <line x1="160" y1="340" x2="200" y2="340" stroke="#10b981" stroke-width="2.5"/>
+          <circle cx="160" cy="340" r="3" fill="#10b981"/>
+          <circle cx="200" cy="340" r="3" fill="#10b981"/>
+          <text x="180" y="328" text-anchor="middle" font-size="13" fill="#10b981" font-weight="bold">S₃</text>
+          <line x1="200" y1="340" x2="420" y2="340" stroke="#10b981" stroke-width="2.5"/>
+          <text x="46" y="344" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">e</text>
+
+          <!-- Left lower: f — E — e (lower loop) -->
+          <line x1="60" y1="190" x2="60" y2="245" stroke="#10b981" stroke-width="2.5"/>
+          <line x1="45" y1="245" x2="75" y2="245" stroke="#10b981" stroke-width="2.5"/>
+          <line x1="50" y1="255" x2="70" y2="255" stroke="#10b981" stroke-width="2.5"/>
+          <text x="30" y="254" text-anchor="end" font-size="14" fill="#10b981" font-weight="bold">E</text>
+          <line x1="60" y1="255" x2="60" y2="340" stroke="#10b981" stroke-width="2.5"/>
+
+          <!-- Loop labels -->
+          <text x="240" y="120" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">上側ループ（E + C₁）</text>
+          <text x="240" y="280" text-anchor="middle" font-size="13" fill="#10b981" font-weight="bold">下側ループ（E + C₂）</text>
+        </svg>
+        <p style="text-align:center; font-size:0.88em; color:#64748b;">$S_2$ を閉じると回路が上下2つのループに分離する</p>
+
+        <ul>
+          <li><span style="color:#3b82f6; font-weight:bold;">上側ループ</span>：$\text{a} \to R \to S_1 \to \text{b} \to C_1 \to \text{c} \to S_2 \to \text{f} \to E \to \text{a}$（起電力 $E$、コンデンサー $C_1$）</li>
+          <li><span style="color:#10b981; font-weight:bold;">下側ループ</span>：$\text{f} \to E \to \text{e} \to S_3 \to \text{d} \to C_2 \to \text{c} \to S_2 \to \text{f}$（起電力 $E$、コンデンサー $C_2$）</li>
+        </ul>
+        <p>
+          十分時間後、それぞれのループで：
+          $$ V(C_1) = E, \quad V(C_2) = E $$
+        </p>
+
+        <h4>$S_2$ を閉じる前後の比較</h4>
+        <p>
+          <strong>閉じる前（問1の結果）</strong>：
+          $$ V(C_1) = \frac{2E\,C_2}{C_1 + C_2} > E, \quad V(C_2) = \frac{2E\,C_1}{C_1 + C_2} < E \quad (\because\; C_1 < C_2) $$
+          $C_1$ は<strong>過充電状態</strong>（$V > E$）なので放電し、$C_2$ は<strong>不足状態</strong>（$V < E$）なので追加充電されます。
+        </p>
+
+        <h4>電流の向きと電気量</h4>
+        <p>
+          $\text{c}$ 点における電荷保存で考えます。$\text{c}$ 点には $C_1$ の c 側極板（負の電荷）と $C_2$ の c 側極板（正の電荷）が接続しています。
+        </p>
+        <p>
+          $S_2$ を閉じる前の c 点の正味の電荷：
+          $$ q_\text{前} = -Q_0 + Q_0 = 0 $$
+          $S_2$ を閉じた後（定常状態）の c 点の正味の電荷：
+          $$ q_\text{後} = -E C_1 + E C_2 = E(C_2 - C_1) > 0 $$
+        </p>
+        <p>
+          c 点の正の電荷が増えた分 $E(C_2 - C_1)$ は、$S_2$ を通って<strong>f 側から c 側へ</strong>正電荷が流入したことを意味します。
+        </p>
+
+        <div class="box-note">
+          <strong>答え</strong><br>
+          電流の向き：<strong>f から c</strong><br>
+          $S_2$ を流れた電気量：
+          $$ \Delta q = E(C_2 - C_1) $$
+        </div>
+
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p><strong>孤立ノードの電荷保存</strong>：$S_2$ が開いている間、c 点周辺の電荷は保存される。$S_2$ を閉じると新たな経路ができ電荷が移動する。移動量は、閉じる前後の c 点の電荷の差から求められます。</p>
+        </div>
+      </div>
+
+      <!-- ===== 問3 ===== -->
+      <div class="card">
+        <h3>問3：誘電体 D の挿入中に $S_2$ を流れる電流</h3>
+
+        <h4>設定</h4>
+        <p>
+          すべてのスイッチを開き、コンデンサーを放電して初期状態に戻します。次に $S_2$ と $S_3$ を閉じて $C_2$ を充電します（$S_1$ は開）。ループ $\text{f} \to S_2 \to \text{c} \to C_2 \to \text{d} \to S_3 \to \text{e} \to E \to \text{f}$ により、十分時間後 $V(C_2) = E$、$Q_0 = EC_2$ に充電されます。
+        </p>
+        <p>
+          その状態のまま、比誘電率 $\varepsilon_r = 3$、極板間隔と同じ厚さの誘電体 D を $C_2$ の極板間にゆっくり挿入します。
+        </p>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; align-items:start;">
+          <canvas id="capViz" width="220" height="260" style="border-radius:8px; background:#fdfdfe; border:1px solid #e2e8f0;"></canvas>
+          <canvas id="qtGraph" width="320" height="260" style="border-radius:8px; background:#fdfdfe; border:1px solid #e2e8f0;"></canvas>
+        </div>
+        <div style="max-width:540px; margin:8px auto; text-align:center;">
+          <label style="font-size:0.92em; color:#334155;">挿入量 $t/t_0$ = <strong id="sliderVal">0.00</strong></label><br>
+          <input type="range" id="dielSlider" min="0" max="100" value="0" style="width:80%; margin-top:4px; accent-color:#3b82f6;">
+          <div style="display:flex; justify-content:space-between; width:80%; margin:0 auto; font-size:0.8em; color:#94a3b8;">
+            <span>0</span><span>t₀</span>
+          </div>
+        </div>
+        <script>
+        (function(){
+          var vizC = document.getElementById('capViz');
+          var vizCtx = vizC.getContext('2d');
+          var grC = document.getElementById('qtGraph');
+          var grCtx = grC.getContext('2d');
+          var slider = document.getElementById('dielSlider');
+          var valSpan = document.getElementById('sliderVal');
+
+          function drawCap(f){
+            var W=220,H=260,ctx=vizCtx;
+            ctx.clearRect(0,0,W,H);
+            ctx.fillStyle='#fdfdfe'; ctx.fillRect(0,0,W,H);
+            var px=30,pw=160,py1=50,py2=170,gap=py2-py1;
+            ctx.strokeStyle='#334155'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.moveTo(px+pw/2,10); ctx.lineTo(px+pw/2,py1); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(px+pw/2,py2); ctx.lineTo(px+pw/2,240); ctx.stroke();
+            ctx.lineWidth=2.5;
+            ctx.beginPath(); ctx.moveTo(px,py1); ctx.lineTo(px+pw,py1); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(px,py2); ctx.lineTo(px+pw,py2); ctx.stroke();
+            var dw=Math.round(pw*f);
+            if(dw>0){
+              ctx.fillStyle='rgba(147,197,253,0.5)';
+              ctx.strokeStyle='#3b82f6'; ctx.lineWidth=1;
+              var dx=px+pw-dw;
+              ctx.fillRect(dx,py1+3,dw,gap-6);
+              ctx.strokeRect(dx,py1+3,dw,gap-6);
+              if(dw>30){
+                ctx.fillStyle='#1d4ed8'; ctx.font='bold 16px sans-serif'; ctx.textAlign='center';
+                ctx.fillText('D',dx+dw/2,py1+gap/2+5);
+              }
+            }
+            if(pw-dw>20){
+              ctx.fillStyle='#cbd5e1'; ctx.font='11px sans-serif'; ctx.textAlign='center';
+              ctx.fillText('\u771f\u7a7a',px+(pw-dw)/2,py1+gap/2+4);
+            }
+            ctx.fillStyle='#1e293b'; ctx.font='bold 14px sans-serif'; ctx.textAlign='center';
+            ctx.fillText('c',px+pw/2,8);
+            ctx.fillText('d',px+pw/2,254);
+            ctx.font='bold 13px sans-serif'; ctx.fillStyle='#334155';
+            ctx.textAlign='right';
+            ctx.fillText('C\u2082',px-6,py1+gap/2+5);
+            ctx.fillStyle='#3b82f6'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+            var cVal=(1+2*f).toFixed(2);
+            ctx.fillText('C(t) = '+cVal+' C\u2082',px+pw/2,py2+30);
+            var qVal=(1+2*f).toFixed(2);
+            ctx.fillText('Q(t) = '+qVal+' EC\u2082',px+pw/2,py2+46);
+          }
+
+          function drawGraph(f){
+            var W=320,H=260,ctx=grCtx;
+            ctx.clearRect(0,0,W,H);
+            ctx.fillStyle='#fdfdfe'; ctx.fillRect(0,0,W,H);
+            var pad={top:30,right:20,bottom:40,left:60};
+            var gW=W-pad.left-pad.right, gH=H-pad.top-pad.bottom;
+            function xPx(v){ return pad.left+v*gW; }
+            function yPx(v){ return pad.top+gH-v*gH; }
+
+            ctx.strokeStyle='#e2e8f0'; ctx.lineWidth=1;
+            [0,1/3,2/3,1].forEach(function(v){
+              ctx.beginPath(); ctx.moveTo(pad.left,yPx(v)); ctx.lineTo(W-pad.right,yPx(v)); ctx.stroke();
+            });
+            ctx.strokeStyle='#334155'; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.moveTo(pad.left,pad.top-5); ctx.lineTo(pad.left,H-pad.bottom); ctx.lineTo(W-pad.right+5,H-pad.bottom); ctx.stroke();
+
+            ctx.fillStyle='#334155'; ctx.font='12px sans-serif'; ctx.textAlign='right';
+            ctx.fillText('EC\u2082',pad.left-6,yPx(1/3)+4);
+            ctx.fillText('2EC\u2082',pad.left-6,yPx(2/3)+4);
+            ctx.fillText('3EC\u2082',pad.left-6,yPx(1)+4);
+            ctx.fillText('0',pad.left-6,yPx(0)+4);
+            ctx.textAlign='center';
+            ctx.fillText('0',xPx(0),H-pad.bottom+16);
+            ctx.fillText('t\u2080',xPx(1),H-pad.bottom+16);
+
+            ctx.save();
+            ctx.translate(12,pad.top+gH/2);
+            ctx.rotate(-Math.PI/2);
+            ctx.fillStyle='#64748b'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+            ctx.fillText('Q(t)',0,0);
+            ctx.restore();
+
+            ctx.strokeStyle='#94a3b8'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+            ctx.beginPath(); ctx.moveTo(pad.left,yPx(1/3)); ctx.lineTo(xPx(0),yPx(1/3)); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(xPx(1),pad.top); ctx.lineTo(xPx(1),H-pad.bottom); ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.strokeStyle='#3b82f6'; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(xPx(0),yPx(1/3)); ctx.lineTo(xPx(1),yPx(1)); ctx.stroke();
+
+            var qNorm=(1+2*f)/3;
+            var dotX=xPx(f), dotY=yPx(qNorm);
+            ctx.setLineDash([3,3]); ctx.strokeStyle='#ef4444'; ctx.lineWidth=1;
+            ctx.beginPath(); ctx.moveTo(dotX,dotY); ctx.lineTo(dotX,H-pad.bottom); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(pad.left,dotY); ctx.lineTo(dotX,dotY); ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle='#ef4444';
+            ctx.beginPath(); ctx.arc(dotX,dotY,6,0,Math.PI*2); ctx.fill();
+            ctx.fillStyle='#fff';
+            ctx.beginPath(); ctx.arc(dotX,dotY,3,0,Math.PI*2); ctx.fill();
+
+            ctx.fillStyle='#334155'; ctx.font='bold 12px sans-serif'; ctx.textAlign='left';
+            ctx.fillText('I = \u0394Q/t\u2080 = 2EC\u2082/t\u2080',xPx(0.08),yPx(0.85));
+            ctx.fillStyle='#64748b'; ctx.font='11px sans-serif';
+            ctx.fillText('(\u50be\u304d\u4e00\u5b9a \u2192 \u96fb\u6d41\u4e00\u5b9a)',xPx(0.08),yPx(0.85)+16);
+          }
+
+          function update(){
+            var f=slider.value/100;
+            valSpan.textContent=f.toFixed(2);
+            drawCap(f);
+            drawGraph(f);
+          }
+          slider.addEventListener('input',update);
+          update();
+        })();
+        </script>
+        <p style="text-align:center; font-size:0.88em; color:#64748b;">スライダーで挿入具合を変えると、電荷 $Q(t)$ のグラフ上の点が連動して動きます</p>
+
+        <h4>解法</h4>
+        <p>
+          $S_2,\,S_3$ は閉じたままなので、$C_2$ の両端は電池に直結しており、<strong>電圧は常に $E$ に保たれます</strong>。
+        </p>
+        <p>
+          時刻 $t$ で D が挿入された面積の割合は $\dfrac{t}{t_0}$（面積は時間に比例）です。$C_2$ を、誘電体が入った部分と真空部分の<strong>2つの並列コンデンサー</strong>と見なすと：
+        </p>
+        <ul>
+          <li>誘電体あり部分：$3C_2 \cdot \dfrac{t}{t_0}$</li>
+          <li>真空部分：$C_2\!\left(1 - \dfrac{t}{t_0}\right)$</li>
+        </ul>
+        <p>
+          合計容量：
+          $$ C(t) = C_2\!\left(1 - \frac{t}{t_0}\right) + 3C_2\,\frac{t}{t_0} = C_2\!\left(1 + \frac{2t}{t_0}\right) $$
+        </p>
+        <p>
+          $C(t)$ は $t$ の<strong>一次関数</strong>（直線）です。電圧 $V = E$ は一定なので、蓄えられる電荷 $Q(t) = C(t) \cdot E$ も $t$ の一次関数になります：
+          $$ Q(t) = EC_2\!\left(1 + \frac{2t}{t_0}\right) $$
+        </p>
+        <p>
+          <strong>$Q(t)$ が $t$ に対して直線的に増える</strong>ということは、単位時間あたりの電荷の増加量（＝電流）が一定であることを意味します。挿入開始時（$t = 0$）と挿入完了時（$t = t_0$）の電荷から：
+        </p>
+        <ul>
+          <li>$t = 0$：$Q(0) = EC_2$</li>
+          <li>$t = t_0$：$Q(t_0) = EC_2(1 + 2) = 3EC_2$</li>
+        </ul>
+        <p>
+          電荷の変化量 $\Delta Q = 3EC_2 - EC_2 = 2EC_2$ がかかった時間 $t_0$ で均等に流れるので：
+          $$ I = \frac{\Delta Q}{t_0} = \frac{2EC_2}{t_0} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え</strong><br>
+          $$ I = \frac{2EC_2}{t_0} \quad \text{（一定）} $$
+        </div>
+
+        <details style="margin-top:12px;">
+          <summary style="cursor:pointer; color:#3b82f6; font-weight:bold;">別解（微分を使う方法）</summary>
+          <p style="margin-top:8px;">
+            $Q(t) = EC_2\!\left(1 + \dfrac{2t}{t_0}\right)$ を $t$ で微分すると：
+            $$ I = \frac{dQ}{dt} = E \cdot \frac{dC}{dt} = E \cdot \frac{2C_2}{t_0} = \frac{2EC_2}{t_0} $$
+            $C(t)$ が $t$ の一次関数なので微分は定数になり、結果は同じです。
+          </p>
+        </details>
+
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>電池に直結（電圧一定）の状態で容量が変化すると、$Q = CV$ も容量に比例して変化します。面積が時間に比例するので $C(t)$ は一次関数 → $Q(t)$ も直線的に増加 → 電流は一定になります。</p>
+        </div>
+      </div>
+
+      <!-- ===== 問4 ===== -->
+      <div class="card">
+        <h3>問4：$S_2$ を開いて D を取り去るための外力の仕事</h3>
+
+        <h4>設定</h4>
+        <p>
+          $t = t_0$ で D が完全に挿入された状態（$C = 3C_2$、$V = E$、$Q = 3EC_2$）から、$S_2$ を<strong>開いて</strong>から D をゆっくり取り去ります。
+        </p>
+        <p>
+          $S_1$ は開、$S_2$ も開になるため、$C_2$ の c 側極板は他のどの回路とも接続されなくなり、<strong>電荷が一定に保たれます</strong>：$Q = 3EC_2$（一定）。
+        </p>
+
+        <div style="display:flex; gap:0; justify-content:center; align-items:stretch; flex-wrap:wrap; margin:16px 0;">
+          <div style="flex:0 0 210px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px 0 0 10px; padding:14px 12px; text-align:center;">
+            <div style="font-weight:bold; color:#0369a1; margin-bottom:8px;">D 除去前（$S_2$ 開直後）</div>
+            <svg viewBox="0 0 160 170" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto;">
+              <line x1="80" y1="5" x2="80" y2="35" stroke="#334155" stroke-width="2"/>
+              <line x1="35" y1="35" x2="125" y2="35" stroke="#334155" stroke-width="2.5"/>
+              <line x1="35" y1="115" x2="125" y2="115" stroke="#334155" stroke-width="2.5"/>
+              <line x1="80" y1="115" x2="80" y2="145" stroke="#334155" stroke-width="2"/>
+              <rect x="39" y="40" width="82" height="70" rx="3" fill="#93c5fd" fill-opacity="0.5" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="80" y="80" text-anchor="middle" font-size="16" font-weight="bold" fill="#1d4ed8">D</text>
+              <!-- Charge symbols -->
+              <text x="80" y="30" text-anchor="middle" font-size="11" fill="#ef4444">+ + + +</text>
+              <text x="80" y="130" text-anchor="middle" font-size="11" fill="#3b82f6">− − − −</text>
+            </svg>
+            <div style="font-size:0.88em; color:#334155; line-height:1.8; margin-top:6px;">
+              $C = 3C_2$<br>$Q = 3EC_2$<br>$V = E$<br>$U = \dfrac{3}{2}C_2 E^2$
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; padding:0 8px;">
+            <svg viewBox="0 0 50 60" width="50" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="35,30 15,18 15,42" fill="#64748b"/>
+              <text x="25" y="55" text-anchor="middle" font-size="9" fill="#64748b">Q一定</text>
+            </svg>
+          </div>
+          <div style="flex:0 0 210px; background:#fefce8; border:1px solid #fde68a; border-radius:0 10px 10px 0; padding:14px 12px; text-align:center;">
+            <div style="font-weight:bold; color:#a16207; margin-bottom:8px;">D 除去後</div>
+            <svg viewBox="0 0 160 170" width="140" xmlns="http://www.w3.org/2000/svg" style="display:block; margin:0 auto;">
+              <line x1="80" y1="5" x2="80" y2="35" stroke="#334155" stroke-width="2"/>
+              <line x1="35" y1="35" x2="125" y2="35" stroke="#334155" stroke-width="2.5"/>
+              <line x1="35" y1="115" x2="125" y2="115" stroke="#334155" stroke-width="2.5"/>
+              <line x1="80" y1="115" x2="80" y2="145" stroke="#334155" stroke-width="2"/>
+              <!-- Stronger E field lines -->
+              <line x1="55" y1="50" x2="55" y2="100" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="80" y1="50" x2="80" y2="100" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
+              <line x1="105" y1="50" x2="105" y2="100" stroke="#f59e0b" stroke-width="1" stroke-dasharray="3,3"/>
+              <text x="80" y="80" text-anchor="middle" font-size="10" fill="#94a3b8">真空</text>
+              <!-- Charge symbols (same amount) -->
+              <text x="80" y="30" text-anchor="middle" font-size="11" fill="#ef4444">+ + + +</text>
+              <text x="80" y="130" text-anchor="middle" font-size="11" fill="#3b82f6">− − − −</text>
+            </svg>
+            <div style="font-size:0.88em; color:#334155; line-height:1.8; margin-top:6px;">
+              $C = C_2$<br>$Q = 3EC_2$<br>$V = 3E$ <span style="color:#ef4444;">↑</span><br>$U = \dfrac{9}{2}C_2 E^2$ <span style="color:#ef4444;">↑</span>
+            </div>
+          </div>
+        </div>
+
+        <h4>解法</h4>
+        <p>
+          電荷一定で誘電体を取り去ると容量が $3C_2 \to C_2$ に減り、電圧が $E \to 3E$ に上昇します。エネルギー変化を比較します。
+        </p>
+        <ul>
+          <li>取り去る前：$U_i = \dfrac{Q^2}{2 \cdot 3C_2} = \dfrac{(3EC_2)^2}{6C_2} = \dfrac{3}{2}\,C_2 E^2$</li>
+          <li>取り去った後：$U_f = \dfrac{Q^2}{2C_2} = \dfrac{(3EC_2)^2}{2C_2} = \dfrac{9}{2}\,C_2 E^2$</li>
+        </ul>
+        <p>
+          回路は開いているので電流は流れず、ジュール熱は発生しません。エネルギーが増加した分がすべて外力の仕事です。
+        </p>
+
+        <div class="box-note">
+          <strong>答え</strong><br>
+          $$ W = U_f - U_i = \frac{9}{2}\,C_2 E^2 - \frac{3}{2}\,C_2 E^2 = 3C_2 E^2 $$
+        </div>
+
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>誘電体はコンデンサーに引き込まれる方向に力を受けます。電荷一定（回路が開）の場合、取り去るための<strong>外力の仕事＝静電エネルギーの増加分</strong>です。</p>
+        </div>
+      </div>
+
+      <!-- ===== 問5 ===== -->
+      <div class="card">
+        <h3>問5：D 除去後に $S_1$ を閉じたときの $C_1,\,C_2$ の電位差とグラフ</h3>
+
+        <h4>設定</h4>
+        <p>
+          D を取り去った後の状態：$C_2$ に電荷 $Q = 3EC_2$（c 側が正）、電圧 $3E$。$C_1$ は無充電。<br>
+          ここで $S_1$ を閉じます（$S_2$ は開、$S_3$ は閉のまま）。
+        </p>
+
+        <svg class="circuit-svg" viewBox="0 0 480 380" xmlns="http://www.w3.org/2000/svg">
+          <!-- Top rail: a → R → S₁(closed) → b -->
+          <line x1="60" y1="40" x2="140" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <rect x="140" y="28" width="60" height="24" rx="4" fill="none" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="170" y="45" text-anchor="middle" font-size="14" fill="#3b82f6" font-weight="bold">R</text>
+          <line x1="200" y1="40" x2="260" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="260" y1="40" x2="300" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <circle cx="260" cy="40" r="3" fill="#3b82f6"/>
+          <circle cx="300" cy="40" r="3" fill="#3b82f6"/>
+          <text x="280" y="28" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">S₁</text>
+          <line x1="300" y1="40" x2="420" y2="40" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="46" y="44" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">a</text>
+          <text x="434" y="44" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">b</text>
+
+          <!-- Right upper: b → C₁ → c -->
+          <line x1="420" y1="40" x2="420" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="118" x2="440" y2="118" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="132" x2="440" y2="132" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="395" y="129" text-anchor="end" font-size="14" fill="#334155">C₁</text>
+          <text x="395" y="146" text-anchor="end" font-size="11" fill="#64748b">初期: Q=0</text>
+          <line x1="420" y1="132" x2="420" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="434" y="198" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">c</text>
+
+          <!-- Middle: f —S₂(open)— c -->
+          <line x1="60" y1="190" x2="160" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="160" cy="190" r="3" fill="#94a3b8"/>
+          <line x1="160" y1="190" x2="195" y2="178" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="200" cy="190" r="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="180" y="170" text-anchor="middle" font-size="13" fill="#94a3b8">S₂</text>
+          <line x1="203" y1="190" x2="420" y2="190" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="46" y="194" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">f</text>
+
+          <!-- Left upper: a — E — f -->
+          <line x1="60" y1="40" x2="60" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="95" x2="75" y2="95" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="105" x2="70" y2="105" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="30" y="104" text-anchor="end" font-size="14" fill="#3b82f6" font-weight="bold">E</text>
+          <line x1="60" y1="105" x2="60" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- Right lower: c → C₂ → d -->
+          <line x1="420" y1="190" x2="420" y2="268" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="268" x2="440" y2="268" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="400" y1="282" x2="440" y2="282" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="395" y="279" text-anchor="end" font-size="14" fill="#334155">C₂</text>
+          <text x="395" y="296" text-anchor="end" font-size="11" fill="#ef4444">初期: Q=3EC₂</text>
+          <line x1="420" y1="282" x2="420" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="434" y="348" text-anchor="start" font-size="15" font-weight="bold" fill="#1e293b">d</text>
+
+          <!-- Bottom: e → S₃(closed) → d -->
+          <line x1="60" y1="340" x2="160" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="160" y1="340" x2="200" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <circle cx="160" cy="340" r="3" fill="#3b82f6"/>
+          <circle cx="200" cy="340" r="3" fill="#3b82f6"/>
+          <text x="180" y="328" text-anchor="middle" font-size="13" fill="#3b82f6" font-weight="bold">S₃</text>
+          <line x1="200" y1="340" x2="420" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="46" y="344" text-anchor="end" font-size="15" font-weight="bold" fill="#1e293b">e</text>
+
+          <!-- Left lower: f — E — e -->
+          <line x1="60" y1="190" x2="60" y2="245" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="245" x2="75" y2="245" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="255" x2="70" y2="255" stroke="#3b82f6" stroke-width="2.5"/>
+          <text x="30" y="254" text-anchor="end" font-size="14" fill="#3b82f6" font-weight="bold">E</text>
+          <line x1="60" y1="255" x2="60" y2="340" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- Isolated node c label -->
+          <rect x="290" y="183" width="100" height="16" rx="3" fill="#fef3c7"/>
+          <text x="340" y="194" text-anchor="middle" font-size="11" fill="#92400e" font-weight="bold">孤立ノード(S₂開)</text>
+        </svg>
+        <p style="text-align:center; font-size:0.88em; color:#64748b;">問1と同じループだが、$C_2$ に初期電荷 $3EC_2$ が蓄えられている</p>
+
+        <h4>解法</h4>
+        <p>
+          ループは問1と同じ構成です。総起電力は $2E$ ですが、<strong>$C_2$ に初期電荷がある</strong>ため結果が異なります。
+        </p>
+        <p>
+          c 点は孤立ノード（$S_2$ が開）なので、c 点に接続した極板の電荷の合計が保存されます。
+          $$ \text{（$C_1$ の c 側極板）} + \text{（$C_2$ の c 側極板）} = 0 + 3EC_2 = 3EC_2 \quad \cdots\text{(i)} $$
+        </p>
+        <p>
+          $C_1$ の b 側極板の電荷を $Q_1$、$C_2$ の c 側極板の電荷を $Q_2$ とすると、$C_1$ の c 側極板は $-Q_1$、$C_2$ の d 側極板は $-Q_2$ です。
+        </p>
+        <p>
+          電荷保存 (i) より：
+          $$ -Q_1 + Q_2 = 3EC_2 \quad \Rightarrow \quad Q_2 = 3EC_2 + Q_1 \quad \cdots\text{(ii)} $$
+        </p>
+        <p>
+          十分時間後に電流が 0 のとき、KVL（ループを一周）：
+          $$ \frac{Q_1}{C_1} + \frac{Q_2}{C_2} = 2E \quad \cdots\text{(iii)} $$
+        </p>
+        <p>
+          (ii) を (iii) に代入：
+          $$ \frac{Q_1}{C_1} + \frac{3EC_2 + Q_1}{C_2} = 2E $$
+          $$ \frac{Q_1}{C_1} + 3E + \frac{Q_1}{C_2} = 2E $$
+          $$ Q_1\!\left(\frac{1}{C_1} + \frac{1}{C_2}\right) = -E $$
+          $$ Q_1 = \frac{-E\,C_1 C_2}{C_1 + C_2} $$
+        </p>
+        <p>
+          $Q_1 < 0$ は、$C_1$ の b 側極板に負の電荷が蓄えられること（通常と逆の極性）を意味します。
+        </p>
+        <p>
+          $$ Q_2 = 3EC_2 + Q_1 = 3EC_2 - \frac{E\,C_1 C_2}{C_1 + C_2} = \frac{EC_2(2C_1 + 3C_2)}{C_1 + C_2} $$
+        </p>
+
+        <div class="box-note">
+          <strong>答え</strong><br>
+          $C_1$ の極板間電位差：
+          $$ V(C_1) = \frac{|Q_1|}{C_1} = \frac{EC_2}{C_1 + C_2} $$
+          $C_2$ の極板間電位差：
+          $$ V(C_2) = \frac{Q_2}{C_2} = \frac{E(2C_1 + 3C_2)}{C_1 + C_2} $$
+        </div>
+
+        <h4>電位のグラフ（図3）</h4>
+        <p>
+          点 e の電位を 0 として各点の電位を求めます。
+        </p>
+        <ul>
+          <li>$V(\text{e}) = 0$</li>
+          <li>$V(\text{d}) = V(\text{e}) = 0$（$S_3$ を通じて接続、電圧降下なし）</li>
+          <li>$V(\text{f}) = V(\text{e}) + E = E$（下側電池）</li>
+          <li>$V(\text{a}) = V(\text{f}) + E = 2E$（上側電池）</li>
+          <li>$V(\text{b}) = V(\text{a}) = 2E$（電流 0 なので $R$ での電圧降下なし）</li>
+          <li>$V(\text{c}) = V(\text{b}) + \dfrac{EC_2}{C_1 + C_2} = \dfrac{E(2C_1 + 3C_2)}{C_1 + C_2}$<br>
+            （$C_1$ の極性が逆のため、b → c で電位が<strong>上昇</strong>する）</li>
+        </ul>
+        <h4>$V(\text{c})$ が $2E$ と $3E$ の間になる理由</h4>
+        <p>
+          $V(\text{c})$ の式を変形してみます：
+          $$ V(\text{c}) = \frac{E(2C_1 + 3C_2)}{C_1 + C_2} = E\!\left(\frac{2C_1 + 3C_2}{C_1 + C_2}\right) = E\!\left(2 + \frac{C_2}{C_1 + C_2}\right) $$
+        </p>
+        <p>
+          ここで $\dfrac{C_2}{C_1 + C_2}$ の取りうる範囲を考えます。$C_1,\,C_2 > 0$ かつ $C_1 < C_2$ なので：
+        </p>
+        <ul>
+          <li>$C_1 > 0$ より $C_1 + C_2 > C_2$ なので $\dfrac{C_2}{C_1 + C_2} < 1$</li>
+          <li>$C_1 < C_2$ より $C_1 + C_2 < 2C_2$ なので $\dfrac{C_2}{C_1 + C_2} > \dfrac{1}{2}$</li>
+        </ul>
+        <p>
+          したがって：
+          $$ \frac{1}{2} < \frac{C_2}{C_1 + C_2} < 1 $$
+          $$ 2E + \frac{E}{2} < V(\text{c}) < 2E + E $$
+          $$ \frac{5}{2}E < V(\text{c}) < 3E $$
+        </p>
+        <p>
+          物理的には、$C_2$ に蓄えられていた大量の電荷（$3EC_2$）のうち一部が $C_1$ に押し込まれ、$C_1$ を<strong>通常と逆の極性</strong>に充電します。この逆極性の $C_1$ が b → c 方向に電位を<strong>押し上げる</strong>ため、c 点の電位が $2E$ を超えます。ただし $C_2$ にも電荷が残る（すべてが $C_1$ に移るわけではない）ので $3E$ には達しません。
+        </p>
+        <p>
+          なお、特殊ケースとして $C_1 \to 0$ のとき $V(\text{c}) \to 3E$（$C_2$ の電荷がすべて電位を支配）、$C_1 \to C_2$ のとき $V(\text{c}) \to \dfrac{5}{2}E$ です。
+        </p>
+
+        <div class="chart-wrap">
+          <canvas id="potentialChart" width="580" height="360"></canvas>
+        </div>
+        <script>
+        (function(){
+          var canvas = document.getElementById('potentialChart');
+          var ctx = canvas.getContext('2d');
+          var W = 580;
+          var H = 360;
+          var pad = {top:44, right:30, bottom:54, left:55};
+          var gW = W - pad.left - pad.right;
+          var gH = H - pad.top - pad.bottom;
+
+          var ratio = 0.5;
+          var Vc = (2*ratio + 3) / (ratio + 1);
+
+          var plateC1L = 0.27;
+          var plateC1R = 0.47;
+          var plateC2L = 0.53;
+          var plateC2R = 0.73;
+
+          var graphPts = [
+            {x:0,        v:2},
+            {x:plateC1L, v:2},
+            {x:plateC1R, v:Vc},
+            {x:plateC2L, v:Vc},
+            {x:plateC2R, v:0},
+            {x:1,        v:0}
+          ];
+          var nodePts = [
+            {label:'a', x:0.0},
+            {label:'b', x:0.25},
+            {label:'c', x:0.50},
+            {label:'d', x:0.75},
+            {label:'e', x:1.0}
+          ];
+
+          function xPx(frac){ return pad.left + frac * gW; }
+          function yPx(val){ return pad.top + gH - (val / 3.2) * gH; }
+
+          ctx.fillStyle = '#fdfdfe'; ctx.fillRect(0, 0, W, H);
+
+          ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+          [0, 1, 2, 3].forEach(function(v){
+            ctx.beginPath(); ctx.moveTo(pad.left, yPx(v)); ctx.lineTo(W - pad.right, yPx(v)); ctx.stroke();
+          });
+
+          ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(pad.left, pad.top - 5);
+          ctx.lineTo(pad.left, H - pad.bottom);
+          ctx.lineTo(W - pad.right + 5, H - pad.bottom);
+          ctx.stroke();
+
+          ctx.fillStyle = '#334155'; ctx.font = '13px sans-serif'; ctx.textAlign = 'right';
+          ['0','E','2E','3E'].forEach(function(label, i){
+            ctx.fillText(label, pad.left - 8, yPx(i) + 4);
+          });
+
+          ctx.setLineDash([5,4]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+          [plateC1L, plateC1R, plateC2L, plateC2R].forEach(function(xf){
+            ctx.beginPath(); ctx.moveTo(xPx(xf), pad.top - 3); ctx.lineTo(xPx(xf), H - pad.bottom); ctx.stroke();
+          });
+          ctx.setLineDash([]);
+
+          ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3;
+          ctx.beginPath();
+          graphPts.forEach(function(p, i){
+            var px = xPx(p.x), py = yPx(p.v);
+            if(i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+
+          ctx.fillStyle = '#1e293b'; ctx.font = 'bold 14px sans-serif'; ctx.textAlign = 'center';
+          nodePts.forEach(function(p){
+            ctx.fillText(p.label, xPx(p.x), H - pad.bottom + 20);
+          });
+
+          ctx.fillStyle = '#64748b'; ctx.font = '12px sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('\u4f4d\u7f6e', W - pad.right + 2, H - pad.bottom + 20);
+
+          ctx.save();
+          ctx.translate(14, pad.top + gH / 2);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillStyle = '#64748b'; ctx.font = '13px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('V', 0, 0);
+          ctx.restore();
+
+          ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+          ctx.fillText('R', xPx(0.08), pad.top - 18);
+          ctx.fillText('S\u2081', xPx(0.18), pad.top - 18);
+          ctx.fillText('C\u2081', xPx((plateC1L + plateC1R) / 2), pad.top - 18);
+          ctx.fillText('C\u2082', xPx((plateC2L + plateC2R) / 2), pad.top - 18);
+          ctx.fillText('S\u2083', xPx(0.88), pad.top - 18);
+
+          ctx.setLineDash([3,3]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(pad.left, yPx(Vc)); ctx.lineTo(xPx(plateC2L), yPx(Vc)); ctx.stroke();
+          ctx.setLineDash([]);
+
+          ctx.fillStyle = '#475569'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+          ctx.fillText('V(c)', pad.left - 8, yPx(Vc) + 4);
+        })();
+        </script>
+
+        <p>
+          グラフの特徴：
+        </p>
+        <ul>
+          <li>a → b：$R$ と $S_1$ を通るが電流 0 なので電位は $2E$ で一定</li>
+          <li>b → c：$C_1$ 内部を横切る。$C_1$ の極性が逆（c 側が正）なので電位は $2E$ から $V(\text{c})$ へ<strong>直線的に上昇</strong></li>
+          <li>c → d：$C_2$ 内部を横切る。電位は $V(\text{c})$ から $0$ へ<strong>直線的に下降</strong></li>
+          <li>d → e：$S_3$ を通るので電位は $0$ で一定</li>
+        </ul>
+
+        <h4>回路と電位の対応</h4>
+        <svg class="circuit-svg" viewBox="0 0 490 420" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="gC1v" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#eab308"/>
+              <stop offset="100%" stop-color="#22c55e"/>
+            </linearGradient>
+            <linearGradient id="gC2v" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#22c55e"/>
+              <stop offset="100%" stop-color="#475569"/>
+            </linearGradient>
+            <linearGradient id="gEuv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#eab308"/>
+              <stop offset="100%" stop-color="#3b82f6"/>
+            </linearGradient>
+            <linearGradient id="gEdv" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6"/>
+              <stop offset="100%" stop-color="#475569"/>
+            </linearGradient>
+          </defs>
+
+          <!-- ===== Top rail: a — R — S₁ — b  (2E = yellow) ===== -->
+          <line x1="60" y1="40" x2="140" y2="40" stroke="#eab308" stroke-width="2.5"/>
+          <rect x="140" y="28" width="60" height="24" rx="4" fill="#eab308" fill-opacity="0.15" stroke="#eab308" stroke-width="2"/>
+          <text x="170" y="45" text-anchor="middle" font-size="14" fill="#92400e" font-weight="bold">R</text>
+          <line x1="200" y1="40" x2="260" y2="40" stroke="#eab308" stroke-width="2.5"/>
+          <line x1="260" y1="40" x2="300" y2="40" stroke="#eab308" stroke-width="2.5"/>
+          <circle cx="260" cy="40" r="3" fill="#eab308"/>
+          <circle cx="300" cy="40" r="3" fill="#eab308"/>
+          <text x="280" y="28" text-anchor="middle" font-size="13" fill="#92400e" font-weight="bold">S₁</text>
+          <line x1="300" y1="40" x2="420" y2="40" stroke="#eab308" stroke-width="2.5"/>
+
+          <!-- node a -->
+          <text x="46" y="36" text-anchor="end" font-size="14" font-weight="bold" fill="#1e293b">a</text>
+          <text x="46" y="52" text-anchor="end" font-size="11" fill="#eab308" font-weight="bold">2E</text>
+
+          <!-- node b -->
+          <text x="434" y="36" text-anchor="start" font-size="14" font-weight="bold" fill="#1e293b">b</text>
+          <text x="434" y="52" text-anchor="start" font-size="11" fill="#eab308" font-weight="bold">2E</text>
+
+          <!-- ===== Middle: f — S₂(open) — c  (drawn first so right-side lines go on top) ===== -->
+          <line x1="60" y1="190" x2="160" y2="190" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <circle cx="160" cy="190" r="3" fill="#94a3b8"/>
+          <line x1="160" y1="190" x2="195" y2="178" stroke="#94a3b8" stroke-width="1.5"/>
+          <circle cx="200" cy="190" r="3" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <text x="180" y="170" text-anchor="middle" font-size="13" fill="#94a3b8">S₂</text>
+          <line x1="203" y1="190" x2="420" y2="190" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,4"/>
+
+          <!-- node f -->
+          <text x="46" y="186" text-anchor="end" font-size="14" font-weight="bold" fill="#1e293b">f</text>
+          <text x="46" y="200" text-anchor="end" font-size="11" fill="#3b82f6" font-weight="bold">E</text>
+
+          <!-- ===== Right: b — C₁ — c — C₂ — d  (drawn after S₂ to stay on top) ===== -->
+          <line x1="420" y1="40" x2="420" y2="118" stroke="#eab308" stroke-width="3"/>
+          <line x1="400" y1="118" x2="440" y2="118" stroke="#eab308" stroke-width="2.5"/>
+          <line x1="400" y1="132" x2="440" y2="132" stroke="#22c55e" stroke-width="2.5"/>
+          <text x="455" y="129" text-anchor="start" font-size="14" fill="#334155" font-weight="bold">C₁</text>
+          <line x1="420" y1="132" x2="420" y2="268" stroke="#22c55e" stroke-width="3"/>
+          <line x1="400" y1="268" x2="440" y2="268" stroke="#22c55e" stroke-width="2.5"/>
+          <line x1="400" y1="282" x2="440" y2="282" stroke="#475569" stroke-width="2.5"/>
+          <text x="455" y="279" text-anchor="start" font-size="14" fill="#334155" font-weight="bold">C₂</text>
+          <line x1="420" y1="282" x2="420" y2="340" stroke="#475569" stroke-width="2.5"/>
+
+          <!-- node c (label offset to right) -->
+          <text x="434" y="196" text-anchor="start" font-size="14" font-weight="bold" fill="#1e293b">c</text>
+          <text x="434" y="210" text-anchor="start" font-size="11" fill="#22c55e" font-weight="bold">V(c)</text>
+
+          <!-- node d -->
+          <text x="434" y="344" text-anchor="start" font-size="14" font-weight="bold" fill="#1e293b">d</text>
+          <text x="434" y="358" text-anchor="start" font-size="11" fill="#475569" font-weight="bold">0</text>
+
+          <!-- ===== Bottom: e — S₃ — d  (0 = dark) ===== -->
+          <line x1="60" y1="340" x2="160" y2="340" stroke="#475569" stroke-width="2.5"/>
+          <line x1="160" y1="340" x2="200" y2="340" stroke="#475569" stroke-width="2.5"/>
+          <circle cx="160" cy="340" r="3" fill="#475569"/>
+          <circle cx="200" cy="340" r="3" fill="#475569"/>
+          <text x="180" y="328" text-anchor="middle" font-size="13" fill="#475569" font-weight="bold">S₃</text>
+          <line x1="200" y1="340" x2="420" y2="340" stroke="#475569" stroke-width="2.5"/>
+
+          <!-- node e -->
+          <text x="46" y="336" text-anchor="end" font-size="14" font-weight="bold" fill="#1e293b">e</text>
+          <text x="46" y="350" text-anchor="end" font-size="11" fill="#475569" font-weight="bold">0</text>
+
+          <!-- ===== Left upper: a — E — f  (2E→E) ===== -->
+          <line x1="60" y1="40" x2="60" y2="90" stroke="#eab308" stroke-width="2.5"/>
+          <line x1="45" y1="90" x2="75" y2="90" stroke="#eab308" stroke-width="2.5"/>
+          <line x1="50" y1="102" x2="70" y2="102" stroke="#3b82f6" stroke-width="2"/>
+          <text x="30" y="100" text-anchor="end" font-size="14" fill="#334155" font-weight="bold">E</text>
+          <line x1="60" y1="102" x2="60" y2="190" stroke="#3b82f6" stroke-width="2.5"/>
+
+          <!-- ===== Left lower: f — E — e  (E→0) ===== -->
+          <line x1="60" y1="190" x2="60" y2="240" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="45" y1="240" x2="75" y2="240" stroke="#3b82f6" stroke-width="2.5"/>
+          <line x1="50" y1="252" x2="70" y2="252" stroke="#475569" stroke-width="2"/>
+          <text x="30" y="250" text-anchor="end" font-size="14" fill="#334155" font-weight="bold">E</text>
+          <line x1="60" y1="252" x2="60" y2="340" stroke="#475569" stroke-width="2.5"/>
+
+          <!-- ===== Junction dots (on top of lines) ===== -->
+          <circle cx="60" cy="40" r="4" fill="#eab308"/>
+          <circle cx="420" cy="40" r="4" fill="#eab308"/>
+          <circle cx="420" cy="190" r="4" fill="#22c55e"/>
+          <circle cx="60" cy="190" r="4" fill="#3b82f6"/>
+          <circle cx="420" cy="340" r="4" fill="#475569"/>
+          <circle cx="60" cy="340" r="4" fill="#475569"/>
+
+          <!-- ===== Legend ===== -->
+          <rect x="70" y="370" width="340" height="40" rx="6" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+          <line x1="86" y1="392" x2="106" y2="392" stroke="#eab308" stroke-width="3"/>
+          <text x="110" y="396" text-anchor="start" font-size="11" fill="#334155">2E</text>
+          <line x1="150" y1="392" x2="170" y2="392" stroke="#22c55e" stroke-width="3"/>
+          <text x="174" y="396" text-anchor="start" font-size="11" fill="#334155">V(c)</text>
+          <line x1="224" y1="392" x2="244" y2="392" stroke="#3b82f6" stroke-width="3"/>
+          <text x="248" y="396" text-anchor="start" font-size="11" fill="#334155">E</text>
+          <line x1="280" y1="392" x2="300" y2="392" stroke="#475569" stroke-width="3"/>
+          <text x="304" y="396" text-anchor="start" font-size="11" fill="#334155">0</text>
+          <line x1="340" y1="392" x2="360" y2="392" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <text x="364" y="396" text-anchor="start" font-size="11" fill="#94a3b8">開</text>
+        </svg>
+
+        <div class="box-alert" data-no-tab="true">
+          <span class="box-alert-label">Point</span>
+          <p>回路の各ノードの電位を追うには、<strong>電池は起電力分だけ電位が上がり、コンデンサーは $Q/C$ だけ電位が下がる（高電位→低電位）</strong>ことを基本に順にたどります。抵抗に電流が流れていなければ電位降下は 0 です。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

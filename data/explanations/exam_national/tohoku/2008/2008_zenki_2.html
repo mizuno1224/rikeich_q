@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="../../../../../css/components.css">
   <link rel="stylesheet" href="../../../../../css/viewer.css">
   <style>
-    .circuit-svg, .diagram-svg { max-width: 480px; width: 100%; height: auto; display: block; margin: 16px auto; }
-    .chart-wrap { width: 100%; max-width: 520px; margin: 16px auto; }
+    .circuit-svg, .diagram-svg { max-width: 500px; width: 100%; height: auto; display: block; margin: 16px auto; }
+    .chart-wrap { width: 100%; max-width: 540px; margin: 16px auto; }
     .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: #fdfdfe; border: 1px solid #e2e8f0; }
     .energy-bar-wrap { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
     .energy-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px; }
@@ -21,7 +21,12 @@
     .fill-joule { background-color: #ef4444; }
     .energy-bar .bar-label { font-size: 0.8rem; color: #64748b; }
     .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
-    .sim-embed { width: 100%; max-width: 480px; height: 300px; margin: 16px auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; position: relative; overflow: hidden; }
+    .sim-embed { width: 100%; max-width: 520px; margin: 16px auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; position: relative; overflow: hidden; }
+    .sim-caption { text-align: center; color: #64748b; font-size: 0.88em; margin: 4px 0 12px; }
+    .legend-row { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 8px 0 4px; font-size: 0.85rem; color: #475569; }
+    .legend-item { display: flex; align-items: center; gap: 5px; }
+    .legend-swatch { width: 22px; height: 3px; border-radius: 2px; }
+    .legend-swatch.dashed { background: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px); height: 3px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
 </head>
@@ -51,151 +56,263 @@
         </div>
       </div>
 
+      <!-- ================= 問(1)(a) ================= -->
       <div class="card">
-        <h3>(a) コンデンサーAの充電</h3>
-        
-        <div class="chart-wrap">
-          <canvas id="chart-rc" width="520" height="280"></canvas>
-        </div>
+        <h3>問(1)(a) コンデンサーAの充電電流</h3>
 
-        <h4>問題設定</h4>
-        <p>スイッチ $S_1$ を閉じた直後、コンデンサー $C_\mathrm{A}$ は未充電（電圧0）であり、回路には最大の電流が流れます。その後、充電が進むにつれて電流は減少します。</p>
+        <h4>回路の状態（図1）</h4>
+        <p>スイッチ $S_1$ を閉じ、$S_2$ は開いたままです。電流は $V_0 \to S_1 \to R \to C_\mathrm{A}$ の経路で流れ、$C_\mathrm{A}$ が充電されます。</p>
 
-        <h4>解法</h4>
-        <p>スイッチ $S_1$ を閉じた時刻 $t=t_0$ において、回路の方程式は以下のようになります。</p>
-        $$V_0 = RI + \frac{q}{C_\mathrm{A}}$$
-        <p>充電開始直後（$q=0$）の電流 $I_0$ は、</p>
-        $$I_0 = \frac{V_0}{R}$$
-        <p>充電完了時（$I=0$）には、$q = C_\mathrm{A}V_0$ となります。電流 $I$ は指数関数的に減衰し、0に漸近します。グラフは $t=t_0$ で最大値 $V_0/R$ をとり、下に凸の減少曲線を描きます。</p>
+        <svg class="circuit-svg" viewBox="0 0 440 215" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+              <polygon points="0 0, 7 2.5, 0 5" fill="#334155"/>
+            </marker>
+          </defs>
 
-        <div class="box-note">
-          <strong>答え：</strong><br>
-          グラフの形状：時刻 $t_0$ で縦軸切片 $V_0/R$ から始まり、横軸に漸近するように減少する曲線（実線）。<br>
-          縦軸の値：$\frac{V_0}{R}$
-        </div>
-        <div class="box-alert">
-          <span class="box-alert-label">Point</span>
-          <p>コンデンサーの充電電流は $I(t) = \frac{V_0}{R}e^{-\frac{t-t_0}{C_\mathrm{A}R}}$ で表されます。初期電流は抵抗のみで決まり、充電が進むとコンデンサーが逆起電力のように働いて電流を妨げます。</p>
-        </div>
-      </div>
+          <!-- Bottom rail -->
+          <line x1="55" y1="188" x2="365" y2="188" stroke="#334155" stroke-width="2"/>
+          <!-- Top rail left -->
+          <line x1="55" y1="32" x2="200" y2="32" stroke="#334155" stroke-width="2"/>
 
-      <div class="card">
-        <h3>(b) 抵抗値が大きい場合の電流変化</h3>
-        <p>グラフは上図の破線を参照。</p>
-        <h4>解法</h4>
-        <p>抵抗値を $R' > R$ とした場合の変化を考えます。</p>
-        <ol>
-            <li><strong>初期電流</strong>：$I'_0 = \frac{V_0}{R'}$ となり、元の電流 $I_0 = \frac{V_0}{R}$ より<span class="highlight">小さくなります</span>。</li>
-            <li><strong>時定数（変化の速さ）</strong>：時定数は $\tau = C_\mathrm{A}R'$ となり、元よりも<span class="highlight">大きくなります</span>。つまり、電流の減少が緩やかになります。</li>
-            <li><strong>総電気量</strong>：最終的に充電される電荷量 $Q = C_\mathrm{A}V_0$ は抵抗値によらないため、グラフと横軸で囲まれた面積（$\int I dt = Q$）は(a)と同じになります。</li>
-        </ol>
-        <p>これらより、グラフ（破線）は実線よりも低い位置から始まり、途中で実線と交差して、その後は実線よりも上側を推移しながら0に漸近します。</p>
+          <!-- S₂ (open) -->
+          <line x1="200" y1="32" x2="245" y2="32" stroke="#334155" stroke-width="2"/>
+          <circle cx="245" cy="32" r="3" fill="#334155"/>
+          <line x1="245" y1="32" x2="296" y2="16" stroke="#334155" stroke-width="2"/>
+          <circle cx="305" cy="32" r="3" fill="none" stroke="#334155" stroke-width="1.5"/>
+          <line x1="305" y1="32" x2="365" y2="32" stroke="#334155" stroke-width="2"/>
+          <text x="275" y="11" text-anchor="middle" font-family="serif" font-size="13" fill="#64748b">S₂</text>
 
-        <div class="box-note">
-            <strong>答え：</strong><br>
-            グラフの形状：(a)の実線よりも小さい切片から始まり、初期は実線の下側、途中から実線の上側を通って緩やかに減少する曲線（破線）。
-        </div>
-        <div class="box-alert">
-          <span class="box-alert-label">Point</span>
-          <p>抵抗を大きくすると「流れにくく」なるためスタートは低くなりますが、「長持ち」するため減衰は遅くなります。両者のグラフの面積（総電荷量）が等しいことから、必ず一度交差することがわかります。</p>
-        </div>
-      </div>
+          <!-- Left branch: S₁ (closed) + V₀ -->
+          <line x1="55" y1="32" x2="55" y2="58" stroke="#334155" stroke-width="2"/>
+          <!-- S₁ closed -->
+          <line x1="55" y1="58" x2="55" y2="80" stroke="#334155" stroke-width="2"/>
+          <circle cx="55" cy="58" r="3" fill="#334155"/>
+          <circle cx="55" cy="80" r="3" fill="#334155"/>
+          <text x="26" y="73" font-family="serif" font-size="13" fill="#64748b">S₁</text>
+          <line x1="55" y1="80" x2="55" y2="112" stroke="#334155" stroke-width="2"/>
+          <!-- Battery V₀ -->
+          <line x1="40" y1="112" x2="70" y2="112" stroke="#334155" stroke-width="3"/>
+          <line x1="44" y1="124" x2="66" y2="124" stroke="#334155" stroke-width="1.5"/>
+          <text x="16" y="122" font-family="serif" font-size="14" fill="#1e293b">V₀</text>
+          <text x="74" y="112" font-family="sans-serif" font-size="10" fill="#94a3b8">+</text>
+          <text x="74" y="128" font-family="sans-serif" font-size="10" fill="#94a3b8">−</text>
+          <line x1="55" y1="124" x2="55" y2="188" stroke="#334155" stroke-width="2"/>
+          <text x="55" y="206" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#94a3b8">電源</text>
 
-      <div class="card">
-        <h3>(c) 電荷の再分配</h3>
-        
-        <svg class="circuit-svg" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
-          <line x1="50" y1="30" x2="250" y2="30" stroke="black" stroke-width="2" />
-          <line x1="50" y1="120" x2="250" y2="120" stroke="black" stroke-width="2" />
-          <line x1="100" y1="30" x2="100" y2="60" stroke="black" stroke-width="2" />
-          <line x1="100" y1="90" x2="100" y2="120" stroke="black" stroke-width="2" />
-          <line x1="200" y1="30" x2="200" y2="60" stroke="black" stroke-width="2" />
-          <line x1="200" y1="90" x2="200" y2="120" stroke="black" stroke-width="2" />
-          
-          <line x1="80" y1="60" x2="120" y2="60" stroke="black" stroke-width="3" />
-          <line x1="80" y1="90" x2="120" y2="90" stroke="black" stroke-width="3" />
-          <text x="70" y="75" font-family="serif" font-size="14">CA</text>
-          <text x="130" y="75" font-family="serif" font-size="14">+QA</text>
-          
-          <line x1="180" y1="60" x2="220" y2="60" stroke="black" stroke-width="3" />
-          <line x1="180" y1="90" x2="220" y2="90" stroke="black" stroke-width="3" />
-          <text x="230" y="75" font-family="serif" font-size="14">CB</text>
-          <text x="230" y="55" font-family="serif" font-size="14">+QB</text>
+          <!-- Center branch: R + CA -->
+          <line x1="200" y1="32" x2="200" y2="50" stroke="#334155" stroke-width="2"/>
+          <!-- Resistor R -->
+          <rect x="186" y="50" width="28" height="52" rx="3" fill="#fff" stroke="#334155" stroke-width="2"/>
+          <text x="224" y="80" font-family="serif" font-size="14" fill="#1e293b">R</text>
+          <text x="174" y="80" text-anchor="end" font-family="sans-serif" font-size="11" fill="#94a3b8">抵抗</text>
+          <line x1="200" y1="102" x2="200" y2="122" stroke="#334155" stroke-width="2"/>
+          <!-- Capacitor CA -->
+          <line x1="182" y1="122" x2="218" y2="122" stroke="#334155" stroke-width="3"/>
+          <line x1="182" y1="134" x2="218" y2="134" stroke="#334155" stroke-width="3"/>
+          <text x="228" y="132" font-family="serif" font-size="14" fill="#1e293b">C<tspan font-size="10" baseline-shift="sub">A</tspan></text>
+          <line x1="200" y1="134" x2="200" y2="188" stroke="#334155" stroke-width="2"/>
+          <text x="200" y="206" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#94a3b8">コンデンサーA</text>
 
-          <text x="150" y="20" text-anchor="middle" font-size="12">V' (同電位)</text>
-          <text x="150" y="140" text-anchor="middle" font-size="12">GND</text>
+          <!-- Right branch: CB -->
+          <line x1="365" y1="32" x2="365" y2="92" stroke="#334155" stroke-width="2"/>
+          <line x1="347" y1="92" x2="383" y2="92" stroke="#334155" stroke-width="3"/>
+          <line x1="347" y1="104" x2="383" y2="104" stroke="#334155" stroke-width="3"/>
+          <text x="393" y="102" font-family="serif" font-size="14" fill="#1e293b">C<tspan font-size="10" baseline-shift="sub">B</tspan></text>
+          <line x1="365" y1="104" x2="365" y2="188" stroke="#334155" stroke-width="2"/>
+          <text x="365" y="206" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#94a3b8">コンデンサーB</text>
+
+          <!-- Current arrow (charging path) -->
+          <path d="M 85 32 L 155 32" stroke="#3b82f6" stroke-width="1.5" fill="none" marker-end="url(#arr)" opacity="0.5"/>
+          <text x="120" y="25" text-anchor="middle" font-family="serif" font-size="12" fill="#3b82f6" font-style="italic">I</text>
         </svg>
 
         <h4>解法</h4>
-        <p>充電完了後、スイッチ $S_1$ を開き $S_2$ を閉じると、帯電した $C_\mathrm{A}$ から $C_\mathrm{B}$ へ電荷が移動します。十分時間が経過して電流が止まったとき、両コンデンサーの電圧は等しくなります。その電圧を $V'$ とします。</p>
-        <ul>
-            <li><strong>電荷保存則</strong>（電気的に孤立した部分）：
-                $$Q_\mathrm{A} + Q_\mathrm{B} = C_\mathrm{A}V_0 + 0$$</li>
-            <li><strong>電圧の関係</strong>（並列接続）：
-                $$\frac{Q_\mathrm{A}}{C_\mathrm{A}} = \frac{Q_\mathrm{B}}{C_\mathrm{B}} = V'$$</li>
-        </ul>
-        <p>これらを連立して解きます。</p>
-        $$C_\mathrm{A}V' + C_\mathrm{B}V' = C_\mathrm{A}V_0 \quad \longrightarrow \quad V' = \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
-        <p>よって、</p>
-        $$Q_\mathrm{A} = C_\mathrm{A}V' = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
-        $$Q_\mathrm{B} = C_\mathrm{B}V' = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        <p>$S_1$ を閉じた時刻 $t = t_0$ において、コンデンサー $C_\mathrm{A}$ は未充電（電圧0）であり、回路には最大の電流が流れます。回路方程式（キルヒホッフ）は</p>
+        $$V_0 = RI + \frac{q}{C_\mathrm{A}}$$
+        <p>$t = t_0$（$q = 0$）での電流 $I_0$ は</p>
+        $$I_0 = \frac{V_0}{R}$$
+        <p>$C_\mathrm{A}$ の充電が進み $q$ が増加すると、コンデンサー電圧 $q/C_\mathrm{A}$ が大きくなり電流 $I$ は減少します。充電完了時には $I = 0$、$q = C_\mathrm{A}V_0$ となります。</p>
+        <p>微分方程式を解くと電流は指数関数的に減衰します。</p>
+        $$I(t) = \frac{V_0}{R}\,e^{-\frac{t-t_0}{C_\mathrm{A}R}}$$
+        <p>時定数 $\tau = C_\mathrm{A}R$ が減衰の速さを決めます。</p>
+
+        <h4>グラフ 1（実線：$R$、破線：$R' > R$）</h4>
+        <div class="chart-wrap">
+          <canvas id="chart-rc" width="540" height="300"></canvas>
+        </div>
+        <div class="legend-row">
+          <span class="legend-item"><span class="legend-swatch" style="background:#3b82f6;"></span>$R$（実線）</span>
+          <span class="legend-item"><span class="legend-swatch dashed" style="color:#ef4444;"></span>$R' > R$（破線）</span>
+        </div>
 
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$Q_\mathrm{A} = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}V_0, \quad Q_\mathrm{B} = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+          グラフの形状：時刻 $t_0$ で縦軸切片 $V_0/R$ から始まり、横軸に漸近する下に凸の減少曲線（実線）。<br>
+          縦軸の値：$\dfrac{V_0}{R}$
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>コンデンサーをつなぎ変える問題では、「孤立部分の電荷保存」と「回路が落ち着いた状態での電圧の一致（キルヒホッフ）」が鉄則です。</p>
+          <p>RC 充電回路の電流は $I = \frac{V_0}{R}\,e^{-t/(C_\mathrm{A}R)}$ です。初期電流は抵抗だけで決まり（$V_0/R$）、充電が進むとコンデンサーが「逆起電力」のように働いて電流を抑えます。グラフは<strong>常に下に凸</strong>（$I'' > 0$）であり、直線的ではありません。</p>
         </div>
       </div>
 
+      <!-- ================= 問(1)(b) ================= -->
       <div class="card">
-        <h3>(d) ジュール熱によるエネルギー損失</h3>
+        <h3>問(1)(b) 抵抗値が大きい場合の電流変化</h3>
+
+        <h4>解法</h4>
+        <p>抵抗値を $R' > R$ に変えたときの3つの変化を整理します。</p>
+        <ol>
+          <li><strong>初期電流が小さくなる</strong>：$I'_0 = \dfrac{V_0}{R'} < \dfrac{V_0}{R} = I_0$</li>
+          <li><strong>時定数が大きくなる</strong>：$\tau' = C_\mathrm{A}R' > C_\mathrm{A}R = \tau$&emsp;→&emsp;減衰が<span class="highlight">緩やか</span>になる</li>
+          <li><strong>総電荷量は変わらない</strong>：$\displaystyle\int_0^\infty I\,dt = C_\mathrm{A}V_0$（抵抗によらない）&emsp;→&emsp;グラフの面積は同じ</li>
+        </ol>
+        <p>面積が等しいのにスタートが低いため、破線は途中で実線と<strong>必ず交差</strong>し、その後は実線より上側を通って緩やかに0に漸近します。</p>
+
+        <h4>シミュレーション：$R'/R$ を変えて比較</h4>
+        <div id="sim-rc" class="sim-embed" style="height:310px;"></div>
+        <p class="sim-caption">スライダーで $R'/R$ を調整すると破線の変化を確認できます</p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          グラフの形状：(a)の実線よりも小さい切片 $V_0/R'$ から始まり、初期は実線の下側、途中から実線の上側を通って緩やかに減少する曲線（破線）。
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>抵抗を大きくすると「流れにくい」ためスタートは低くなりますが、「長持ち」するため減衰は遅くなります。<strong>面積（＝総電荷量 $C_\mathrm{A}V_0$）が等しい</strong>ことから、2本の曲線は必ず1回交差します。</p>
+        </div>
+      </div>
+
+      <!-- ================= 問(1)(c) ================= -->
+      <div class="card">
+        <h3>問(1)(c) 電荷の再分配</h3>
+
+        <h4>回路の状態</h4>
+        <p>$C_\mathrm{A}$ の充電完了後（$Q_\mathrm{A} = C_\mathrm{A}V_0$）、$S_1$ を開き $S_2$ を閉じます。$C_\mathrm{A}$ の電荷は抵抗 $R$ を通って $C_\mathrm{B}$ へ流れ込みます。十分時間が経つと電流が止まり、両コンデンサーの電圧が等しくなります。</p>
+
+        <svg class="circuit-svg" viewBox="0 0 440 180" xmlns="http://www.w3.org/2000/svg">
+          <!-- Top rail -->
+          <line x1="60" y1="30" x2="380" y2="30" stroke="#334155" stroke-width="2"/>
+          <!-- Bottom rail -->
+          <line x1="60" y1="150" x2="380" y2="150" stroke="#334155" stroke-width="2"/>
+
+          <!-- Resistor R (on top rail) -->
+          <line x1="60" y1="30" x2="130" y2="30" stroke="#334155" stroke-width="2"/>
+          <rect x="130" y="18" width="50" height="24" rx="3" fill="#fff" stroke="#334155" stroke-width="2"/>
+          <text x="155" y="34" text-anchor="middle" font-family="serif" font-size="13" fill="#1e293b">R</text>
+          <line x1="180" y1="30" x2="220" y2="30" stroke="#334155" stroke-width="2"/>
+
+          <!-- CA (left) -->
+          <line x1="90" y1="30" x2="90" y2="65" stroke="#334155" stroke-width="2"/>
+          <line x1="74" y1="65" x2="106" y2="65" stroke="#334155" stroke-width="3"/>
+          <line x1="74" y1="77" x2="106" y2="77" stroke="#334155" stroke-width="3"/>
+          <line x1="90" y1="77" x2="90" y2="150" stroke="#334155" stroke-width="2"/>
+          <text x="90" y="100" text-anchor="middle" font-family="serif" font-size="13" fill="#1e293b">C<tspan font-size="9" baseline-shift="sub">A</tspan></text>
+          <text x="112" y="60" font-family="serif" font-size="12" fill="#3b82f6">+Q<tspan font-size="8" baseline-shift="sub">A</tspan></text>
+
+          <!-- CB (right) -->
+          <line x1="320" y1="30" x2="320" y2="65" stroke="#334155" stroke-width="2"/>
+          <line x1="304" y1="65" x2="336" y2="65" stroke="#334155" stroke-width="3"/>
+          <line x1="304" y1="77" x2="336" y2="77" stroke="#334155" stroke-width="3"/>
+          <line x1="320" y1="77" x2="320" y2="150" stroke="#334155" stroke-width="2"/>
+          <text x="320" y="100" text-anchor="middle" font-family="serif" font-size="13" fill="#1e293b">C<tspan font-size="9" baseline-shift="sub">B</tspan></text>
+          <text x="342" y="60" font-family="serif" font-size="12" fill="#10b981">+Q<tspan font-size="8" baseline-shift="sub">B</tspan></text>
+
+          <!-- Labels -->
+          <text x="220" y="18" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#64748b">同電位 V'</text>
+          <text x="220" y="168" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#94a3b8">GND</text>
+
+          <!-- Current arrow -->
+          <path d="M 200 38 L 265 38" stroke="#3b82f6" stroke-width="1.2" fill="none" stroke-dasharray="4 3"/>
+        </svg>
+
+        <h4>解法</h4>
+        <p>最終状態では電流が止まっているので、$R$ の電圧降下は0です。したがって2つのコンデンサーは並列接続と同じ状態になり、電圧 $V'$ が等しくなります。</p>
+        <ul>
+          <li><strong>電荷保存則</strong>（孤立部分）：
+            $$Q_\mathrm{A} + Q_\mathrm{B} = C_\mathrm{A}V_0$$</li>
+          <li><strong>電圧の一致</strong>（並列接続）：
+            $$\frac{Q_\mathrm{A}}{C_\mathrm{A}} = \frac{Q_\mathrm{B}}{C_\mathrm{B}} = V'$$</li>
+        </ul>
+        <p>連立すると</p>
+        $$(C_\mathrm{A} + C_\mathrm{B})\,V' = C_\mathrm{A}V_0 \quad\Longrightarrow\quad V' = \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}\,V_0$$
+        <p>よって</p>
+        $$Q_\mathrm{A} = C_\mathrm{A}V' = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}\,V_0, \qquad Q_\mathrm{B} = C_\mathrm{B}V' = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}\,V_0$$
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$Q_\mathrm{A} = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}\,V_0, \quad Q_\mathrm{B} = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}\,V_0$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>コンデンサーをつなぎ変える問題では、「<strong>孤立部分の電荷保存</strong>」と「<strong>定常状態での電圧一致</strong>」を組み合わせるのが鉄則です。抵抗 $R$ の値は最終状態に影響しません（過渡現象の速さだけを変えます）。</p>
+        </div>
+      </div>
+
+      <!-- ================= 問(1)(d) ================= -->
+      <div class="card">
+        <h3>問(1)(d) ジュール熱によるエネルギー損失</h3>
+
+        <h4>シミュレーション：電荷再分配とエネルギーの行方</h4>
+        <div id="sim-redist" class="sim-embed" style="height:340px;"></div>
+        <p class="sim-caption">再生ボタンで電荷が $C_\mathrm{A}$ から $C_\mathrm{B}$ へ移動する過程を観察できます</p>
+
+        <h4>解法</h4>
+        <p>ジュール熱 $\Delta E$ は「初期の静電エネルギー」と「最終の静電エネルギー」の差です。</p>
+        <ul>
+          <li><strong>初期エネルギー</strong>（$S_2$ を閉じる直前）：
+            $$U_\text{前} = \frac{1}{2}C_\mathrm{A}V_0^2$$</li>
+          <li><strong>最終エネルギー</strong>（$S_2$ を閉じた後、定常状態）：<br>
+            合成容量 $C_\mathrm{A}+C_\mathrm{B}$ に総電荷 $C_\mathrm{A}V_0$ が分配されるので
+            $$U_\text{後} = \frac{(C_\mathrm{A}V_0)^2}{2(C_\mathrm{A}+C_\mathrm{B})}$$</li>
+        </ul>
+        <p>差をとると</p>
+        $$\Delta E = U_\text{前} - U_\text{後} = \frac{1}{2}C_\mathrm{A}V_0^2 - \frac{C_\mathrm{A}^2 V_0^2}{2(C_\mathrm{A}+C_\mathrm{B})} = \frac{1}{2}C_\mathrm{A}V_0^2 \left(1 - \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}\right)$$
+        $$= \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}\,V_0^2$$
 
         <div class="energy-bar-wrap">
           <div class="energy-bar">
             <div class="bar-outer">
-              <div class="bar-fill fill-ca" style="height: 100%;"></div>
+              <div class="bar-fill fill-ca" style="height:100%;"></div>
             </div>
             <span class="bar-label">初期</span>
-            <span class="bar-label">(1/2)CAV₀²</span>
+            <span class="bar-label" style="font-size:0.72rem;">½C<sub>A</sub>V₀²</span>
           </div>
-          <div style="display:flex; align-items:center;">→</div>
+          <div style="display:flex;align-items:center;font-size:1.4rem;color:#94a3b8;">→</div>
           <div class="energy-bar">
             <div class="bar-outer">
-              <div class="bar-fill fill-cb" style="height: 20%; bottom: 60%;"></div>
-              <div class="bar-fill fill-ca" style="height: 40%; bottom: 20%;"></div>
-              <div class="bar-fill fill-joule" style="height: 20%;"></div>
+              <div class="bar-fill fill-ca" id="bar-d-ca" style="height:50%;"></div>
             </div>
-            <span class="bar-label">最終</span>
-            <span class="bar-label">CA+CB+熱</span>
+            <span class="bar-label">C<sub>A</sub></span>
+          </div>
+          <div style="display:flex;align-items:center;font-size:1rem;color:#94a3b8;">+</div>
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-cb" id="bar-d-cb" style="height:20%;"></div>
+            </div>
+            <span class="bar-label">C<sub>B</sub></span>
+          </div>
+          <div style="display:flex;align-items:center;font-size:1rem;color:#94a3b8;">+</div>
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-joule" id="bar-d-j" style="height:30%;"></div>
+            </div>
+            <span class="bar-label">ジュール熱</span>
           </div>
         </div>
-
-        <h4>解法</h4>
-        <p>抵抗で発生したジュール熱 $\Delta E$ は、エネルギー保存則より「失われた静電エネルギー」に等しくなります。</p>
-        <ul>
-            <li><strong>初期エネルギー</strong>（$S_2$ を閉じる前）：
-                $$U_\text{前} = \frac{1}{2}C_\mathrm{A}V_0^2$$</li>
-            <li><strong>最終エネルギー</strong>（$S_2$ を閉じた後）：
-                合成容量は $C_\mathrm{A}+C_\mathrm{B}$、保存された総電荷は $C_\mathrm{A}V_0$ なので、
-                $$U_\text{後} = \frac{1}{2}\frac{(\text{総電荷})^2}{\text{合成容量}} = \frac{1}{2}\frac{(C_\mathrm{A}V_0)^2}{C_\mathrm{A}+C_\mathrm{B}}$$</li>
-        </ul>
-        <p>差をとってジュール熱を求めます。</p>
-        $$\Delta E = U_\text{前} - U_\text{後} = \frac{1}{2}C_\mathrm{A}V_0^2 - \frac{1}{2}\frac{C_\mathrm{A}^2 V_0^2}{C_\mathrm{A}+C_\mathrm{B}}$$
-        $$= \frac{1}{2}C_\mathrm{A}V_0^2 \left( 1 - \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}} \right) = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
 
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$\Delta E = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+          $$\Delta E = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}\,V_0^2$$
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>電荷の移動に伴い、エネルギーの一部は必ず抵抗での熱として失われます。その量は「初期エネルギー」と「最終エネルギー」の差として計算するのが最も簡単です。</p>
+          <p>電荷の再分配では、抵抗値 $R$ によらずジュール熱の総量は同じです。$R$ が変わるのは「どれだけ速く平衡に達するか」だけです。エネルギー損失は「初期 $-$ 最終」の引き算で求めるのが最もシンプルかつ確実です。</p>
         </div>
       </div>
 
+      <!-- ================= 問(2)(a) ================= -->
       <div class="card">
         <h3>(a) コイルを含む回路の電流（LC振動）</h3>
 
@@ -349,7 +466,7 @@
         <h3>(e) エネルギーの完全移動条件</h3>
         
         <div id="sim-lc" class="sim-embed"></div>
-        <p style="text-align:center; color:#666; font-size:0.9em;">シミュレーション：容量比を変えて電荷移動を観察できます</p>
+        <p class="sim-caption">容量比を変えて電荷移動を観察できます</p>
 
         <h4>解法</h4>
         <p>「$C_\mathrm{A}$ のエネルギーをすべて $C_\mathrm{B}$ に移す」とは、ある瞬間に $C_\mathrm{A}$ の電荷 $Q_\mathrm{A}$ が 0 になり、すべての電荷（エネルギー）が $C_\mathrm{B}$ に移動することを意味します。</p>
@@ -373,125 +490,442 @@
 
     </div>
   </div>
+
   <script>
-    const canvas = document.getElementById('chart-rc');
-    if(canvas && canvas.getContext) {
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-      
-      const pad = 40;
-      const plotW = w - pad * 2;
-      const plotH = h - pad * 2;
-      const tMax = 5;
-      
-      ctx.beginPath();
-      ctx.moveTo(pad, h - pad);
-      ctx.lineTo(w - pad, h - pad);
-      ctx.moveTo(pad, h - pad);
-      ctx.lineTo(pad, pad);
-      ctx.strokeStyle = '#64748b';
-      ctx.stroke();
-      
-      ctx.fillStyle = '#64748b';
-      ctx.font = '14px serif';
-      ctx.fillText('0', pad - 15, h - pad + 15);
-      ctx.fillText('t', w - pad + 10, h - pad + 5);
-      ctx.fillText('I', pad - 10, pad - 10);
-      ctx.fillText('t₀', pad, h - pad + 15);
-      
-      ctx.beginPath();
-      ctx.moveTo(pad, pad + plotH * 0.1);
-      for(let t = 0; t <= tMax; t += 0.05) {
-        const I = Math.exp(-t);
-        const x = pad + (t / tMax) * plotW;
-        const y = (h - pad) - I * (plotH * 0.9);
-        ctx.lineTo(x, y);
-      }
-      ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.fillText('V₀/R', pad - 35, pad + plotH * 0.1 + 5);
-      
-      const R_ratio = 1.8;
-      ctx.beginPath();
-      ctx.setLineDash([5, 5]);
-      ctx.moveTo(pad, (h-pad) - (plotH * 0.9) / R_ratio); 
-      for(let t = 0; t <= tMax; t += 0.05) {
-        const val = (1/R_ratio) * Math.exp(-t / R_ratio);
-        const y2 = (h - pad) - val * (plotH * 0.9);
-        const x = pad + (t / tMax) * plotW;
-        ctx.lineTo(x, y2);
-      }
-      ctx.strokeStyle = '#ef4444';
-      ctx.stroke();
-      ctx.setLineDash([]);
+  /* ========================================
+     1. RC充電 I-t グラフ（Canvas — 静的）
+     ======================================== */
+  (function() {
+    var canvas = document.getElementById('chart-rc');
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+
+    var pad = { top: 30, right: 30, bottom: 42, left: 58 };
+    var pw = w - pad.left - pad.right;
+    var ph = h - pad.top - pad.bottom;
+    var tMax = 5.5;
+
+    function tx(t) { return pad.left + (t / tMax) * pw; }
+    function iy(val) { return pad.top + ph - val * ph * 0.92; }
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+    for (var g = 0.2; g <= 1.0; g += 0.2) {
+      ctx.beginPath(); ctx.moveTo(pad.left, iy(g)); ctx.lineTo(w - pad.right, iy(g)); ctx.stroke();
+    }
+    for (var gt = 1; gt <= 5; gt++) {
+      ctx.beginPath(); ctx.moveTo(tx(gt), pad.top); ctx.lineTo(tx(gt), pad.top + ph); ctx.stroke();
     }
 
-    const sketchLC = (p) => {
-      let angle = 0;
-      let running = true;
-      let slider;
+    ctx.strokeStyle = '#475569'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, pad.top - 8);
+    ctx.lineTo(pad.left, pad.top + ph);
+    ctx.lineTo(w - pad.right + 8, pad.top + ph);
+    ctx.stroke();
 
-      p.setup = () => {
-        let cnv = p.createCanvas(480, 280);
-        cnv.parent('sim-lc');
-        
-        p.createDiv('容量比 CB/CA: ').parent('sim-lc').style('margin', '10px 0 0 20px').style('display','inline-block');
-        slider = p.createSlider(0.5, 3, 1, 0.1);
-        slider.parent('sim-lc');
-        slider.style('width', '100px');
-      };
+    ctx.fillStyle = '#475569'; ctx.font = 'italic 15px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('I', pad.left - 2, pad.top - 14);
+    ctx.fillText('t', w - pad.right + 18, pad.top + ph + 5);
 
-      p.draw = () => {
-        p.background(248, 250, 252);
-        
-        let ratio = slider.value();
-        let q_eq = (1 / (1 + ratio)) * 200;
-        let amp = (ratio / (1 + ratio)) * 200;
-        
-        if (running) angle += 0.05;
-        
-        let hA = q_eq + amp * p.cos(angle);
-        let hB = 200 - hA;
-        
-        p.fill(255); p.stroke(0);
-        p.rect(50, 50, 60, 200);
-        p.fill(59, 130, 246);
-        p.noStroke();
-        p.rect(50, 250 - hA, 60, hA);
-        p.fill(0); p.textAlign(p.CENTER);
-        p.text("CA", 80, 270);
-        
-        p.fill(255); p.stroke(0);
-        p.rect(250, 50, 60 * ratio, 200);
-        p.fill(16, 185, 129);
-        p.noStroke();
-        p.rect(250, 250 - hB, 60 * ratio, hB);
-        p.fill(0);
-        p.text("CB", 250 + 30 * ratio, 270);
-        
-        p.stroke(0); p.strokeWeight(4);
-        p.line(110, 240, 250, 240);
-        
-        p.noStroke();
-        p.textAlign(p.LEFT);
-        p.text(`CB = ${ratio.toFixed(1)} CA`, 20, 30);
-        
-        if (ratio === 1) {
-            p.fill(255, 0, 0);
-            p.text("完全移動条件 (CA=CB)", 180, 30);
-        }
-        
-        let minQA = q_eq - amp;
-        
-        p.stroke(200); p.strokeWeight(1);
-        p.line(40, 250 - minQA, 120, 250 - minQA);
-        p.fill(100); p.noStroke();
-        p.text("Min QA", 10, 250 - minQA);
-      };
+    ctx.font = '13px serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('V\u2080/R', pad.left - 6, iy(1) + 5);
+
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(pad.left, iy(1)); ctx.lineTo(pad.left + 8, iy(1)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.textAlign = 'center'; ctx.font = '13px serif';
+    ctx.fillText('t\u2080', pad.left, pad.top + ph + 18);
+
+    ctx.beginPath();
+    ctx.moveTo(tx(0), iy(1));
+    for (var t = 0; t <= tMax; t += 0.04) {
+      ctx.lineTo(tx(t), iy(Math.exp(-t)));
+    }
+    ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+    ctx.stroke();
+
+    var Rr = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(tx(0), iy(1 / Rr));
+    for (var t2 = 0; t2 <= tMax; t2 += 0.04) {
+      ctx.lineTo(tx(t2), iy((1 / Rr) * Math.exp(-t2 / Rr)));
+    }
+    ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.setLineDash([7, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#ef4444'; ctx.font = '12px serif'; ctx.textAlign = 'right';
+    ctx.fillText("V\u2080/R'", pad.left - 6, iy(1 / Rr) + 4);
+
+    ctx.setLineDash([3, 3]); ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(pad.left, iy(1 / Rr)); ctx.lineTo(pad.left + 8, iy(1 / Rr)); ctx.stroke();
+    ctx.setLineDash([]);
+
+    var tCross = Rr * Math.log(Rr) / (Rr - 1);
+    var yCross = Math.exp(-tCross);
+    ctx.beginPath();
+    ctx.arc(tx(tCross), iy(yCross), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#94a3b8';
+    ctx.fill();
+    ctx.fillStyle = '#64748b'; ctx.font = '11px sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText('交差点', tx(tCross) + 6, iy(yCross) - 6);
+  })();
+
+  /* ========================================
+     2. RC充電 インタラクティブ（p5.js）
+     ======================================== */
+  new p5(function(p) {
+    var W = 500, H = 290;
+    var gx = 58, gy = 28, gw = W - 88, gh = H - 75;
+    var sliderR, sliderWrap;
+    var Rval = 2.0;
+
+    p.setup = function() {
+      var cnv = p.createCanvas(W, H);
+      cnv.parent('sim-rc');
+      cnv.style('display', 'block');
+
+      sliderWrap = p.createDiv('');
+      sliderWrap.parent('sim-rc');
+      sliderWrap.style('display', 'flex');
+      sliderWrap.style('align-items', 'center');
+      sliderWrap.style('gap', '8px');
+      sliderWrap.style('padding', '8px 16px');
+      sliderWrap.style('font-size', '13px');
+      sliderWrap.style('color', '#475569');
+
+      var lbl = p.createSpan("R'/R =");
+      lbl.parent(sliderWrap);
+
+      sliderR = p.createSlider(1.0, 4.0, 2.0, 0.1);
+      sliderR.parent(sliderWrap);
+      sliderR.style('width', '140px');
+      sliderR.style('accent-color', '#ef4444');
+
+      var valDisp = p.createSpan('2.0');
+      valDisp.parent(sliderWrap);
+      valDisp.id('rc-val');
     };
-    new p5(sketchLC, 'sim-lc');
+
+    p.draw = function() {
+      Rval = sliderR.value();
+      var valEl = document.getElementById('rc-val');
+      if (valEl) valEl.textContent = Rval.toFixed(1);
+
+      p.background(248, 250, 252);
+
+      p.stroke(226, 232, 240); p.strokeWeight(1);
+      for (var gy2 = 0.2; gy2 <= 1.0; gy2 += 0.2) {
+        var yy = gy + gh - gy2 * gh * 0.92;
+        p.line(gx, yy, gx + gw, yy);
+      }
+
+      p.stroke(71, 85, 105); p.strokeWeight(1.5);
+      p.line(gx, gy - 6, gx, gy + gh);
+      p.line(gx, gy + gh, gx + gw + 6, gy + gh);
+
+      p.noStroke(); p.fill(71, 85, 105);
+      p.textSize(14); p.textFont('serif'); p.textStyle(p.ITALIC);
+      p.textAlign(p.CENTER); p.text('I', gx - 2, gy - 12);
+      p.text('t', gx + gw + 18, gy + gh + 5);
+
+      p.textStyle(p.NORMAL); p.textSize(12);
+      p.textAlign(p.RIGHT);
+      p.fill(59, 130, 246);
+      p.text('V\u2080/R', gx - 5, gy + gh - 0.92 * gh + 4);
+
+      p.stroke(59, 130, 246); p.strokeWeight(2.5); p.noFill();
+      p.beginShape();
+      for (var i = 0; i <= gw; i++) {
+        var t = (i / gw) * 5.5;
+        var val = Math.exp(-t);
+        p.vertex(gx + i, gy + gh - val * gh * 0.92);
+      }
+      p.endShape();
+
+      if (Rval > 1.05) {
+        p.fill(239, 68, 68);
+        p.noStroke(); p.textAlign(p.RIGHT); p.textSize(12);
+        p.text("V\u2080/R'", gx - 5, gy + gh - (1 / Rval) * gh * 0.92 + 4);
+      }
+
+      p.stroke(239, 68, 68); p.strokeWeight(2);
+      p.drawingContext.setLineDash([6, 4]);
+      p.noFill(); p.beginShape();
+      for (var j = 0; j <= gw; j++) {
+        var t2 = (j / gw) * 5.5;
+        var val2 = (1 / Rval) * Math.exp(-t2 / Rval);
+        p.vertex(gx + j, gy + gh - val2 * gh * 0.92);
+      }
+      p.endShape();
+      p.drawingContext.setLineDash([]);
+
+      if (Rval > 1.05) {
+        var tC = Rval * Math.log(Rval) / (Rval - 1);
+        var yC = Math.exp(-tC);
+        var cx = gx + (tC / 5.5) * gw;
+        var cy = gy + gh - yC * gh * 0.92;
+        if (cx > gx && cx < gx + gw) {
+          p.fill(148, 163, 184); p.noStroke();
+          p.ellipse(cx, cy, 7, 7);
+        }
+      }
+
+      p.noStroke(); p.textAlign(p.LEFT); p.textSize(11);
+      p.fill(59, 130, 246);
+      p.text('\u2501 R\uff08\u57fa\u6e96\uff09', gx + gw - 95, gy + 14);
+      p.fill(239, 68, 68);
+      p.text('\u254c R\u2019', gx + gw - 95, gy + 28);
+
+      p.noLoop();
+    };
+
+    p.mousePressed = function() { p.loop(); };
+    p.mouseMoved = function() {
+      var el = document.getElementById('sim-rc');
+      if (el && el.matches(':hover')) p.redraw();
+    };
+
+    sliderR && sliderR.input(function() { p.redraw(); });
+  }, 'sim-rc');
+
+  /* ========================================
+     3. 電荷再分配シミュレーション（p5.js）
+     ======================================== */
+  new p5(function(p) {
+    var W = 500, H = 320;
+    var time = 0;
+    var running = false;
+    var CA = 1.0, CB = 1.5, V0 = 1.0;
+    var tau;
+
+    function calcTau() { tau = (CA * CB) / (CA + CB) * 1.2; }
+    calcTau();
+
+    var Q_total, QA_final, QB_final, E_init;
+    function calcFinals() {
+      Q_total = CA * V0;
+      var Vf = Q_total / (CA + CB);
+      QA_final = CA * Vf;
+      QB_final = CB * Vf;
+      E_init = 0.5 * CA * V0 * V0;
+    }
+    calcFinals();
+
+    p.setup = function() {
+      var cnv = p.createCanvas(W, H);
+      cnv.parent('sim-redist');
+      cnv.style('display', 'block');
+
+      var ctrlDiv = p.createDiv('');
+      ctrlDiv.parent('sim-redist');
+      ctrlDiv.style('display', 'flex');
+      ctrlDiv.style('align-items', 'center');
+      ctrlDiv.style('gap', '10px');
+      ctrlDiv.style('padding', '6px 16px');
+      ctrlDiv.style('font-size', '13px');
+      ctrlDiv.style('color', '#475569');
+
+      var btnPlay = p.createButton('\u25b6');
+      btnPlay.parent(ctrlDiv);
+      btnPlay.style('font-size', '14px');
+      btnPlay.style('cursor', 'pointer');
+      btnPlay.style('padding', '2px 10px');
+      btnPlay.mousePressed(function() {
+        running = !running;
+        btnPlay.html(running ? '\u23f8' : '\u25b6');
+        if (running) p.loop();
+      });
+
+      var btnReset = p.createButton('\u21ba');
+      btnReset.parent(ctrlDiv);
+      btnReset.style('font-size', '14px');
+      btnReset.style('cursor', 'pointer');
+      btnReset.style('padding', '2px 10px');
+      btnReset.mousePressed(function() {
+        time = 0; running = false;
+        btnPlay.html('\u25b6');
+        p.redraw();
+      });
+
+      var sep = p.createSpan('|');
+      sep.parent(ctrlDiv);
+      sep.style('color', '#cbd5e1');
+
+      var lbl2 = p.createSpan('C\u1d35/C\u1d2c =');
+      lbl2.parent(ctrlDiv);
+
+      var sl = p.createSlider(0.5, 3.0, 1.5, 0.1);
+      sl.parent(ctrlDiv);
+      sl.style('width', '100px');
+      sl.style('accent-color', '#10b981');
+      sl.input(function() {
+        CB = sl.value();
+        var vd = document.getElementById('redist-ratio');
+        if (vd) vd.textContent = CB.toFixed(1);
+        calcTau(); calcFinals();
+        time = 0; running = false;
+        btnPlay.html('\u25b6');
+        p.redraw();
+      });
+
+      var vd2 = p.createSpan('1.5');
+      vd2.parent(ctrlDiv);
+      vd2.id('redist-ratio');
+    };
+
+    p.draw = function() {
+      if (running) { time += 0.04; if (time > 8) time = 8; }
+
+      p.background(248, 250, 252);
+
+      var expF = Math.exp(-time / tau);
+      var QA = QA_final + (Q_total - QA_final) * expF;
+      var QB = QB_final * (1 - expF);
+
+      var maxH = 140;
+      var baseY = 170;
+      var hA = (QA / Q_total) * maxH;
+      var hB = (QB / Q_total) * maxH;
+
+      p.fill(255); p.stroke(203, 213, 225); p.strokeWeight(1);
+      p.rect(70, baseY - maxH, 60, maxH, 0, 0, 4, 4);
+      p.fill(59, 130, 246, 200); p.noStroke();
+      p.rect(70, baseY - hA, 60, hA, 0, 0, 4, 4);
+      p.fill(71, 85, 105); p.noStroke(); p.textAlign(p.CENTER); p.textSize(13);
+      p.text('C\u2090', 100, baseY + 18);
+      p.textSize(11); p.fill(59, 130, 246);
+      p.text('Q\u2090=' + QA.toFixed(2), 100, baseY - maxH - 6);
+
+      p.fill(255); p.stroke(203, 213, 225); p.strokeWeight(1);
+      p.rect(310, baseY - maxH, 60, maxH, 0, 0, 4, 4);
+      p.fill(16, 185, 129, 200); p.noStroke();
+      p.rect(310, baseY - hB, 60, hB, 0, 0, 4, 4);
+      p.fill(71, 85, 105); p.noStroke(); p.textAlign(p.CENTER); p.textSize(13);
+      p.text('C\u1d35', 340, baseY + 18);
+      p.textSize(11); p.fill(16, 185, 129);
+      p.text('Q\u1d35=' + QB.toFixed(2), 340, baseY - maxH - 6);
+
+      var currentAlpha = Math.max(0, (QA - QA_final) / Math.max(0.01, Q_total - QA_final));
+      p.stroke(100, 100, 100, currentAlpha * 200);
+      p.strokeWeight(2);
+      p.line(145, baseY - maxH / 2, 295, baseY - maxH / 2);
+      if (currentAlpha > 0.05) {
+        p.fill(100, 100, 100, currentAlpha * 200); p.noStroke();
+        p.triangle(290, baseY - maxH / 2 - 5, 295, baseY - maxH / 2, 290, baseY - maxH / 2 + 5);
+      }
+      p.noStroke(); p.fill(100, 100, 100, 180); p.textAlign(p.CENTER); p.textSize(12);
+      p.text('R', 220, baseY - maxH / 2 - 8);
+
+      var eBarY = baseY + 38;
+      var eBarW = 320;
+      var eBarH = 18;
+      var E_CA = 0.5 * QA * QA / CA;
+      var E_CB = (QB > 0.001) ? 0.5 * QB * QB / CB : 0;
+      var E_J = Math.max(0, E_init - E_CA - E_CB);
+
+      var wCA = (E_CA / E_init) * eBarW;
+      var wCB = (E_CB / E_init) * eBarW;
+      var wJ = (E_J / E_init) * eBarW;
+
+      p.noStroke(); p.fill(71, 85, 105); p.textAlign(p.LEFT); p.textSize(12);
+      p.text('\u30a8\u30cd\u30eb\u30ae\u30fc', 70, eBarY - 4);
+
+      p.fill(59, 130, 246); p.rect(70, eBarY + 2, wCA, eBarH, 2, 0, 0, 2);
+      p.fill(16, 185, 129); p.rect(70 + wCA, eBarY + 2, wCB, eBarH);
+      p.fill(239, 68, 68); p.rect(70 + wCA + wCB, eBarY + 2, wJ, eBarH, 0, 2, 2, 0);
+
+      p.stroke(203, 213, 225); p.noFill();
+      p.rect(70, eBarY + 2, eBarW, eBarH, 2);
+
+      p.noStroke(); p.textSize(10); p.textAlign(p.LEFT);
+      var legY = eBarY + eBarH + 14;
+      p.fill(59, 130, 246); p.rect(70, legY - 8, 10, 10, 2); p.text(' C\u2090', 82, legY);
+      p.fill(16, 185, 129); p.rect(130, legY - 8, 10, 10, 2); p.text(' C\u1d35', 142, legY);
+      p.fill(239, 68, 68); p.rect(190, legY - 8, 10, 10, 2); p.text(' \u30b8\u30e5\u30fc\u30eb\u71b1', 202, legY);
+
+      p.fill(100); p.textSize(10); p.textAlign(p.RIGHT);
+      p.text(((E_J / E_init) * 100).toFixed(0) + '%', 70 + eBarW + 35, eBarY + eBarH - 2);
+
+      if (!running) p.noLoop();
+    };
+  }, 'sim-redist');
+
+  /* ========================================
+     4. LC振動シミュレーション（p5.js — 問2(e)）
+     ======================================== */
+  new p5(function(p) {
+    var angle = 0;
+    var running = true;
+    var slider;
+
+    p.setup = function() {
+      var cnv = p.createCanvas(480, 280);
+      cnv.parent('sim-lc');
+
+      p.createDiv('\u5bb9\u91cf\u6bd4 CB/CA: ').parent('sim-lc')
+        .style('margin', '10px 0 0 20px').style('display', 'inline-block')
+        .style('font-size', '13px').style('color', '#475569');
+      slider = p.createSlider(0.5, 3, 1, 0.1);
+      slider.parent('sim-lc');
+      slider.style('width', '100px');
+    };
+
+    p.draw = function() {
+      p.background(248, 250, 252);
+
+      var ratio = slider.value();
+      var q_eq = (1 / (1 + ratio)) * 200;
+      var amp = (ratio / (1 + ratio)) * 200;
+
+      if (running) angle += 0.05;
+
+      var hA = q_eq + amp * p.cos(angle);
+      var hB = 200 - hA;
+
+      p.fill(255); p.stroke(0);
+      p.rect(50, 50, 60, 200);
+      p.fill(59, 130, 246);
+      p.noStroke();
+      p.rect(50, 250 - hA, 60, hA);
+      p.fill(0); p.textAlign(p.CENTER);
+      p.text('CA', 80, 270);
+
+      p.fill(255); p.stroke(0);
+      p.rect(250, 50, 60 * ratio, 200);
+      p.fill(16, 185, 129);
+      p.noStroke();
+      p.rect(250, 250 - hB, 60 * ratio, hB);
+      p.fill(0);
+      p.text('CB', 250 + 30 * ratio, 270);
+
+      p.stroke(0); p.strokeWeight(4);
+      p.line(110, 240, 250, 240);
+
+      p.noStroke();
+      p.textAlign(p.LEFT);
+      p.text('CB = ' + ratio.toFixed(1) + ' CA', 20, 30);
+
+      if (ratio === 1) {
+        p.fill(255, 0, 0);
+        p.text('\u5b8c\u5168\u79fb\u52d5\u6761\u4ef6 (CA=CB)', 180, 30);
+      }
+
+      var minQA = q_eq - amp;
+
+      p.stroke(200); p.strokeWeight(1);
+      p.line(40, 250 - minQA, 120, 250 - minQA);
+      p.fill(100); p.noStroke();
+      p.text('Min QA', 10, 250 - minQA);
+    };
+  }, 'sim-lc');
   </script>
 </body>
 </html>

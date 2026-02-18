@@ -259,6 +259,10 @@ document.addEventListener("DOMContentLoaded", () => {
               } else {
                 html += '<div class="prob-grid">';
                 problems.forEach(function (p) {
+                  // 非公開の問題は教員モード以外では表示しない
+                  if (!isTeacherMode && p.isPublic === false) {
+                    return;
+                  }
                   var path = p.explanationPath || "";
                   var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
                   var hasExplanation = path && !isPDF;
@@ -291,6 +295,10 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
               html += '<div class="prob-grid">';
               problems.forEach(function (p) {
+                // 非公開の問題は教員モード以外では表示しない
+                if (!isTeacherMode && p.isPublic === false) {
+                  return;
+                }
                 var path = p.explanationPath || "";
                 var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
                 var hasExplanation = path && !isPDF;

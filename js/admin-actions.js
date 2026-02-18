@@ -330,6 +330,7 @@ async function createNewProblem(subject, field) {
     title: "新規問題",
     desc: "",
     explanationPath: path,
+    isPublic: true, // デフォルトは公開
   };
   field.problems.push(newProb);
 
@@ -747,6 +748,7 @@ async function executeSmartImport(htmlRaw, jsonRaw) {
     title: metaData.title,
     desc: metaData.desc || "",
     explanationPath: metaData.explanationPath,
+    isPublic: metaData.isPublic !== false, // デフォルトは公開（未指定時はtrue）
   };
 
   if (existingProbIndex !== -1) {
