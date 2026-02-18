@@ -27,22 +27,42 @@ body.pointer-active .sim-embed {
   -webkit-touch-callout: none;
 }
 
-/* --- 録画モード（ポインターモード時）：全画面・ヘッダー非表示 --- */
-body.pointer-active .prob-header-top,
+/* --- 録画モード（ポインターモード時）：タブバー・タブ移動ボタンは表示、終了ボタンは重ならない位置に --- */
+body.pointer-active {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* 操作モード: 画面上部はタブのみ（タイトル行は非表示）、詰めて表示 */
+body.pointer-active .prob-header-top {
+  flex-shrink: 0;
+  min-height: 52px;
+  /* 画面拡大時もサイズ・文字も同じ比率で固定表示（逆スケールで打ち消し） */
+  transform: scale(calc(1 / var(--zoom-scale, 1))) translateZ(0);
+  transform-origin: top center;
+}
+
+/* 操作モード: タブバー内の文字サイズをpxで固定し拡大時も同じ比率で表示 */
+body.pointer-active .prob-header-top .card-tab-btn {
+  font-size: 14px;
+}
+body.pointer-active .prob-header-top > .header-top-row {
+  display: none !important;
+}
 body.pointer-active .skip-link {
   display: none !important;
 }
 
+/* 操作モード時は画面下部のフッター（ハブ等）を非表示 */
+body.pointer-active .site-footer {
+  display: none !important;
+}
+
 body.pointer-active .viewer-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  flex: 1;
+  min-height: 0;
+  position: relative;
   width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  z-index: 0;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -79,15 +99,15 @@ body.pointer-active .explanation-area {
 }
 
 body.pointer-active .card-tabs-bar {
-  position: sticky;
+  position: relative;
   top: 0;
   background: var(--col-bg);
   z-index: 10;
-  padding-top: 16px;
-  padding-bottom: 16px;
-  margin-top: -24px;
-  margin-bottom: 16px;
-  border-bottom: 2px solid #e2e8f0;
+  padding: 8px 100px 8px 24px; /* 右に終了ボタン用の余白 */
+  margin: 0;
+  border-bottom: 1px solid #e2e8f0;
+  min-height: 52px;
+  box-sizing: border-box;
 }
 
 /* ポインターモード時は疑問点メモ・リアクションボタンを非表示（録画用） */
@@ -100,7 +120,7 @@ body.pointer-active .ad-slot.ad-slot--sidebar {
   display: none !important;
 }
 
-/* 操作モード用フロート（右下・終了ボタンのみ・iPadのホームインジケータで見切れないよう余裕を確保） */
+/* 操作モード用フロート（通常時は非表示） */
 .recording-float-bar {
   display: none;
   position: fixed;
@@ -114,8 +134,42 @@ body.pointer-active .ad-slot.ad-slot--sidebar {
   isolation: isolate;
 }
 
+/* 操作モード時: 終了ボタンをタブバー右端に固定表示 */
 body.pointer-active .recording-float-bar {
   display: flex;
+  top: 0;
+  right: calc(12px + env(safe-area-inset-right, 0px));
+  bottom: auto;
+  height: 52px;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0;
+  /* 画面拡大時もサイズを変えず固定表示 */
+  transform: scale(calc(1 / var(--zoom-scale, 1))) translateZ(0);
+  transform-origin: top right;
+}
+
+/* 操作モード時: 終了ボタンをタブに馴染む控えめなデザインに（文字はpxで固定・拡大時も同じ比率） */
+body.pointer-active .recording-float-btn-exit {
+  padding: 8px 14px;
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  color: var(--col-text-sub, #64748b);
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+
+body.pointer-active .recording-float-btn-exit:hover {
+  background: rgba(59, 130, 246, 0.06);
+  color: var(--col-text, #1e293b);
+  border-color: #e2e8f0;
+}
+
+body.pointer-active .recording-float-btn-exit:active {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .recording-float-btn {
@@ -127,7 +181,7 @@ body.pointer-active .recording-float-bar {
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.1s, color 0.2s, border-color 0.2s;
   font-family: var(--font-base);
 }
 
@@ -141,7 +195,7 @@ body.pointer-active .recording-float-bar {
   box-shadow: 0 2px 16px rgba(244, 63, 94, 0.35);
 }
 
-.recording-float-btn-exit:hover {
+body:not(.pointer-active) .recording-float-btn-exit:hover {
   background: #e11d48;
   color: #fff;
 }
@@ -177,13 +231,36 @@ body.pointer-active .recording-float-bar {
   transition: min-height 0.2s ease;
 }
 
-/* スクロール時にタイトル行を隠す */
+/* スクロール時にタイトル行をなめらかに隠す（フェード＋スライド） */
+.prob-header-top > .header-top-row {
+  max-height: 70px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s ease,
+              margin 0.35s ease;
+}
+
 .prob-header-top.header-scrolled > .header-top-row {
-  display: none;
+  max-height: 0;
+  height: 0;
+  min-height: 0;
+  opacity: 0;
+  transform: translateY(-12px);
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .prob-header-top.header-scrolled {
   min-height: auto;
+  transition: min-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* スクロール時にタブバーの左側に戻るボタンエリアを確保 */
@@ -226,10 +303,10 @@ body.pointer-active .recording-float-bar {
   justify-content: space-between;
   padding: 0 12px 0 24px;
   height: 70px;
+  min-height: 70px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
-  transition: opacity 0.2s ease, transform 0.2s ease;
   overflow: hidden;
 }
 
@@ -255,9 +332,78 @@ body.pointer-active .recording-float-bar {
   scrollbar-color: #cbd5e1 transparent;
   -webkit-overflow-scrolling: touch;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* 左端のタブが確実に表示される */
   position: relative;
 }
+
+/* 解説画面下・左右に固定のタブ移動ボタン（複数タブ時のみ表示） */
+.explanation-tab-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: var(--z-header, 100);
+  pointer-events: none;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.explanation-tab-nav.is-visible {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.explanation-tab-nav .tab-nav-btn {
+  pointer-events: auto;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--col-text-sub, #64748b);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  font-size: 1.4rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.explanation-tab-nav .tab-nav-btn:hover:not(:disabled) {
+  background: var(--col-primary, #3b82f6);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(59, 130, 246, 0.35);
+  transform: scale(1.05);
+}
+
+.explanation-tab-nav .tab-nav-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.explanation-tab-nav .tab-nav-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* 操作モードで画面拡大時も左右タブボタンはサイズ・文字も同じ比率で固定表示 */
+body.pointer-active .explanation-tab-nav.is-visible {
+  transform: scale(calc(1 / var(--zoom-scale, 1))) translateZ(0);
+  transform-origin: bottom center;
+}
+
+/* 操作モード: 左右タブボタン内のアイコン（‹ ›）サイズをpxで固定し拡大時も同じ比率で表示 */
+body.pointer-active .explanation-tab-nav .tab-nav-btn {
+  font-size: 22px;
+}
+
+/* 操作モードでも左右のタブ移動ボタンは表示（終了ボタンは上にずらして重ならない） */
 
 /* ページ上部のタイトルを非表示（固定バーにタイトルがあるため） */
 .prob-title-sub {

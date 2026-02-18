@@ -1,0 +1,108 @@
+---
+description: 解説ページ（data/explanations/）のHTML作成・修正時に従うルール
+globs:
+  - data/explanations/**/*.html
+---
+
+# 解説ページ作成ルール
+
+## 1. 全体構造
+
+```html
+<h2 class="prob-title-sub">大問X：タイトル</h2>
+
+<!-- 冒頭の全体像カード -->
+<div class="card">
+  <h3>解法の指針</h3>
+  <!-- 問題の概要・各設問の位置づけ -->
+  <!-- 全体を貫くポイントまとめ（box-note内） -->
+</div>
+
+<!-- タブ構造（設問ごと） -->
+<div class="tab-container">
+  <div class="tab-buttons">...</div>
+  <div class="tab-content active">...</div>
+  ...
+</div>
+```
+
+- 冒頭の「解法の指針」カードに**問題全体のポイントまとめ**を `box-note` で配置する
+- ページ末尾に独立した全体ポイントまとめ（box-alert）は**置かない**
+
+## 2. レイアウト方式
+
+### 基本はフラットスクロール（タブなし）
+- 各設問を `.card` で囲み、上から順に並べる（タブボタンは使わない）
+- スクロールで全設問を閲覧できるため、ボタンの見切れ問題が発生しない
+- 設問ごとの見出し `<h3>` で区切りを明確にする
+
+### タブを使う場合（任意）
+- 設問数が非常に多く（10問以上）、ページが極端に長くなる場合のみタブを検討
+- その場合は **2つの設問を1タブに収める**
+- 「問(1) 〇〇を含む回路」のような**大問レベルの親タブは作らない**
+- タブボタンは `flex-wrap: nowrap` + `overflow-x: auto` で横スクロール可能にする
+
+## 3. Point（box-alert）の配置
+
+- **各設問の下部**にその設問固有の Point を配置する
+- Point は設問の `box-note`（答え）の直後に置く
+- 問題全体のポイントまとめは冒頭の「解法の指針」に集約する
+- ページ末尾に独立した全体ポイントまとめは置かない
+
+```html
+<div class="box-note">
+  <strong>答え：</strong><br>
+  $$ ... $$
+</div>
+
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <p>この設問で押さえるべきポイント</p>
+</div>
+```
+
+### Point枠の幅
+- `.box-alert` の幅は `.box-note`（答え枠）と同じ幅にする
+- `.card` 内に配置する場合、以下のCSSを `<style>` で上書きする：
+
+```css
+.box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+```
+
+## 4. 図・シミュレーション
+
+各設問には**適宜 視覚的な要素**を含める：
+
+- **回路図・力図・状況図**: インライン SVG（`<svg class="circuit-svg">`）で軽量に描画
+- **グラフ**: `<canvas>` + インラインJS で描画（Chart.js 不要）
+- **エネルギー棒グラフ**: HTML+CSS の棒グラフ（`.energy-bar-wrap`）
+- **動的シミュレーション**: p5.js を使用（`<div class="sim-embed">` + p5 sketch）
+- 図は設問の冒頭（問題設定の直後）に配置し、解法の前に状況を視覚的に理解させる
+
+## 5. CSS・JSのインクルード
+
+```html
+<link rel="stylesheet" href="[相対パス]/css/base.css">
+<link rel="stylesheet" href="[相対パス]/css/components.css">
+<link rel="stylesheet" href="[相対パス]/css/viewer.css">
+```
+
+- タブ用CSSは `<style>` タグでページ内に記述する（上記テンプレート参照）
+- タブ切り替えJSもページ内 `<script>` に記述する
+
+## 6. マニフェスト更新
+
+新しい解説ページを追加したら `data/materials/*.json` のマニフェストも更新する。
+
+## 7. 参考テンプレート
+
+- `data/explanations/exam_national/tohoku/2008/2008_zenki_2.html` — タブ構成・Point配置・図の参考例
+- `data/explanations/exam_national/kyushu/2018/2018_zenki_1.html` — タブ構成の参考例
+- `data/explanations/exam_national/chiba/2021/2021_zenki_1.html` — p5.jsシミュレーションの参考例
+
+## 8. 問題画像から解説を生成する場合（Cursor 単体）
+
+- **外部AI（Gemini 等）は使わない**。解説は Cursor 単体で、添付された問題画像を読み取り0から生成する。
+- **長い問題（入試大問など）**は、いきなり全設問を書かず**小分けして依頼し、増築**する。
+  - 例：1回目で「解法の指針＋問(1)(a)(b)」まで作成 → 2回目で「問(1)(c)(d)を追加」→ 3回目で「問(2)を追加」。
+- 詳細な手順・トリガー例は **.cursor/rules/cursor-explanation-from-images.mdc** を参照する。

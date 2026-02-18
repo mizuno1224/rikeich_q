@@ -176,6 +176,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // 操作モードで画面拡大時もタブバー・タブ切り替えボタンを常に同じサイズで表示するためズーム率をCSS変数へ
+  function updateZoomScale() {
+    var scale = window.visualViewport ? window.visualViewport.scale : 1;
+    document.documentElement.style.setProperty("--zoom-scale", String(scale));
+  }
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", updateZoomScale);
+    window.visualViewport.addEventListener("scroll", updateZoomScale);
+  }
+  updateZoomScale();
+
   // --- ブックマークボタン ---
   const btnBookmark = document.getElementById("btn-bookmark");
   if (btnBookmark) {
@@ -1377,6 +1388,9 @@ function setupCardTabs(container) {
 
   // --- タブ切り替え ---
   var currentTabIndex = 0;
+  var tabNavPrevBtn = null;
+  var tabNavNextBtn = null;
+
   function switchTab(index) {
     // すべて非表示
     tabButtons.forEach(function(btn) {
@@ -1392,6 +1406,10 @@ function setupCardTabs(container) {
     tabButtons[index].setAttribute('aria-selected', 'true');
     items[index].style.display = '';
     currentTabIndex = index;
+
+    // 固定タブ移動ボタンの有効/無効を更新
+    if (tabNavPrevBtn) tabNavPrevBtn.disabled = index <= 0;
+    if (tabNavNextBtn) tabNavNextBtn.disabled = index >= tabButtons.length - 1;
 
     // 遅延スクリプトの実行（初回のみ）+ MathJax
     // 表示状態を確実にするため、少し待ってから処理
@@ -1424,5 +1442,33 @@ function setupCardTabs(container) {
     }, 100);
 
     // タブバーが固定バー内にある場合はスクロール位置調整不要
+  }
+
+  // 解説画面下・左右に固定のタブ移動ボタン（複数タブ時のみ表示）
+  var existingTabNav = document.querySelector('.explanation-tab-nav');
+  if (existingTabNav) existingTabNav.remove();
+  if (tabButtons.length > 1) {
+    var tabNav = document.createElement('div');
+    tabNav.className = 'explanation-tab-nav is-visible';
+    tabNav.setAttribute('aria-label', 'タブ移動');
+    var prevBtn = document.createElement('button');
+    prevBtn.type = 'button';
+    prevBtn.className = 'tab-nav-btn';
+    prevBtn.setAttribute('aria-label', '前のタブ');
+    prevBtn.innerHTML = '‹';
+    prevBtn.disabled = true;
+    var nextBtn = document.createElement('button');
+    nextBtn.type = 'button';
+    nextBtn.className = 'tab-nav-btn';
+    nextBtn.setAttribute('aria-label', '次のタブ');
+    nextBtn.innerHTML = '›';
+    nextBtn.disabled = false;
+    prevBtn.addEventListener('click', function() { switchTab(currentTabIndex - 1); });
+    nextBtn.addEventListener('click', function() { switchTab(currentTabIndex + 1); });
+    tabNav.appendChild(prevBtn);
+    tabNav.appendChild(nextBtn);
+    document.body.appendChild(tabNav);
+    tabNavPrevBtn = prevBtn;
+    tabNavNextBtn = nextBtn;
   }
 }

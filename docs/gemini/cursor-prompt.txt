@@ -1,0 +1,4 @@
+【Cursor に送る一言】
+
+添付画像は元の問題、@import.html は Gemini で作成した解説のベースです。
+import.html の内容をもとに、適切な保存先（大学・年度フォルダ）へのファイル作成、CSS相対パスの修正、および data/materials/exam_national.json 等のマニフェスト更新をすべて自動で行ってください。

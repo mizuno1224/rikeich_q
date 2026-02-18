@@ -1,0 +1,540 @@
+<!-- ここに Gemini で出力された HTML を貼り付けて保存してください（毎回上書きでOK） -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>東北大学 2008年 前期 物理 大問2：コンデンサーの放電（抵抗とコイルの比較）</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+  <style>
+    .circuit-svg, .diagram-svg { max-width: 480px; width: 100%; height: auto; display: block; margin: 16px auto; }
+    .chart-wrap { width: 100%; max-width: 520px; margin: 16px auto; }
+    .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: #fdfdfe; border: 1px solid #e2e8f0; }
+    .energy-bar-wrap { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+    .energy-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px; }
+    .energy-bar .bar-outer { width: 50px; height: 120px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; position: relative; overflow: hidden; }
+    .energy-bar .bar-fill { position: absolute; bottom: 0; width: 100%; border-radius: 0 0 5px 5px; transition: height 0.5s ease; }
+    .fill-ca { background-color: #3b82f6; } /* Blue for CA */
+    .fill-cb { background-color: #10b981; } /* Green for CB */
+    .fill-l { background-color: #f59e0b; }  /* Amber for Coil */
+    .fill-joule { background-color: #ef4444; } /* Red for Heat */
+    .energy-bar .bar-label { font-size: 0.8rem; color: #64748b; }
+    .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+    .sim-embed { width: 100%; max-width: 480px; height: 300px; margin: 16px auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; position: relative; overflow: hidden; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">大問2：コンデンサーの放電（抵抗とコイルの比較）</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>本問は、コンデンサーを含む回路において、<span class="highlight">抵抗</span>を接続した場合（RC回路）と<span class="highlight">コイル</span>を接続した場合（LC回路）の過渡現象を比較・考察する問題です。抵抗によるエネルギー散逸と、コイルによるエネルギー保存（電気振動）の違いを明確に意識する必要があります。</p>
+        <p>問(1)では電荷再分配とジュール熱を、問(2)ではLC振動におけるエネルギーの授受と電荷保存則を扱います。</p>
+        <h4>問題の構成</h4>
+        <ul>
+          <li><strong>問(1)</strong>：抵抗を含む回路（図1）— 充電過程(a)(b)，電荷再分配(c)，ジュール熱(d)</li>
+          <li><strong>問(2)</strong>：コイルを含む回路（図2）— LC振動(a)，最大電流時の電圧・エネルギー(b)(c)，半周期後の電荷(d)，完全エネルギー移動条件(e)</li>
+        </ul>
+        <div class="box-note">
+          <strong>全体を貫くポイント</strong><br>
+          <ul style="margin:8px 0 0 0; padding-left:1.2em;">
+            <li><strong>回路の方程式</strong>：抵抗回路ではキルヒホッフの法則（電圧降下）、振動回路ではエネルギー保存則または電圧の関係式を立式する。</li>
+            <li><strong>電荷保存則</strong>：孤立部分（スイッチ間の導線など）の総電荷量は変化しない。</li>
+            <li><strong>エネルギー保存則</strong>：抵抗がない場合（LC回路）、コンデンサーの静電エネルギーとコイルの磁気エネルギーの総和は保存される。</li>
+            <li><strong>電気振動の対称性</strong>：LC振動では、電荷や電流は単振動（正弦波）の形になり、エネルギーはキャッチボールのように往復する。</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(a) コンデンサーAの充電</h3>
+        
+        <div class="chart-wrap">
+          <canvas id="chart-rc" width="520" height="280"></canvas>
+        </div>
+
+        <h4>問題設定</h4>
+        <p>スイッチ $S_1$ を閉じた直後、コンデンサー $C_\mathrm{A}$ は未充電（電圧0）であり、回路には最大の電流が流れます。その後、充電が進むにつれて電流は減少します。</p>
+
+        <h4>解法</h4>
+        <p>スイッチ $S_1$ を閉じた時刻 $t=t_0$ において、回路の方程式は以下のようになります。</p>
+        $$V_0 = RI + \frac{q}{C_\mathrm{A}}$$
+        <p>充電開始直後（$q=0$）の電流 $I_0$ は、</p>
+        $$I_0 = \frac{V_0}{R}$$
+        <p>充電完了時（$I=0$）には、$q = C_\mathrm{A}V_0$ となります。電流 $I$ は指数関数的に減衰し、0に漸近します。グラフは $t=t_0$ で最大値 $V_0/R$ をとり、下に凸の減少曲線を描きます。</p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          グラフの形状：時刻 $t_0$ で縦軸切片 $V_0/R$ から始まり、横軸に漸近するように減少する曲線（実線）。<br>
+          縦軸の値：$\frac{V_0}{R}$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>コンデンサーの充電電流は $I(t) = \frac{V_0}{R}e^{-\frac{t-t_0}{C_\mathrm{A}R}}$ で表されます。初期電流は抵抗のみで決まり、充電が進むとコンデンサーが逆起電力のように働いて電流を妨げます。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(b) 抵抗値が大きい場合の電流変化</h3>
+        <p>グラフは上図の破線を参照。</p>
+        <h4>解法</h4>
+        <p>抵抗値を $R' > R$ とした場合の変化を考えます。</p>
+        <ol>
+            <li><strong>初期電流</strong>：$I'_0 = \frac{V_0}{R'}$ となり、元の電流 $I_0 = \frac{V_0}{R}$ より<span class="highlight">小さくなります</span>。</li>
+            <li><strong>時定数（変化の速さ）</strong>：時定数は $\tau = C_\mathrm{A}R'$ となり、元よりも<span class="highlight">大きくなります</span>。つまり、電流の減少が緩やかになります。</li>
+            <li><strong>総電気量</strong>：最終的に充電される電荷量 $Q = C_\mathrm{A}V_0$ は抵抗値によらないため、グラフと横軸で囲まれた面積（$\int I dt = Q$）は(a)と同じになります。</li>
+        </ol>
+        <p>これらより、グラフ（破線）は実線よりも低い位置から始まり、途中で実線と交差して、その後は実線よりも上側を推移しながら0に漸近します。</p>
+
+        <div class="box-note">
+            <strong>答え：</strong><br>
+            グラフの形状：(a)の実線よりも小さい切片から始まり、初期は実線の下側、途中から実線の上側を通って緩やかに減少する曲線（破線）。
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>抵抗を大きくすると「流れにくく」なるためスタートは低くなりますが、「長持ち」するため減衰は遅くなります。両者のグラフの面積（総電荷量）が等しいことから、必ず一度交差することがわかります。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(c) 電荷の再分配</h3>
+        
+        <svg class="circuit-svg" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50" y1="30" x2="250" y2="30" stroke="black" stroke-width="2" />
+          <line x1="50" y1="120" x2="250" y2="120" stroke="black" stroke-width="2" />
+          <line x1="100" y1="30" x2="100" y2="60" stroke="black" stroke-width="2" />
+          <line x1="100" y1="90" x2="100" y2="120" stroke="black" stroke-width="2" />
+          <line x1="200" y1="30" x2="200" y2="60" stroke="black" stroke-width="2" />
+          <line x1="200" y1="90" x2="200" y2="120" stroke="black" stroke-width="2" />
+          
+          <line x1="80" y1="60" x2="120" y2="60" stroke="black" stroke-width="3" />
+          <line x1="80" y1="90" x2="120" y2="90" stroke="black" stroke-width="3" />
+          <text x="70" y="75" font-family="serif" font-size="14">CA</text>
+          <text x="130" y="75" font-family="serif" font-size="14">+QA</text>
+          
+          <line x1="180" y1="60" x2="220" y2="60" stroke="black" stroke-width="3" />
+          <line x1="180" y1="90" x2="220" y2="90" stroke="black" stroke-width="3" />
+          <text x="230" y="75" font-family="serif" font-size="14">CB</text>
+          <text x="230" y="55" font-family="serif" font-size="14">+QB</text>
+
+          <text x="150" y="20" text-anchor="middle" font-size="12">V' (同電位)</text>
+          <text x="150" y="140" text-anchor="middle" font-size="12">GND</text>
+        </svg>
+
+        <h4>解法</h4>
+        <p>充電完了後、スイッチ $S_1$ を開き $S_2$ を閉じると、帯電した $C_\mathrm{A}$ から $C_\mathrm{B}$ へ電荷が移動します。十分時間が経過して電流が止まったとき、両コンデンサーの電圧は等しくなります。その電圧を $V'$ とします。</p>
+        <ul>
+            <li><strong>電荷保存則</strong>（電気的に孤立した部分）：
+                $$Q_\mathrm{A} + Q_\mathrm{B} = C_\mathrm{A}V_0 + 0$$</li>
+            <li><strong>電圧の関係</strong>（並列接続）：
+                $$\frac{Q_\mathrm{A}}{C_\mathrm{A}} = \frac{Q_\mathrm{B}}{C_\mathrm{B}} = V'$$</li>
+        </ul>
+        <p>これらを連立して解きます。</p>
+        $$C_\mathrm{A}V' + C_\mathrm{B}V' = C_\mathrm{A}V_0 \quad \longrightarrow \quad V' = \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        <p>よって、</p>
+        $$Q_\mathrm{A} = C_\mathrm{A}V' = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        $$Q_\mathrm{B} = C_\mathrm{B}V' = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$Q_\mathrm{A} = \frac{C_\mathrm{A}^2}{C_\mathrm{A}+C_\mathrm{B}}V_0, \quad Q_\mathrm{B} = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>コンデンサーをつなぎ変える問題では、「孤立部分の電荷保存」と「回路が落ち着いた状態での電圧の一致（キルヒホッフ）」が鉄則です。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(d) ジュール熱によるエネルギー損失</h3>
+
+        <div class="energy-bar-wrap">
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-ca" style="height: 100%;"></div>
+            </div>
+            <span class="bar-label">初期</span>
+            <span class="bar-label">(1/2)CAV₀²</span>
+          </div>
+          <div style="display:flex; align-items:center;">→</div>
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-cb" style="height: 20%; bottom: 60%;"></div>
+              <div class="bar-fill fill-ca" style="height: 40%; bottom: 20%;"></div>
+              <div class="bar-fill fill-joule" style="height: 20%;"></div>
+            </div>
+            <span class="bar-label">最終</span>
+            <span class="bar-label">CA+CB+熱</span>
+          </div>
+        </div>
+
+        <h4>解法</h4>
+        <p>抵抗で発生したジュール熱 $\Delta E$ は、エネルギー保存則より「失われた静電エネルギー」に等しくなります。</p>
+        <ul>
+            <li><strong>初期エネルギー</strong>（$S_2$ を閉じる前）：
+                $$U_\text{前} = \frac{1}{2}C_\mathrm{A}V_0^2$$</li>
+            <li><strong>最終エネルギー</strong>（$S_2$ を閉じた後）：
+                合成容量は $C_\mathrm{A}+C_\mathrm{B}$、保存された総電荷は $C_\mathrm{A}V_0$ なので、
+                $$U_\text{後} = \frac{1}{2}\frac{(\text{総電荷})^2}{\text{合成容量}} = \frac{1}{2}\frac{(C_\mathrm{A}V_0)^2}{C_\mathrm{A}+C_\mathrm{B}}$$</li>
+        </ul>
+        <p>差をとってジュール熱を求めます。</p>
+        $$\Delta E = U_\text{前} - U_\text{後} = \frac{1}{2}C_\mathrm{A}V_0^2 - \frac{1}{2}\frac{C_\mathrm{A}^2 V_0^2}{C_\mathrm{A}+C_\mathrm{B}}$$
+        $$= \frac{1}{2}C_\mathrm{A}V_0^2 \left( 1 - \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}} \right) = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$\Delta E = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>電荷の移動に伴い、エネルギーの一部は必ず抵抗での熱として失われます。その量は「初期エネルギー」と「最終エネルギー」の差として計算するのが最も簡単です。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(a) コイルを含む回路の電流（LC振動）</h3>
+
+        <svg class="circuit-svg" viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+            <rect x="50" y="20" width="200" height="80" rx="10" fill="none" stroke="black" stroke-width="2"/>
+            
+            <g transform="translate(100, 20)">
+                <line x1="-5" y1="-10" x2="-5" y2="10" stroke="white" stroke-width="4"/> <line x1="-15" y1="0" x2="-5" y2="0" stroke="black" stroke-width="2"/>
+                <line x1="15" y1="0" x2="5" y2="0" stroke="black" stroke-width="2"/>
+                <line x1="-5" y1="-10" x2="-5" y2="10" stroke="black" stroke-width="3"/>
+                <line x1="5" y1="-10" x2="5" y2="10" stroke="black" stroke-width="3"/>
+                <text x="-5" y="25" text-anchor="middle" font-size="12">CA</text>
+            </g>
+            <g transform="translate(250, 60)">
+                <path d="M0,-20 q10,5 0,10 q10,5 0,10 q10,5 0,10 q10,5 0,10" fill="none" stroke="black" stroke-width="2"/>
+                <rect x="-10" y="-25" width="20" height="50" fill="white" opacity="0"/> <text x="-20" y="5" text-anchor="end" font-size="12">L</text>
+            </g>
+            <g transform="translate(100, 100)">
+                <line x1="-5" y1="-10" x2="-5" y2="10" stroke="white" stroke-width="4"/>
+                <line x1="-15" y1="0" x2="-5" y2="0" stroke="black" stroke-width="2"/>
+                <line x1="15" y1="0" x2="5" y2="0" stroke="black" stroke-width="2"/>
+                <line x1="-5" y1="-10" x2="-5" y2="10" stroke="black" stroke-width="3"/>
+                <line x1="5" y1="-10" x2="5" y2="10" stroke="black" stroke-width="3"/>
+                <text x="-5" y="-15" text-anchor="middle" font-size="12">CB</text>
+            </g>
+            
+            <path d="M 180 30 l 10 0 l -3 -3 m 3 3 l -3 3" stroke="red" stroke-width="2" fill="none"/>
+            <text x="180" y="25" fill="red" font-size="12">I(t)</text>
+        </svg>
+
+        <h4>問題設定</h4>
+        <p>$S_1$ で $C_\mathrm{A}$ を充電した後、$S_1$ を開き $S_2$ を閉じると、$C_\mathrm{A}, L, C_\mathrm{B}$ の閉回路で電気振動（LC振動）が始まります。</p>
+
+        <h4>解法</h4>
+        <ul>
+            <li><strong>時刻 $t_0$</strong>：スイッチ $S_2$ を閉じた瞬間。コイルの自己誘導作用により電流は急には流れず、<span class="highlight">0から連続的に増加</span>します。</li>
+            <li><strong>時刻 $t_1$</strong>：電流が最大値をとる時刻。</li>
+        </ul>
+        <p>電流 $I$ の時間変化は正弦波（サインカーブ）の一部となります。$t=t_0$ で $I=0$ かつ傾き（増加率）が最大となるグラフを選びます。<br>
+        図3の中で、0から始まり上に凸の形（サインカーブの最初の山の形）をしているのは <strong>(イ)</strong> です。(エ)は変曲点を持って立ち上がっており（S字）、LC振動の初期挙動（余弦波の微分は正弦波）と一致しません。</p>
+        <p><strong>理由：</strong><br>
+        時刻 $t_0$ において、コンデンサー $C_\mathrm{A}$ の電圧は $V_0$ であり、コイルには大きな電圧がかかるため、電流の増加率 $dI/dt$（グラフの接線の傾き）は最大となるから。</p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          記号：(イ)<br>
+          理由：閉じた瞬間の電流は0であるが、コンデンサーの電圧によりコイルに大きな電圧がかかるため、電流の時間変化率（グラフの傾き）は最大となるから。
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>振動電流は $I(t) = I_\text{max}\sin\omega(t-t_0)$ の形になります。$t=t_0$ で $I=0$ ですが、$\cos$ 型の電荷分布から駆動されるため、スタート直後の勢い（傾き）は最大です。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(b) 電流最大時の電圧</h3>
+        <h4>解法</h4>
+        <p>時刻 $t_1$ において電流 $I$ が最大になるとき、その時間変化率 $\frac{\Delta I}{\Delta t}$（すなわち $dI/dt$）は <span class="highlight">0</span> になります。</p>
+        <p>コイルの電圧降下は $V_L = L \frac{dI}{dt}$ なので、このとき <strong>コイルの両端電圧は0</strong> となります。<br>
+        したがって、キルヒホッフの法則より、コンデンサーAとBの電圧は等しくなります。</p>
+        $$V_\mathrm{A} = V_\mathrm{B}$$
+        <p>また、電荷保存則より、常に $Q_\mathrm{A} + Q_\mathrm{B} = C_\mathrm{A}V_0$ が成り立ちます。</p>
+        $$C_\mathrm{A}V_\mathrm{A} + C_\mathrm{B}V_\mathrm{B} = C_\mathrm{A}V_0$$
+        <p>$V_\mathrm{B} = V_\mathrm{A}$ を代入して、</p>
+        $$(C_\mathrm{A} + C_\mathrm{B}) V_\mathrm{A} = C_\mathrm{A}V_0 \quad \longrightarrow \quad V_\mathrm{A} = \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$V_\mathrm{A} = V_\mathrm{B} = \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>「電流最大」$\iff$「$dI/dt=0$」$\iff$「コイルの電圧0」$\iff$「コンデンサー同士の電圧が釣り合う（平衡位置）」。この連想が重要です。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(c) 電流最大時のエネルギー</h3>
+        
+        <div class="energy-bar-wrap">
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-ca" style="height: 100%;"></div>
+            </div>
+            <span class="bar-label">初期</span>
+            <span class="bar-label">CAのみ</span>
+          </div>
+          <div style="display:flex; align-items:center;">→</div>
+          <div class="energy-bar">
+            <div class="bar-outer">
+              <div class="bar-fill fill-cb" style="height: 15%; bottom: 85%;"></div>
+              <div class="bar-fill fill-ca" style="height: 25%; bottom: 60%;"></div>
+              <div class="bar-fill fill-l" style="height: 60%;"></div>
+            </div>
+            <span class="bar-label">t=t₁</span>
+            <span class="bar-label">CA+CB+Coil</span>
+          </div>
+        </div>
+
+        <h4>解法</h4>
+        <p>時刻 $t_1$ における各エネルギーを求めます。</p>
+        <ul>
+            <li><strong>コンデンサーBのエネルギー $U_\mathrm{B}$</strong>：<br>
+                (b)で求めた電圧 $V_\mathrm{B}$ を用います。
+                $$U_\mathrm{B} = \frac{1}{2}C_\mathrm{B}V_\mathrm{B}^2 = \frac{1}{2}C_\mathrm{B} \left( \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0 \right)^2 = \frac{C_\mathrm{A}^2 C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})^2}V_0^2$$</li>
+            <li><strong>コイルのエネルギー $U_L$</strong>：<br>
+                系全体のエネルギー保存則を用います。抵抗がないため、初期エネルギー $U_0$ が保存されます。
+                $$U_0 = U_\mathrm{A}(t_1) + U_\mathrm{B}(t_1) + U_L$$
+                ここで、時刻 $t_1$ では $V_\mathrm{A}=V_\mathrm{B}$ なので、コンデンサー全体のエネルギーは合成容量 $C_\mathrm{A}+C_\mathrm{B}$ のコンデンサーに電圧 $V_\mathrm{A}$ がかかっているのと同じです。
+                $$U_\text{caps} = \frac{1}{2}(C_\mathrm{A}+C_\mathrm{B}) V_\mathrm{A}^2 = \frac{1}{2}(C_\mathrm{A}+C_\mathrm{B}) \left( \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}}V_0 \right)^2 = \frac{C_\mathrm{A}^2}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+                よって、
+                $$U_L = U_0 - U_\text{caps} = \frac{1}{2}C_\mathrm{A}V_0^2 - \frac{C_\mathrm{A}^2}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+                $$= \frac{1}{2}C_\mathrm{A}V_0^2 \left( 1 - \frac{C_\mathrm{A}}{C_\mathrm{A}+C_\mathrm{B}} \right) = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$</li>
+        </ul>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$U_\mathrm{B} = \frac{C_\mathrm{A}^2 C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})^2}V_0^2, \quad U_L = \frac{C_\mathrm{A}C_\mathrm{B}}{2(C_\mathrm{A}+C_\mathrm{B})}V_0^2$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>コイルのエネルギー計算は $1/2 LI^2$ を直接計算するよりも、全エネルギーからの引き算（エネルギー保存則）を利用する方が計算ミスを防げます。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(d) 半周期後の電荷 $Q_\mathrm{F}$</h3>
+        <h4>解法</h4>
+        <p>電流 $I$ が最初に0になった時刻から、次に0になる時刻（半周期後）を考えます。LC振動において、電荷 $q(t)$ は単振動します。</p>
+        <ul>
+            <li><strong>振動の中心（平衡点）</strong>：$dI/dt=0$ となる点、つまり $V_\mathrm{A}=V_\mathrm{B}$ となる状態です。<br>
+                このときのBの電荷は、(c)の状態に相当し、$Q_\text{center} = \frac{C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$ です。</li>
+            <li><strong>初期状態</strong>：$t=t_0$ で $Q_\mathrm{B}=0$。<br>
+                これは平衡点 $Q_\text{center}$ から $-Q_\text{center}$ だけずれた状態です。</li>
+            <li><strong>半周期後</strong>：単振動の反対側の端点なので、平衡点から $+Q_\text{center}$ だけずれた状態になります。</li>
+        </ul>
+        <p>よって、求める $Q_\mathrm{F}$（半周期後のBの電荷）は、</p>
+        $$Q_\mathrm{F} = Q_\text{center} + Q_\text{center} = 2 Q_\text{center} = \frac{2C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$Q_\mathrm{F} = \frac{2C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>電気振動は、力がつり合う点（電圧が等しい点）を中心とした電荷の単振動です。「0から中心まで行った振幅分だけ、さらに向こう側へ行く」と考えると直感的に解けます。</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(e) エネルギーの完全移動条件</h3>
+        
+        <div id="sim-lc" class="sim-embed"></div>
+        <p style="text-align:center; color:#666; font-size:0.9em;">シミュレーション：容量比を変えて電荷移動を観察できます</p>
+
+        <h4>解法</h4>
+        <p>「$C_\mathrm{A}$ のエネルギーをすべて $C_\mathrm{B}$ に移す」とは、ある瞬間に $C_\mathrm{A}$ の電荷 $Q_\mathrm{A}$ が 0 になり、すべての電荷（エネルギー）が $C_\mathrm{B}$ に移動することを意味します。</p>
+        <p>(d)で考察した「半周期後の状態」が、最も電荷が移動した瞬間です。このとき、コンデンサーAに残っている電荷は、</p>
+        $$Q_\mathrm{A}' = (\text{総電荷}) - Q_\mathrm{F} = C_\mathrm{A}V_0 - \frac{2C_\mathrm{A}C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}}V_0$$
+        <p>これが 0 になればよいので、</p>
+        $$C_\mathrm{A}V_0 \left( 1 - \frac{2C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}} \right) = 0$$
+        $$1 = \frac{2C_\mathrm{B}}{C_\mathrm{A}+C_\mathrm{B}} \quad \longrightarrow \quad C_\mathrm{A} + C_\mathrm{B} = 2C_\mathrm{B}$$
+        $$\therefore C_\mathrm{A} = C_\mathrm{B}$$
+        <p>このとき、$Q_\mathrm{F} = C_\mathrm{A}V_0$ となり、確かに電荷がすべて移動しています。</p>
+
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          $$C_\mathrm{A} = C_\mathrm{B}$$
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>同じ容量のコンデンサー同士でLC振動させると、エネルギー（電荷）を完全にキャッチボールできます。容量が異なると、片方に電荷が残り続けます。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <script>
+    // Canvas: RC Circuit Current Graph
+    const canvas = document.getElementById('chart-rc');
+    if(canvas && canvas.getContext) {
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+      
+      // Plot params
+      const pad = 40;
+      const plotW = w - pad * 2;
+      const plotH = h - pad * 2;
+      const tMax = 5; // 5 tau
+      
+      // Draw axes
+      ctx.beginPath();
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(w - pad, h - pad); // t-axis
+      ctx.moveTo(pad, h - pad);
+      ctx.lineTo(pad, pad); // I-axis
+      ctx.strokeStyle = '#64748b';
+      ctx.stroke();
+      
+      // Labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '14px serif';
+      ctx.fillText('0', pad - 15, h - pad + 15);
+      ctx.fillText('t', w - pad + 10, h - pad + 5);
+      ctx.fillText('I', pad - 10, pad - 10);
+      ctx.fillText('t₀', pad, h - pad + 15);
+      
+      // Curve 1: Normal R (Solid)
+      ctx.beginPath();
+      ctx.moveTo(pad, pad + plotH * 0.1); // Start high (V0/R)
+      for(let t = 0; t <= tMax; t += 0.05) {
+        const I = Math.exp(-t);
+        const x = pad + (t / tMax) * plotW;
+        const y = (h - pad) - I * (plotH * 0.9);
+        ctx.lineTo(x, y);
+      }
+      ctx.strokeStyle = '#3b82f6';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillText('V₀/R', pad - 35, pad + plotH * 0.1 + 5);
+      
+      // Curve 2: Large R (Dashed)
+      // I0' < I0 (let's say 0.6), tau' > tau (let's say 1.66)
+      // Total charge (Area) must be equal. Area1 = 1 * 1 = 1. Area2 = 0.6 * 1.66 = 1.
+      const R_ratio = 1.8;
+      ctx.beginPath();
+      ctx.setLineDash([5, 5]);
+      ctx.moveTo(pad, (h-pad) - (plotH * 0.9) / R_ratio); 
+      for(let t = 0; t <= tMax; t += 0.05) {
+        const I = (1/R_ratio) * Math.exp(-t / R_ratio);
+        const x = pad + (t / tMax) * plotW;
+        const y = (h - pad) - I * (plotH * 0.9) * R_ratio; // Scale y to match visually relative to max I
+        // Wait, logic check: y pixel = bottom - value * scale.
+        // Base scale: Max I (V0/R) maps to plotH * 0.9.
+        // I_base = exp(-t). y = bottom - exp(-t) * H.
+        // I_new = (1/r) * exp(-t/r). y = bottom - (1/r) * exp(-t/r) * H.
+        const val = (1/R_ratio) * Math.exp(-t / R_ratio);
+        const y2 = (h - pad) - val * (plotH * 0.9);
+        ctx.lineTo(x, y2);
+      }
+      ctx.strokeStyle = '#ef4444';
+      ctx.stroke();
+      ctx.setLineDash([]);
+      
+      // Label curve 2
+      // ctx.fillText('V₀/R\'', pad + 10, (h-pad) - (plotH * 0.9) / R_ratio);
+    }
+
+    // p5.js Simulation: LC Energy Transfer
+    const sketchLC = (p) => {
+      let ca = 100;
+      let cb = 100; // adjustable
+      let qTotal = 100;
+      let angle = 0;
+      let running = true;
+      let slider;
+
+      p.setup = () => {
+        let cnv = p.createCanvas(480, 280);
+        cnv.parent('sim-lc');
+        
+        p.createDiv('容量比 CB/CA: ').parent('sim-lc').style('margin', '10px 0 0 20px').style('display','inline-block');
+        slider = p.createSlider(0.5, 3, 1, 0.1);
+        slider.parent('sim-lc');
+        slider.style('width', '100px');
+      };
+
+      p.draw = () => {
+        p.background(248, 250, 252);
+        
+        let ratio = slider.value();
+        // CA = fixed, CB changes relative to CA
+        // To keep physics simple visual:
+        // Q_center = (CA*CB / CA+CB) * V0. But here we just sim oscillation.
+        // qA(t) oscillates around Q_eq.
+        // Q_eq = CA / (CA+CB) * Q_total.
+        // Amp = Q_total - Q_eq = CB / (CA+CB) * Q_total.
+        // qA(t) = Q_eq + Amp * cos(wt).
+        // At t=0, qA = Q_eq + Amp = Q_total. Correct.
+        // At t=pi, qA = Q_eq - Amp = (CA-CB)/(CA+CB) * Q_total.
+        
+        // Let's visualize tanks.
+        let q_eq = (1 / (1 + ratio)) * 200; // Total height 200
+        let amp = (ratio / (1 + ratio)) * 200;
+        
+        if (running) angle += 0.05;
+        
+        let hA = q_eq + amp * p.cos(angle);
+        let hB = 200 - hA; // Conservation of charge in the loop logic for visualization height sum
+        
+        // Draw Tank A
+        p.fill(255); p.stroke(0);
+        p.rect(50, 50, 60, 200);
+        p.fill(59, 130, 246); // Blue
+        p.noStroke();
+        p.rect(50, 250 - hA, 60, hA);
+        p.fill(0); p.textAlign(p.CENTER);
+        p.text("CA", 80, 270);
+        
+        // Draw Tank B
+        p.fill(255); p.stroke(0);
+        // Width of B proportional to capacitance ratio? Maybe too complex. Keep width same, height represents charge Q.
+        // But Q = CV. If C changes, for same Q, V is different. 
+        // Let's just show Charge Q.
+        p.rect(250, 50, 60 * ratio, 200); // Make B wider if C is larger
+        p.fill(16, 185, 129); // Green
+        p.noStroke();
+        p.rect(250, 250 - hB, 60 * ratio, hB);
+        p.fill(0);
+        p.text("CB", 250 + 30 * ratio, 270);
+        
+        // Connection animation (Pipe)
+        p.stroke(0); p.strokeWeight(4);
+        p.line(110, 240, 250, 240);
+        
+        // Info
+        p.noStroke();
+        p.textAlign(p.LEFT);
+        p.text(`CB = ${ratio.toFixed(1)} CA`, 20, 30);
+        
+        if (ratio === 1) {
+            p.fill(255, 0, 0);
+            p.text("完全移動条件 (CA=CB)", 180, 30);
+        }
+        
+        // Check min qA
+        let minQA = q_eq - amp; // (1-r)/(1+r) * 200.
+        // If r=1, minQA = 0.
+        
+        // Visualize min line for A
+        p.stroke(200); p.strokeWeight(1);
+        p.line(40, 250 - minQA, 120, 250 - minQA);
+        p.fill(100); p.noStroke();
+        p.text("Min QA", 10, 250 - minQA);
+      };
+    };
+    new p5(sketchLC, 'sim-lc');
+  </script>
+</body>
+</html>

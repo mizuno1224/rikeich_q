@@ -42,6 +42,18 @@
       "folderName": "tohoku",
       "fields": [
         {
+          "fieldName": "2008年度",
+          "folderId": "2008",
+          "problems": [
+            {
+              "id": "2008_zenki_2",
+              "title": "前期 大問2",
+              "desc": "コンデンサーの放電（抵抗とコイルの比較）",
+              "explanationPath": "data/explanations/exam_national/tohoku/2008/2008_zenki_2.html"
+            }
+          ]
+        },
+        {
           "fieldName": "2017年度",
           "folderId": "2017",
           "problems": [

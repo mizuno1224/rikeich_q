@@ -1,0 +1,14 @@
+【ステップ4：完成HTMLの出力】
+
+このチャットの**これまでのメッセージ**（ステップ1のJSON、ステップ2の解説本文、ステップ3の図・シミュ設計書）と、添付の **template.html** を参照し、以下を実行してください。
+
+■ やること
+1. template.html の【ここに〜】のプレースホルダを、ステップ1・2・3の内容で埋める。
+2. 解法の指針：ステップ2の「解法の指針」で置き換え。問題の構成は問(1)・問(2)のように設問1つずつ。
+3. 各設問：ステップ2の解説本文で card 内を埋める。ステップ3の設計書に従い、該当する設問の h3 の直後に図（SVG / chart-wrap+canvas+script / energy-bar-wrap / sim-embed）を挿入する。図はできる限り実装する（SVG は線・円・text で描画、Canvas は script で描画）。p5 は &lt;div class="sim-embed"&gt; と「// p5 sketch: 設計書の〜を実装」のコメントだけでも可。
+4. 各 card の順序を厳守：h3 → 図 → 解説 → &lt;div class="box-note"&gt;答え&lt;/div&gt; → &lt;div class="box-alert"&gt;&lt;span class="box-alert-label"&gt;Point&lt;/span&gt;&lt;p&gt;...&lt;/p&gt;&lt;/div&gt;
+5. 添付の **rules.txt** のルールをすべて満たす。
+6. &lt;style&gt; 内に .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; } を含める。
+
+■ 出力
+完成した**1つのHTMLファイル全体**をコードブロックで出力する。説明文は最小限にし、HTMLのコードを省略せずにすべて出力すること。CSSパス（../../../../../css/）はそのままでよい。

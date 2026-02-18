@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>【ここに大問タイトル】</title>
+  <link rel="stylesheet" href="../../../../../css/base.css">
+  <link rel="stylesheet" href="../../../../../css/components.css">
+  <link rel="stylesheet" href="../../../../../css/viewer.css">
+  <style>
+    .circuit-svg, .diagram-svg { max-width: 480px; width: 100%; height: auto; display: block; margin: 16px auto; }
+    .chart-wrap { width: 100%; max-width: 520px; margin: 16px auto; }
+    .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: #fdfdfe; border: 1px solid #e2e8f0; }
+    .energy-bar-wrap { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
+    .energy-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px; }
+    .energy-bar .bar-outer { width: 50px; height: 120px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; position: relative; overflow: hidden; }
+    .energy-bar .bar-fill { position: absolute; bottom: 0; width: 100%; border-radius: 0 0 5px 5px; }
+    .energy-bar .bar-label { font-size: 0.8rem; color: #64748b; }
+    .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+  <div class="viewer-container">
+    <div class="explanation-area">
+
+      <h2 class="prob-title-sub">【ここに大問タイトル】</h2>
+
+      <div class="card">
+        <h3>解法の指針</h3>
+        <p>【ここに問題の概要 1〜2段落】</p>
+        <h4>問題の構成</h4>
+        <ul>
+          <li><strong>問(1)</strong>：【ここに問(1)の一行要約】</li>
+          <li><strong>問(2)</strong>：【ここに問(2)の一行要約】</li>
+        </ul>
+        <div class="box-note">
+          <strong>全体を貫くポイント</strong><br>
+          <ul style="margin:8px 0 0 0; padding-left:1.2em;">
+            <li>【ポイント1】</li>
+            <li>【ポイント2】</li>
+            <li>【ポイント3】</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- ===== 問(1) ===== -->
+      <div class="card">
+        <h3>(a) 【ここに小問タイトル】</h3>
+        <!-- 【ここに図・シミュ】 -->
+        <h4>【必要なら小見出し】</h4>
+        <p>【解説本文】</p>
+        <div class="box-note">
+          <strong>答え：</strong><br>
+          【ここに答えの式・選択肢】
+        </div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>【この設問のポイント 1〜3文】</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>(b) 【小問タイトル】</h3>
+        <p>【解説】</p>
+        <div class="box-note"><strong>答え：</strong><br>【答え】</div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>【Point】</p>
+        </div>
+      </div>
+
+      <!-- 問(1)の (c)(d)... も同様に card を追加 -->
+
+      <!-- ===== 問(2) ===== -->
+      <div class="card">
+        <h3>(a) 【小問タイトル】</h3>
+        <p>【解説】</p>
+        <div class="box-note"><strong>答え：</strong><br>【答え】</div>
+        <div class="box-alert">
+          <span class="box-alert-label">Point</span>
+          <p>【Point】</p>
+        </div>
+      </div>
+
+      <!-- 問(2)の (b)(c)... を同様に -->
+
+    </div>
+  </div>
+  <script>
+  // 【Canvas でグラフを描く場合のインライン script】
+  </script>
+</body>
+</html>
