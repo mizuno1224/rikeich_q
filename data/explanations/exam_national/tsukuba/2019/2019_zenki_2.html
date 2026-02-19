@@ -347,11 +347,11 @@
             ctx.font='bold 13px sans-serif'; ctx.fillStyle='#334155';
             ctx.textAlign='right';
             ctx.fillText('C\u2082',px-6,py1+gap/2+5);
-            ctx.fillStyle='#3b82f6'; ctx.font='12px sans-serif'; ctx.textAlign='center';
+            ctx.fillStyle='#3b82f6'; ctx.font='12px sans-serif'; ctx.textAlign='right';
             var cVal=(1+2*f).toFixed(2);
-            ctx.fillText('C(t) = '+cVal+' C\u2082',px+pw/2,py2+30);
+            ctx.fillText('C(t) = '+cVal+' C\u2082',px+pw/2-10,py2+30);
             var qVal=(1+2*f).toFixed(2);
-            ctx.fillText('Q(t) = '+qVal+' EC\u2082',px+pw/2,py2+46);
+            ctx.fillText('Q(t) = '+qVal+' EC\u2082',px+pw/2-10,py2+46);
           }
 
           function drawGraph(f){

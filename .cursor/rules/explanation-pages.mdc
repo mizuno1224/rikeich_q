@@ -61,12 +61,13 @@ globs:
 </div>
 ```
 
-### Point枠の幅
-- `.box-alert` の幅は `.box-note`（答え枠）と同じ幅にする
-- `.card` 内に配置する場合、以下のCSSを `<style>` で上書きする：
+### Point枠（.box-alert）と答え枠（.box-note）の幅
+- **Point枠（.box-alert）**：カード幅いっぱい（100%）に広げ、最も強調する。
+- **答え枠（.box-note）**：Point枠より少し小さく（90%）し、中央寄せにする。
 
 ```css
-.box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
+.box-alert { width: 100%; max-width: 100%; margin: 40px 0; }
+.box-note { max-width: 90%; margin: 20px auto; }
 ```
 
 ## 4. 図・シミュレーション
