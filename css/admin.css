@@ -158,6 +158,22 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
+  transition: width 0.3s ease, min-width 0.3s ease;
+}
+.sidebar-area.collapsed {
+  width: 0;
+  min-width: 0;
+  border-right: none;
+  overflow: hidden;
+}
+.sidebar-area.collapsed #tree-root {
+  display: none;
+}
+.sidebar-area.collapsed .sidebar-header h3 {
+  display: none;
+}
+.sidebar-area.collapsed .sidebar-tools .btn-tool:not(#btn-toggle-sidebar) {
+  display: none;
 }
 .sidebar-header {
   padding: 10px 15px;
@@ -339,7 +355,8 @@ summary:hover .tree-actions {
   position: relative;
 }
 .view-content.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 #view-editor {

@@ -4,6 +4,14 @@
 
 async function loadMaterial(index) {
   if (index < 0 || index >= manifestData.length) return;
+  
+  // 未保存の変更がある場合は確認
+  if (hasUnsavedChanges) {
+    if (!confirm("変更を破棄しますか？\n（一括保存ボタンで保存できます）")) {
+      return;
+    }
+    hasUnsavedChanges = false;
+  }
 
   // 開いたタブのインデックスを保存
   activeMaterialIndex = index;
@@ -53,9 +61,51 @@ async function loadMaterial(index) {
   }
   
   renderApp();
+  
+  // 元のデータを保存（変更検出用）
+  originalMaterialData = currentMaterialData ? JSON.parse(JSON.stringify(currentMaterialData)) : null;
+  hasUnsavedChanges = false;
+  
+  // 教材を読み込んだら自動的に一括編集画面を表示
+  if (currentMaterialData && currentMaterialData.subjects && currentMaterialData.subjects.length > 0) {
+    // 問題選択を解除
+    currentProblem = null;
+    ui.editorMainWrapper.style.display = "flex";
+    ui.emptyState.style.display = "none";
+    
+    // 一括編集タブをアクティブにする
+    if (ui.tabSpreadsheet && ui.viewSpreadsheet) {
+      // 他のタブを非アクティブ
+      if (ui.tabEdit) ui.tabEdit.classList.remove("active");
+      if (ui.tabPreview) ui.tabPreview.classList.remove("active");
+      if (ui.tabAnalyze) ui.tabAnalyze.classList.remove("active");
+      if (ui.viewEditor) ui.viewEditor.classList.remove("active");
+      if (ui.viewPreview) ui.viewPreview.classList.remove("active");
+      if (ui.viewAnalyze) ui.viewAnalyze.classList.remove("active");
+      
+      // 一括編集タブをアクティブ
+      ui.tabSpreadsheet.classList.add("active");
+      ui.viewSpreadsheet.classList.add("active");
+      
+      // 一括編集画面では個々の問題タイトルID情報を非表示
+      if (ui.editingTitle) ui.editingTitle.style.display = "none";
+      if (ui.editingId) ui.editingId.style.display = "none";
+      const editorHeader = document.querySelector(".editor-header");
+      if (editorHeader) editorHeader.style.display = "none";
+      
+      // 一括編集画面をレンダリング
+      renderSpreadsheet();
+    }
+  }
+}
+
+function markAsChanged() {
+  hasUnsavedChanges = true;
 }
 
 async function saveAll() {
+  hasUnsavedChanges = false;
+  originalMaterialData = currentMaterialData ? JSON.parse(JSON.stringify(currentMaterialData)) : null;
   // クラウドモードなら保存不可
   if (isCloudMode) return;
   

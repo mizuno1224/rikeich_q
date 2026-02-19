@@ -266,13 +266,23 @@ document.addEventListener("DOMContentLoaded", () => {
                   var path = p.explanationPath || "";
                   var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
                   var hasExplanation = path && !isPDF;
+                  var hasYouTube = p.youtubeUrl && p.youtubeUrl.trim();
                   var title = esc(p.title);
-                  if (isPDF || !hasExplanation) {
-                    // PDFからの解説ページ、または解説がない問題はグレーアウトして無効化
-                    html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span></a>';
+                  
+                  // 動画ありマーク
+                  var videoMark = hasYouTube ? '<span class="prob-video-mark" title="動画解説あり">📹</span>' : '';
+                  
+                  if (isPDF || (!hasExplanation && !hasYouTube)) {
+                    // PDFからの解説ページ、または解説も動画もない問題はグレーアウトして無効化
+                    html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span>' + videoMark + '</a>';
+                  } else if (!hasExplanation && hasYouTube) {
+                    // 解説なし・動画ありの場合は動画のみ見られるようにボタンを有効化
+                    var targetUrl = "viewer.html?path=" + encodeURIComponent(path || '') + (isTeacherMode ? "&admin=1" : "");
+                    html += '<a href="' + targetUrl + '" class="prob-link prob-link-video-only" data-search-text="' + esc(path + " " + p.title) + '" data-youtube-url="' + esc(p.youtubeUrl) + '"><span>' + title + '</span>' + videoMark + '</a>';
                   } else {
+                    // 通常の解説ページ
                     var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                    html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                    html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span>' + videoMark + '</a>';
                   }
                 });
                 html += '</div>';
@@ -302,13 +312,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 var path = p.explanationPath || "";
                 var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
                 var hasExplanation = path && !isPDF;
+                var hasYouTube = p.youtubeUrl && p.youtubeUrl.trim();
                 var title = esc(p.title);
-                if (isPDF || !hasExplanation) {
-                  // PDFからの解説ページ、または解説がない問題はグレーアウトして無効化
-                  html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span></a>';
+                
+                // 動画ありマーク
+                var videoMark = hasYouTube ? '<span class="prob-video-mark" title="動画解説あり">📹</span>' : '';
+                
+                if (isPDF || (!hasExplanation && !hasYouTube)) {
+                  // PDFからの解説ページ、または解説も動画もない問題はグレーアウトして無効化
+                  html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span>' + videoMark + '</a>';
+                } else if (!hasExplanation && hasYouTube) {
+                  // 解説なし・動画ありの場合は動画のみ見られるようにボタンを有効化
+                  var targetUrl = "viewer.html?path=" + encodeURIComponent(path || '') + (isTeacherMode ? "&admin=1" : "");
+                  html += '<a href="' + targetUrl + '" class="prob-link prob-link-video-only" data-search-text="' + esc(path + " " + p.title) + '" data-youtube-url="' + esc(p.youtubeUrl) + '"><span>' + title + '</span>' + videoMark + '</a>';
                 } else {
+                  // 通常の解説ページ
                   var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                  html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span></a>';
+                  html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span>' + videoMark + '</a>';
                 }
               });
               html += '</div>';

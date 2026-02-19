@@ -43,22 +43,36 @@ document.addEventListener("DOMContentLoaded", () => {
     sessionStorage.setItem('previousPageUrl', document.referrer);
   }
   
-  // スクロール時にタイトル行を隠す
+  // スクロール時にタイトル行を隠す（滑らかなアニメーション）
   var headerTop = document.querySelector('.prob-header-top');
   var headerTopRow = headerTop ? headerTop.querySelector('.header-top-row') : null;
   var scrollThreshold = 100; // 100pxスクロールしたらタイトルを隠す
+  var isScrolled = false;
+  var rafId = null;
   
   function handleScroll() {
     if (!headerTop || !headerTopRow) return;
     
-    var scrollY = window.scrollY || window.pageYOffset;
-    var isScrolled = scrollY > scrollThreshold;
-    
-    if (isScrolled) {
-      headerTop.classList.add('header-scrolled');
-    } else {
-      headerTop.classList.remove('header-scrolled');
+    // 既にリクエスト中の場合はキャンセル
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
     }
+    
+    rafId = requestAnimationFrame(function() {
+      var scrollY = window.scrollY || window.pageYOffset;
+      var newIsScrolled = scrollY > scrollThreshold;
+      
+      // 状態が変わった場合のみクラスを更新
+      if (newIsScrolled !== isScrolled) {
+        isScrolled = newIsScrolled;
+        if (isScrolled) {
+          headerTop.classList.add('header-scrolled');
+        } else {
+          headerTop.classList.remove('header-scrolled');
+        }
+      }
+      rafId = null;
+    });
   }
   
   window.addEventListener('scroll', handleScroll, { passive: true });
@@ -442,6 +456,26 @@ function loadExplanationByPath(path) {
         return;
       }
       
+      // YouTube URLを保存
+      if (problem && problem.youtubeUrl) {
+        currentProblem = currentProblem || {};
+        currentProblem.youtubeUrl = problem.youtubeUrl;
+      }
+      
+      // 解説ページがない場合は動画のみ表示
+      if (!path || path.trim() === '') {
+        if (problem && problem.youtubeUrl) {
+          hideLoading(loader);
+          renderExplanation(textTarget, '', problem);
+          if (problem.title) updateTitle(problem.title);
+          return;
+        } else {
+          hideLoading(loader);
+          showError("解説または動画が見つかりませんでした。");
+          return;
+        }
+      }
+      
       // 通常の読み込み処理
       return fetchWithRetry(path)
         .then((res) => {
@@ -451,7 +485,7 @@ function loadExplanationByPath(path) {
         .then((html) => {
           return new Promise((resolve) => {
             whenReadyToRender(html, () => {
-              renderExplanation(textTarget, html);
+              renderExplanation(textTarget, html, problem);
               const heading = textTarget.querySelector("h2, h3");
               if (heading) updateTitle(heading.textContent);
               updateBookmarkButton(path);
@@ -634,7 +668,7 @@ function onFullscreenChange() {
   }
 }
 
-function renderExplanation(container, html) {
+function renderExplanation(container, html, problem) {
   // 1. HTML挿入（直接innerHTMLで高速化、DocumentFragmentは不要）
   // 完全なHTMLドキュメントの場合は<div class="explanation-area">の中身だけを抽出
   var htmlContent = html.trim();
@@ -831,8 +865,8 @@ function renderExplanation(container, html) {
     });
   }
 
-  // 7. タブ機能の追加（カードごとにタブで切り替え、Pointは最後のタブ）
-  setupCardTabs(container);
+  // 7. タブ機能の追加（カードごとにタブで切り替え、YouTube動画タブを追加、Pointタブは削除）
+  setupCardTabs(container, problem);
 }
 
 function showError(msg) {
@@ -1114,7 +1148,8 @@ function initAudioControls() {
 
 /**
  * カードごとにタブで切り替えられるようにする
- * Pointは最後のタブに配置
+ * YouTube動画タブを最後に追加（動画URLがある場合）
+ * Pointタブは削除（各設問内にPointを移動）
  *
  * 重要: DOM要素を移動しない。元のカード/Pointをそのまま残し、
  * display で表示/非表示を切り替える。
@@ -1122,23 +1157,31 @@ function initAudioControls() {
  * タブを開いた時に初めて実行する。これによりシミュレーションが
  * 正しいコンテナ幅で描画される。
  */
-function setupCardTabs(container) {
+function setupCardTabs(container, problem) {
   var cards = Array.from(container.querySelectorAll('.card'));
-  // .card の外にある直属の .box-alert のみをタブに含める（.card 内の Point は除外）
-  var pointBox = null;
+  
+  // .card の外にある直属の .box-alert は削除（Pointタブを廃止）
   var allAlerts = Array.from(container.querySelectorAll('.box-alert'));
   for (var i = 0; i < allAlerts.length; i++) {
     if (!allAlerts[i].closest('.card')) {
-      pointBox = allAlerts[i];
-      break;
+      // カード外のPointは削除
+      allAlerts[i].remove();
     }
   }
 
-  if (cards.length < 2 && !pointBox) return;
+  // YouTube動画タブを作成（動画URLがある場合）
+  var youtubeTab = null;
+  if (problem && problem.youtubeUrl && problem.youtubeUrl.trim()) {
+    youtubeTab = createYouTubeTab(problem.youtubeUrl);
+    container.appendChild(youtubeTab);
+  }
 
-  // タブの対象要素一覧（カード + Point）
+  // タブが1つ以下の場合はタブ機能を有効化しない
+  if (cards.length < 2 && !youtubeTab) return;
+
+  // タブの対象要素一覧（カード + YouTube動画タブ）
   var items = cards.slice();
-  if (pointBox) items.push(pointBox);
+  if (youtubeTab) items.push(youtubeTab);
 
   // --- 遅延スクリプトの実行関数（先に定義） ---
   function executeDeferredScripts(item) {
@@ -1373,14 +1416,14 @@ function setupCardTabs(container) {
   }
 
   items.forEach(function(item, index) {
-    var isPoint = item === pointBox;
+    var isYouTube = item === youtubeTab;
     var btn = document.createElement('button');
-    btn.className = 'card-tab-btn' + (isPoint ? ' card-tab-btn-point' : '');
+    btn.className = 'card-tab-btn' + (isYouTube ? ' card-tab-btn-youtube' : '');
     btn.setAttribute('role', 'tab');
     btn.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
 
     var heading = item.querySelector('h3');
-    var label = isPoint ? 'Point' : (heading ? heading.textContent.trim() : 'セクション ' + (index + 1));
+    var label = isYouTube ? '📹 動画' : (heading ? heading.textContent.trim() : 'セクション ' + (index + 1));
     // MathJaxマークアップを除去
     label = cleanMathForTabTitle(label);
     if (label.length > 20) label = label.substring(0, 17) + '...';
@@ -1507,4 +1550,66 @@ function setupCardTabs(container) {
     tabNavPrevBtn = prevBtn;
     tabNavNextBtn = nextBtn;
   }
+}
+
+/**
+ * YouTube動画タブを作成
+ */
+function createYouTubeTab(youtubeUrl) {
+  var card = document.createElement('div');
+  card.className = 'card youtube-tab';
+  
+  var heading = document.createElement('h3');
+  heading.textContent = 'YouTube解説動画';
+  card.appendChild(heading);
+  
+  var embedContainer = document.createElement('div');
+  embedContainer.className = 'youtube-embed-container';
+  embedContainer.style.cssText = 'position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 20px 0;';
+  
+  // YouTube URLから動画IDを抽出
+  var videoId = extractYouTubeVideoId(youtubeUrl);
+  if (videoId) {
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube.com/embed/' + videoId;
+    iframe.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;';
+    iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('loading', 'lazy');
+    embedContainer.appendChild(iframe);
+  } else {
+    // URLが無効な場合はリンクを表示
+    var link = document.createElement('a');
+    link.href = youtubeUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.textContent = 'YouTube動画を開く';
+    link.style.cssText = 'display: inline-block; padding: 12px 24px; background: #ff0000; color: #fff; border-radius: 8px; text-decoration: none; margin: 20px 0;';
+    embedContainer.appendChild(link);
+  }
+  
+  card.appendChild(embedContainer);
+  return card;
+}
+
+/**
+ * YouTube URLから動画IDを抽出
+ */
+function extractYouTubeVideoId(url) {
+  if (!url) return null;
+  
+  // 様々なYouTube URL形式に対応
+  var patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+  ];
+  
+  for (var i = 0; i < patterns.length; i++) {
+    var match = url.match(patterns[i]);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+  
+  return null;
 }

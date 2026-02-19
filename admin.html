@@ -70,10 +70,11 @@
       <div class="tabs-area" id="material-tabs"></div>
 
       <div class="content-split">
-        <div class="sidebar-area">
+        <div class="sidebar-area" id="sidebar-area">
           <div class="sidebar-header">
             <h3>構成ツリー</h3>
             <div class="sidebar-tools">
+              <button id="btn-toggle-sidebar" class="btn-tool" title="ツリーを開閉">◀</button>
               <button id="btn-add-subject" class="btn-tool" title="科目を追加">
                 ＋科目
               </button>
@@ -96,15 +97,22 @@
 
               <div class="view-switch">
                 <button id="tab-edit" class="view-tab active">📝 編集</button>
+                <button id="tab-spreadsheet" class="view-tab">📊 一括編集</button>
                 <button id="tab-preview" class="view-tab">
                   👁️ プレビュー
                 </button>
-                <button id="tab-analyze" class="view-tab">📊 分析</button>
+                <button id="tab-analyze" class="view-tab">📈 分析</button>
               </div>
             </div>
 
             <div id="view-editor" class="view-content active">
               <div id="form-container"></div>
+            </div>
+
+            <div id="view-spreadsheet" class="view-content" style="padding: 20px; background: #f8fafc; overflow-y: auto">
+              <div id="spreadsheet-container">
+                <p>一括編集モード：左のツリーから教材を選択してください</p>
+              </div>
             </div>
 
             <div id="view-preview" class="view-content" style="padding: 0; background: #fff; overflow: hidden">

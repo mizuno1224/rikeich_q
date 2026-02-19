@@ -218,46 +218,22 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
 /* --- 1. 上部ヘッダー --- */
 .prob-header-top {
   flex-shrink: 0;
-  min-height: 70px;
+  height: 122px; /* タイトル行(70px) + タブバー(52px) */
+  min-height: 122px;
   display: flex;
   flex-direction: column;
-  background: #fff;
-  border-bottom: 1px solid #cbd5e1;
+  background: transparent;
+  border: none;
   z-index: var(--z-header, 100);
-  /* ヘッダーを常に追従 */
   position: sticky;
   top: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: min-height 0.2s ease;
-}
-
-/* スクロール時にタイトル行を隠す（アニメ短くしてタブのぶれを防ぐ） */
-.prob-header-top > .header-top-row {
-  max-height: 70px;
-  opacity: 1;
-  transform: translateZ(0); /* レイヤー化で下のタブバーとの同時描画ずれを防ぐ */
-  transition: max-height 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.2s ease,
-              visibility 0.2s step-end;
-}
-
-.prob-header-top.header-scrolled > .header-top-row {
-  max-height: 0;
-  height: 0;
-  min-height: 0;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  box-shadow: none;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  padding-top: 0;
-  padding-bottom: 0;
-  margin: 0;
 }
 
-.prob-header-top.header-scrolled {
-  min-height: auto;
-  transition: min-height 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
+/* スクロール時にタイトル行を隠す（滑らかなアニメーション） */
 
 /* タブバー内の戻るボタン（常に一番左に表示・フレックス項目） */
 .prob-header-top > .card-tabs-bar .compact-back-btn {
@@ -268,10 +244,10 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   margin-right: 8px;
   margin-left: 0;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: rgba(255, 255, 255, 1); /* 不透明な背景（白） */
   color: var(--col-text-sub);
   font-weight: bold;
-  border: none;
+  border: 1px solid rgba(226, 232, 240, 0.8);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -279,6 +255,7 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   transition: all 0.2s;
   font-size: 1.2rem;
   line-height: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 /* タイトル行の戻るボタンはタブバーがあるとき非表示（タブ左に表示するため） */
@@ -287,21 +264,61 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
 }
 
 .compact-back-btn:hover {
-  background: var(--col-primary);
-  color: #fff;
+  background: rgba(255, 255, 255, 1); /* 不透明な背景 */
+  color: var(--col-primary);
+  border-color: var(--col-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .prob-header-top > .header-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px 0 24px;
+  padding: 0 12px;
   height: 70px;
   min-height: 70px;
+  max-height: 70px;
   flex-shrink: 0;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  background: transparent;
+  opacity: 1;
+  transform: translateZ(0);
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              margin 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  visibility: visible;
+}
+
+.prob-header-top.header-scrolled {
+  height: 52px; /* タブバーの高さのみ */
+  min-height: 52px;
+}
+
+.prob-header-top.header-scrolled > .header-top-row {
+  height: 0;
+  min-height: 0;
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              min-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-top 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding-bottom 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              margin 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              visibility 0s linear 0.3s;
 }
 
 .prob-header-top > .header-top-row > .header-left {
@@ -314,11 +331,10 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
 }
 
 .prob-header-top > .card-tabs-bar {
-  padding: 8px 24px;
+  padding: 8px 12px;
   margin: 0;
-  border-bottom: none;
-  border-top: 1px solid #e2e8f0;
-  background: #fff;
+  border: none;
+  background: transparent;
   flex-shrink: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -326,13 +342,21 @@ body:not(.pointer-active) .recording-float-btn-exit:hover {
   scrollbar-color: #cbd5e1 transparent;
   -webkit-overflow-scrolling: touch;
   display: flex;
-  justify-content: flex-start; /* 左端のタブが確実に表示される */
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
   position: relative;
+  height: 52px;
   min-height: 52px;
   box-sizing: border-box;
-  /* スクロール時のタイトル行アニメ中にタブ表記がぶれないようレイヤー化 */
   transform: translateZ(0);
   backface-visibility: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* タイトル行が隠れたときにタブバーを上に移動 */
+.prob-header-top.header-scrolled > .card-tabs-bar {
+  transform: translateY(0);
 }
 
 /* 解説画面下・左右に固定のタブ移動ボタン（複数タブ時のみ表示） */
@@ -650,14 +674,14 @@ body.viewer-student .header-top-row .header-actions {
 .explanation-area {
   box-sizing: border-box; /* パディングを幅に含め、カード右端の見切れを防ぐ */
   width: 100%;
-  max-width: 900px; /* 読みやすい幅に制限 */
+  max-width: 100%; /* 横幅を広げる */
   margin: 0 auto;
   background: #fff;
   border-radius: 0;
   contain: layout style;
   box-shadow: none;
   overflow: visible;
-  padding: 40px 20px 100px 20px; /* 下に余白 */
+  padding: 40px 12px 100px 12px; /* 左右の余白を削減 */
   scroll-snap-type: none;
   will-change: scroll-position;
 }
@@ -723,6 +747,9 @@ mjx-container[display="true"] {
   padding-bottom: 0.5em;
   contain: layout style;
   content-visibility: auto;
+  width: 100%; /* カードの横幅を広げる */
+  max-width: 100%; /* 最大幅も100%に */
+  box-sizing: border-box;
 }
 
 .card-reaction-footer {
@@ -1017,49 +1044,55 @@ mjx-container[display="true"] {
 .card-tab-btn {
   flex-shrink: 0;
   padding: 10px 20px;
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(255, 255, 255, 1); /* 不透明な背景（白） */
   color: var(--col-text-sub);
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
+  border-radius: 8px;
   transition: all 0.2s;
   white-space: nowrap;
   font-family: var(--font-base);
   position: relative;
-  min-height: 44px;
+  min-height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 
 .card-tab-btn:hover {
   color: var(--col-primary);
-  background: rgba(59, 130, 246, 0.05);
-  border-radius: 8px 8px 0 0;
+  background: rgba(255, 255, 255, 1); /* 不透明な背景 */
+  border-color: var(--col-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
 }
 
 .card-tab-btn.active {
   color: var(--col-primary);
-  border-bottom-color: var(--col-primary);
+  border-color: var(--col-primary);
   font-weight: 700;
+  background: rgba(255, 255, 255, 1); /* 不透明な背景 */
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
+  transform: translateY(-2px);
 }
 
-.card-tab-btn-point {
-  color: var(--col-warning);
+.card-tab-btn-youtube {
+  color: #ff0000; /* YouTubeの赤色 */
 }
 
-.card-tab-btn-point.active {
-  color: var(--col-warning);
-  border-bottom-color: var(--col-warning);
+.card-tab-btn-youtube.active {
+  color: #ff0000;
+  border-bottom-color: #ff0000;
 }
 
 /* iPad横画面（1024px以上）でのレイアウト最適化 */
 @media (min-width: 1024px) {
   .explanation-area {
-    max-width: 95%;
-    padding: 40px 30px 100px 30px;
+    max-width: 100%; /* 横幅を広げる */
+    padding: 40px 16px 100px 16px; /* 左右の余白を削減 */
   }
 
   .card-tabs-bar {
@@ -1086,12 +1119,13 @@ mjx-container[display="true"] {
 /* 大型タブレット・デスクトップ（1366px以上） */
 @media (min-width: 1366px) {
   .explanation-area {
-    max-width: 1200px;
-    padding: 40px 40px 100px 40px;
+    max-width: 100%; /* 横幅を広げる */
+    padding: 40px 20px 100px 20px; /* 左右の余白を削減 */
   }
 
   .card {
     padding: 50px;
+    max-width: 100%; /* カードの最大幅も100%に */
   }
 }
 

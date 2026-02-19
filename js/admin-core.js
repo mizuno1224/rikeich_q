@@ -19,6 +19,10 @@ let currentVisualEditor = null;
 let dragSrcProb = null;
 let dragSrcField = null;
 
+// 未保存の変更を追跡
+let hasUnsavedChanges = false;
+let originalMaterialData = null;
+
 // --- DOM Elements (Global Access) ---
 let ui = {};
 
@@ -30,6 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
     btnSave: document.getElementById("btn-save"),
     btnAddSubject: document.getElementById("btn-add-subject"),
     sidebarTools: document.querySelector(".sidebar-tools"),
+    sidebarArea: document.getElementById("sidebar-area"),
+    btnToggleSidebar: document.getElementById("btn-toggle-sidebar"),
     mainUi: document.getElementById("main-ui"),
     initialMsg: document.getElementById("initial-msg"),
     tabsArea: document.getElementById("material-tabs"),
@@ -38,11 +44,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Tabs & Views
     tabEdit: document.getElementById("tab-edit"),
+    tabSpreadsheet: document.getElementById("tab-spreadsheet"),
     tabPreview: document.getElementById("tab-preview"),
     tabAnalyze: document.getElementById("tab-analyze"),
     viewEditor: document.getElementById("view-editor"),
+    viewSpreadsheet: document.getElementById("view-spreadsheet"),
     viewPreview: document.getElementById("view-preview"),
     viewAnalyze: document.getElementById("view-analyze"),
+    
+    spreadsheetContainer: document.getElementById("spreadsheet-container"),
     
     formContainer: document.getElementById("form-container"),
     previewContainer: document.getElementById("preview-container"),
@@ -152,6 +162,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 5. Sidebar Tools
   setupSidebarTools();
+  
+  // 6. Sidebar Toggle
+  if (ui.btnToggleSidebar && ui.sidebarArea) {
+    // デフォルトでツリーを非表示にする
+    ui.sidebarArea.classList.add("collapsed");
+    ui.btnToggleSidebar.textContent = "▶";
+    ui.btnToggleSidebar.title = "ツリーを開く";
+    
+    ui.btnToggleSidebar.addEventListener("click", () => {
+      ui.sidebarArea.classList.toggle("collapsed");
+      ui.btnToggleSidebar.textContent = ui.sidebarArea.classList.contains("collapsed") ? "▶" : "◀";
+      ui.btnToggleSidebar.title = ui.sidebarArea.classList.contains("collapsed") ? "ツリーを開く" : "ツリーを閉じる";
+    });
+  }
 
   // 6. Import Modal Events
   setupImportModalEvents();
