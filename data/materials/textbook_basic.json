@@ -9,467 +9,352 @@
           "fieldName": "第1編 運動とエネルギー / 第1章 運動の表し方",
           "folderId": "01/01",
           "problems": [
-            {
-              "id": "basic_01_01_001",
-              "title": "問1",
-              "youtubeUrl": "https://youtu.be/sC5li_LEcxM"
-            },
-            {
-              "id": "basic_01_01_002",
-              "title": "問2：速さの単位の変換",
-              "youtubeUrl": "https://youtu.be/iMJOjnoiTlo"
-            },
-            {
-              "id": "basic_01_01_003",
-              "title": "例題1",
-              "youtubeUrl": "https://youtu.be/2OtwN26MA2M"
-            },
-            {
-              "id": "basic_01_01_004",
-              "title": "類題1",
-              "youtubeUrl": "https://youtu.be/nP0Gd-FDrNE"
-            },
-            {
-              "id": "basic_01_01_005",
-              "title": "問abc：相対速度",
-              "youtubeUrl": "https://youtu.be/k1TNTW4EkPo"
-            },
-            {
-              "id": "basic_01_01_006",
-              "title": "問3",
-              "youtubeUrl": "https://youtu.be/BIE_4psLN-8"
-            },
-            {
-              "id": "basic_01_01_007",
-              "title": "等加速度直線運動の式",
-              "youtubeUrl": "https://youtu.be/fVGSxyCvqfk"
-            },
-            {
-              "id": "basic_01_01_008",
-              "title": "等加速度直線運動の式",
-              "youtubeUrl": "https://youtu.be/mD80xtCh9L4"
-            },
-            {
-              "id": "basic_01_01_009",
-              "title": "等加速度直線運動のグラフ",
-              "youtubeUrl": "https://youtu.be/Z2atHIiWVGw"
-            },
-            {
-              "id": "basic_01_01_010",
-              "title": "等加速度直線運動のグラフ",
-              "youtubeUrl": "https://youtu.be/EVLCktOrcGI"
-            },
-            {
-              "id": "basic_01_01_011",
-              "title": "加速度",
-              "youtubeUrl": "https://youtu.be/eDs4wMAr66E"
-            },
-            {
-              "id": "basic_01_01_012",
-              "title": "問b：斜方投射",
-              "youtubeUrl": "https://youtu.be/CxOtCGL_1NM"
-            },
-            {
-              "id": "basic_01_01_013",
-              "title": "問c：斜方投射",
-              "youtubeUrl": "https://youtu.be/pZeQFyAcJ8M"
-            },
-            {
-              "id": "basic_01_01_014",
-              "title": "平均の速さ",
-              "youtubeUrl": "https://youtu.be/kI2PnftMOGU"
-            },
-            {
-              "id": "basic_01_01_015",
-              "title": "等速直線運動",
-              "youtubeUrl": "https://youtu.be/MxnOTJnBKpw"
-            },
-            {
-              "id": "basic_01_01_016",
-              "title": "相対速度",
-              "youtubeUrl": "https://youtu.be/KwU_mwxvKxs"
-            },
-            {
-              "id": "basic_01_01_017",
-              "title": "加速度",
-              "youtubeUrl": "https://youtu.be/2kDyfjZREPU"
-            },
-            {
-              "id": "basic_01_01_018",
-              "title": "等加速度直線運動",
-              "youtubeUrl": "https://youtu.be/W7EHYLBKDYs"
-            }
+            { "id": "1", "title": "問1" },
+            { "id": "2", "title": "問2", "youtubeUrl": "https://youtu.be/iMJOjnoiTlo" },
+            { "id": "3", "title": "問3" },
+            { "id": "4", "title": "問4", "youtubeUrl": "https://youtu.be/pYaSeKV0w0c" },
+            { "id": "5", "title": "問5", "youtubeUrl": "https://youtu.be/zZehezR61E4" },
+            { "id": "6", "title": "問6", "youtubeUrl": "https://youtu.be/Og19yv54LRk" },
+            { "id": "7", "title": "問7", "youtubeUrl": "https://youtu.be/DaUae4ZC1VE" },
+            { "id": "8", "title": "問8", "youtubeUrl": "https://youtu.be/u3dui9PU33I" },
+            { "id": "9", "title": "問9", "youtubeUrl": "https://youtu.be/rqHlSO6vImQ" },
+            { "id": "10", "title": "問10", "youtubeUrl": "https://youtu.be/6v304lr4bjA" },
+            { "id": "11", "title": "問11" },
+            { "id": "12", "title": "問12" },
+            { "id": "13", "title": "問a~c" },
+            { "id": "14", "title": "問13", "youtubeUrl": "https://youtu.be/0yOuGNI8mGw" },
+            { "id": "15", "title": "問a~e" },
+            { "id": "16", "title": "類題1" },
+            { "id": "17", "title": "問14" },
+            { "id": "18", "title": "問15", "youtubeUrl": "https://youtu.be/D5Q_gtuI99o" },
+            { "id": "19", "title": "問16", "youtubeUrl": "https://youtu.be/TVEdTTR9bB8" },
+            { "id": "20", "title": "問a", "youtubeUrl": "https://youtu.be/eDs4wMAr66E" },
+            { "id": "21", "title": "問17", "youtubeUrl": "https://youtu.be/5T_8aLkdePo" },
+            { "id": "22", "title": "問18", "youtubeUrl": "https://youtu.be/Kh8HOnM1vRE" },
+            { "id": "23", "title": "例題2", "youtubeUrl": "https://youtu.be/fVGSxyCvqfk" },
+            { "id": "24", "title": "類題2", "youtubeUrl": "https://youtu.be/mD80xtCh9L4" },
+            { "id": "25", "title": "例題3", "youtubeUrl": "https://youtu.be/Z2atHIiWVGw" },
+            { "id": "26", "title": "類題3", "youtubeUrl": "https://youtu.be/EVLCktOrcGI" },
+            { "id": "27", "title": "思考学習", "youtubeUrl": "https://youtu.be/NT-QEuas7UE" },
+            { "id": "28", "title": "問a~e", "youtubeUrl": "https://youtu.be/wfJJqYPnITk" },
+            { "id": "29", "title": "問19", "youtubeUrl": "https://youtu.be/1Hze4nZ1M-U" },
+            { "id": "30", "title": "問20", "youtubeUrl": "https://youtu.be/yloQQkPSZlw" },
+            { "id": "31", "title": "問21", "youtubeUrl": "https://youtu.be/fwSEzEZgmdY" },
+            { "id": "32", "title": "問22", "youtubeUrl": "https://youtu.be/kU3lpK-c-HI" },
+            { "id": "33", "title": "問23", "youtubeUrl": "https://youtu.be/ZFXbGc8YkQM" },
+            { "id": "34", "title": "例題4", "youtubeUrl": "https://youtu.be/zDUf7brTt_k" },
+            { "id": "35", "title": "類題4", "youtubeUrl": "https://youtu.be/mopVihTqa2g" },
+            { "id": "36", "title": "問a~g", "youtubeUrl": "https://youtu.be/duS1K65qaE8" },
+            { "id": "37", "title": "問24" },
+            { "id": "38", "title": "類題5" },
+            { "id": "39", "title": "類題6" },
+            { "id": "40", "title": "演習問題1", "youtubeUrl": "https://youtu.be/kI2PnftMOGU" },
+            { "id": "41", "title": "演習問題2", "youtubeUrl": "https://youtu.be/MxnOTJnBKpw" },
+            { "id": "42", "title": "演習問題3", "youtubeUrl": "https://youtu.be/KwU_mwxvKxs" },
+            { "id": "43", "title": "演習問題4", "youtubeUrl": "https://youtu.be/2kDyfjZREPU" },
+            { "id": "44", "title": "演習問題5", "youtubeUrl": "https://youtu.be/W7EHYLBKDYs" },
+            { "id": "45", "title": "演習問題6", "youtubeUrl": "https://youtu.be/Ba7B0Vlrkbw" },
+            { "id": "46", "title": "演習問題7", "youtubeUrl": "https://youtu.be/LUX3qxhPPV8" },
+            { "id": "47", "title": "演習問題8", "youtubeUrl": "https://youtu.be/N-lm5HsSEBc" },
+            { "id": "48", "title": "演習問題9" }
           ]
         },
         {
           "fieldName": "第1編 運動とエネルギー / 第2章 運動の法則",
           "folderId": "01/02",
           "problems": [
-            {
-              "id": "basic_01_02_001",
-              "title": "問4：力のモーメント",
-              "youtubeUrl": "https://youtu.be/S6oPL7MYe4I"
-            },
-            {
-              "id": "basic_01_02_002",
-              "title": "問5：力のモーメント",
-              "youtubeUrl": "https://youtu.be/P0XNwjErJnY"
-            },
-            {
-              "id": "basic_01_02_003",
-              "title": "例題4：剛体のつりあい",
-              "youtubeUrl": "https://youtu.be/1g7kBf3GR_w"
-            },
-            {
-              "id": "basic_01_02_004",
-              "title": "類題4：剛体のつりあい",
-              "youtubeUrl": "https://youtu.be/fRYknHrrHp8"
-            },
-            {
-              "id": "basic_01_02_005",
-              "title": "問6：剛体にはたらく力の合力",
-              "youtubeUrl": "https://youtu.be/ZcF22W83Kbw"
-            },
-            {
-              "id": "basic_01_02_006",
-              "title": "問7：偶力",
-              "youtubeUrl": "https://youtu.be/bbnLoZYwDjc"
-            },
-            {
-              "id": "basic_01_02_007",
-              "title": "問8：重心",
-              "youtubeUrl": "https://youtu.be/C8bEzjJQz6Q"
-            },
-            {
-              "id": "basic_01_02_008",
-              "title": "問9：重心",
-              "youtubeUrl": "https://youtu.be/Y_3Y3qlAqjY"
-            },
-            {
-              "id": "basic_01_02_009",
-              "title": "問10：棒の重心",
-              "youtubeUrl": "https://youtu.be/Cs3KXR3lbZc"
-            },
-            {
-              "id": "basic_01_02_010",
-              "title": "問11：重心",
-              "youtubeUrl": "https://youtu.be/SrIBSW0M1cw"
-            },
-            {
-              "id": "basic_01_02_011",
-              "title": "例題5：物体が傾く条件",
-              "youtubeUrl": "https://youtu.be/HJgZXbZ0GJw"
-            },
-            {
-              "id": "basic_01_02_012",
-              "title": "類題5：剛体の傾きと転倒",
-              "youtubeUrl": "https://youtu.be/NaHwNxef7j4"
-            },
-            {
-              "id": "basic_01_02_013",
-              "title": "記録タイマーで生じる抵抗力",
-              "youtubeUrl": "https://youtu.be/cfrXjJA2waI"
-            },
-            {
-              "id": "basic_01_02_014",
-              "title": "演習問題1",
-              "youtubeUrl": "https://youtu.be/rd6lrQ4ToY8"
-            },
-            {
-              "id": "basic_01_02_015",
-              "title": "運動の法則",
-              "youtubeUrl": "https://youtu.be/GN5r3pGQ3P4"
-            },
-            {
-              "id": "basic_01_02_016",
-              "title": "演習問題3：転倒しない条件",
-              "youtubeUrl": "https://youtu.be/k78UcD-Oe4I"
-            },
-            {
-              "id": "basic_01_02_017",
-              "title": "演習問題4：クレーン車の転倒防止",
-              "youtubeUrl": "https://youtu.be/6i41BckCIZM"
-            }
+            { "id": "1", "title": "問25" },
+            { "id": "2", "title": "問26" },
+            { "id": "3", "title": "問27" },
+            { "id": "4", "title": "問28" },
+            { "id": "5", "title": "問29" },
+            { "id": "6", "title": "問30", "youtubeUrl": "https://youtu.be/293TDjGbshI" },
+            { "id": "7", "title": "問31", "youtubeUrl": "https://youtu.be/dp8uzw1BAoA" },
+            { "id": "8", "title": "問A", "youtubeUrl": "https://youtu.be/yhbhrEM8fjQ" },
+            { "id": "9", "title": "問B", "youtubeUrl": "https://youtu.be/yRXQ-KKXRo8" },
+            { "id": "10", "title": "例題7", "youtubeUrl": "https://youtu.be/P8uuKE9zTj8" },
+            { "id": "11", "title": "類題7", "youtubeUrl": "https://youtu.be/-n-SCGvQXWc" },
+            { "id": "12", "title": "例題8", "youtubeUrl": "https://youtu.be/ZJI8tX6i-pI" },
+            { "id": "13", "title": "類題8" },
+            { "id": "14", "title": "問a", "youtubeUrl": "https://youtu.be/NS93sUseOA4" },
+            { "id": "15", "title": "問32" },
+            { "id": "16", "title": "問33" },
+            { "id": "17", "title": "問A", "youtubeUrl": "https://youtu.be/7BlPxFfwyoU" },
+            { "id": "18", "title": "問a", "youtubeUrl": "https://youtu.be/e3IjP-96UB8" },
+            { "id": "19", "title": "問34", "youtubeUrl": "https://youtu.be/RIGc4dg7C7c" },
+            { "id": "20", "title": "問35", "youtubeUrl": "https://youtu.be/0EpknRan9mc" },
+            { "id": "21", "title": "問36", "youtubeUrl": "https://youtu.be/uEq5ujG8Ipo" },
+            { "id": "22", "title": "問37", "youtubeUrl": "https://youtu.be/eZId339sdMs" },
+            { "id": "23", "title": "問38", "youtubeUrl": "https://youtu.be/5XzmjkVdSUg" },
+            { "id": "24", "title": "例題9", "youtubeUrl": "https://youtu.be/bYcpi6_rwWk" },
+            { "id": "25", "title": "類題9", "youtubeUrl": "https://youtu.be/rc6hWNoP2lI" },
+            { "id": "26", "title": "例題10", "youtubeUrl": "https://youtu.be/tIHxjFi7I0A" },
+            { "id": "27", "title": "類題10", "youtubeUrl": "https://youtu.be/erWhDVdui7A" },
+            { "id": "28", "title": "例題11", "youtubeUrl": "https://youtu.be/0mRw8kIZp5w" },
+            { "id": "29", "title": "類題11", "youtubeUrl": "https://youtu.be/L822V__U1qA" },
+            { "id": "30", "title": "例題12", "youtubeUrl": "https://youtu.be/cup0QpVMQsk" },
+            { "id": "31", "title": "類題12", "youtubeUrl": "https://youtu.be/qR3zINjW25A" },
+            { "id": "32", "title": "例題13", "youtubeUrl": "https://youtu.be/r1qqjANRwPY" },
+            { "id": "33", "title": "類題13", "youtubeUrl": "https://youtu.be/rsThYJtpR7w" },
+            { "id": "34", "title": "例題14", "youtubeUrl": "https://youtu.be/aDAULxtMe6o" },
+            { "id": "35", "title": "類題14", "youtubeUrl": "https://youtu.be/_lyT05BRRw8" },
+            { "id": "36", "title": "問39" },
+            { "id": "37", "title": "問40", "youtubeUrl": "https://youtu.be/EYkDl1UnE0A" },
+            { "id": "38", "title": "問41" },
+            { "id": "39", "title": "例題15", "youtubeUrl": "https://youtu.be/OmFawTK7j0Q" },
+            { "id": "40", "title": "類題15", "youtubeUrl": "https://youtu.be/brWKPelKyGM" },
+            { "id": "41", "title": "思考学習" },
+            { "id": "42", "title": "問42" },
+            { "id": "43", "title": "問43" },
+            { "id": "44", "title": "問44" },
+            { "id": "45", "title": "問45" },
+            { "id": "46", "title": "問46" },
+            { "id": "47", "title": "例題16" },
+            { "id": "48", "title": "類題16" },
+            { "id": "49", "title": "演習問題1" },
+            { "id": "50", "title": "演習問題2" },
+            { "id": "51", "title": "演習問題3" },
+            { "id": "52", "title": "演習問題4", "youtubeUrl": "https://youtu.be/myGafhlgtUg" },
+            { "id": "53", "title": "演習問題5", "youtubeUrl": "https://youtu.be/IBfAgyayQZs" },
+            { "id": "54", "title": "演習問題6", "youtubeUrl": "https://youtu.be/yIt4Bpy8V3w" }
           ]
         },
         {
           "fieldName": "第1編 運動とエネルギー / 第3章 仕事と力学的エネルギー",
           "folderId": "01/03",
           "problems": [
-            {
-              "id": "basic_01_03_001",
-              "title": "問12"
-            },
-            {
-              "id": "basic_01_03_002",
-              "title": "問13：運動量と力積",
-              "youtubeUrl": "https://youtu.be/0jd4rfHUlno"
-            },
-            {
-              "id": "basic_01_03_003",
-              "title": "問14：運動量と力積",
-              "youtubeUrl": "https://youtu.be/JaImpWW_S9A"
-            },
-            {
-              "id": "basic_01_03_004",
-              "title": "例題6：運動量と力積",
-              "youtubeUrl": "https://youtu.be/B5qHXDqly_A"
-            },
-            {
-              "id": "basic_01_03_005",
-              "title": "類題6：運動量と力積",
-              "youtubeUrl": "https://youtu.be/7Lgb3lN4-PQ"
-            },
-            {
-              "id": "basic_01_03_006",
-              "title": "例題7：直線上の運動量保存則",
-              "youtubeUrl": "https://youtu.be/HL5v4ti7HTA"
-            },
-            {
-              "id": "basic_01_03_007",
-              "title": "類題7：直線上の運動量保存則",
-              "youtubeUrl": "https://youtu.be/sEOS78A72r0"
-            },
-            {
-              "id": "basic_01_03_008",
-              "title": "例題8：平面上の運動量保存則",
-              "youtubeUrl": "https://youtu.be/heVDy2xSZPA"
-            },
-            {
-              "id": "basic_01_03_009",
-              "title": "類題8：平面上の運動量保存則",
-              "youtubeUrl": "https://youtu.be/WHhDQTqk1uA"
-            },
-            {
-              "id": "basic_01_03_010",
-              "title": "例題9：物体の分裂",
-              "youtubeUrl": "https://youtu.be/qPbDHGxX7eg"
-            },
-            {
-              "id": "basic_01_03_011",
-              "title": "類題9：物体の分裂",
-              "youtubeUrl": "https://youtu.be/YOmYBUBSd6k"
-            },
-            {
-              "id": "basic_01_03_012",
-              "title": "問15"
-            },
-            {
-              "id": "basic_01_03_013",
-              "title": "問16：反発係数",
-              "youtubeUrl": "https://youtu.be/-hrJtcsf_NE"
-            },
-            {
-              "id": "basic_01_03_014",
-              "title": "問17：反発係数（小球と机の面）",
-              "youtubeUrl": "https://youtu.be/y80Oru5DH9Y"
-            },
-            {
-              "id": "basic_01_03_015",
-              "title": "例題10：反発係数①",
-              "youtubeUrl": "https://youtu.be/0zV0RaXWaGE"
-            },
-            {
-              "id": "basic_01_03_016",
-              "title": "類題10：反発係数①",
-              "youtubeUrl": "https://youtu.be/vlnuw9pDqxk"
-            },
-            {
-              "id": "basic_01_03_017",
-              "title": "例題11：反発係数②",
-              "youtubeUrl": "https://youtu.be/A6bdSvoAxyE"
-            },
-            {
-              "id": "basic_01_03_018",
-              "title": "類題11：反発係数②",
-              "youtubeUrl": "https://youtu.be/mGIpKSJ_PMI"
-            },
-            {
-              "id": "basic_01_03_019",
-              "title": "問a"
-            },
-            {
-              "id": "basic_01_03_020",
-              "title": "問b"
-            },
-            {
-              "id": "basic_01_03_021",
-              "title": "問c"
-            },
-            {
-              "id": "basic_01_03_022",
-              "title": "問d"
-            },
-            {
-              "id": "basic_01_03_023",
-              "title": "問18：運動量と力学的エネルギー",
-              "youtubeUrl": "https://youtu.be/1PWUjjg-JHI"
-            },
-            {
-              "id": "basic_01_03_024",
-              "title": "演習問題1：力積と運動量",
-              "youtubeUrl": "https://youtu.be/_gOZdFZpCG8"
-            },
-            {
-              "id": "basic_01_03_025",
-              "title": "演習問題2：直線上の運動量保存則",
-              "youtubeUrl": "https://youtu.be/3u_0Vpa36F4"
-            },
-            {
-              "id": "basic_01_03_026",
-              "title": "演習問題3：物体の分裂",
-              "youtubeUrl": "https://youtu.be/nxV3hntL-Ic"
-            },
-            {
-              "id": "basic_01_03_027",
-              "title": "演習問題4：床との斜めの衝突",
-              "youtubeUrl": "https://youtu.be/c0c7Sq_ibUo"
-            },
-            {
-              "id": "basic_01_03_028",
-              "title": "演習問題5：運動量と力学的エネルギー",
-              "youtubeUrl": "https://youtu.be/Ji6mGBbynpI"
-            },
-            {
-              "id": "basic_01_03_029",
-              "title": "演習問題6：運動量と力学的エネルギー",
-              "youtubeUrl": "https://youtu.be/rrVTCh-vVRs"
-            },
-            {
-              "id": "basic_01_03_030",
-              "title": "演習問題7：2物体の衝突",
-              "youtubeUrl": "https://youtu.be/p1faQ94uHmA"
-            }
+            { "id": "1", "title": "問47" },
+            { "id": "2", "title": "問48" },
+            { "id": "3", "title": "問49" },
+            { "id": "4", "title": "問50" },
+            { "id": "5", "title": "問51" },
+            { "id": "6", "title": "問52", "youtubeUrl": "https://youtu.be/z11qjiBbPNM" },
+            { "id": "7", "title": "問53" },
+            { "id": "8", "title": "問54" },
+            { "id": "9", "title": "問55" },
+            { "id": "10", "title": "問56" },
+            { "id": "11", "title": "問57", "youtubeUrl": "https://youtu.be/iZ2xiYWhSmE" },
+            { "id": "12", "title": "例題17", "youtubeUrl": "https://youtu.be/7i7xoyefwao" },
+            { "id": "13", "title": "類題17", "youtubeUrl": "https://youtu.be/PAEYla4Nb2E" },
+            { "id": "14", "title": "例題18", "youtubeUrl": "https://youtu.be/IKSmEEmSWb8" },
+            { "id": "15", "title": "類題18", "youtubeUrl": "https://youtu.be/KtPZHgs8Yws" },
+            { "id": "16", "title": "例題19", "youtubeUrl": "https://youtu.be/u7eoPazrLu4" },
+            { "id": "17", "title": "類題19", "youtubeUrl": "https://youtu.be/uOMe5CbMb4U" },
+            { "id": "18", "title": "例題20", "youtubeUrl": "https://youtu.be/Ia3OYuxtFCo" },
+            { "id": "19", "title": "類題20", "youtubeUrl": "https://youtu.be/hfNRtfNNta8" },
+            { "id": "20", "title": "問A", "youtubeUrl": "https://youtu.be/DQViVyx4wp4" },
+            { "id": "21", "title": "演習問題1", "youtubeUrl": "https://youtu.be/oi_JatK4evI" },
+            { "id": "22", "title": "演習問題2", "youtubeUrl": "https://youtu.be/jzvVdgjMkTc" },
+            { "id": "23", "title": "演習問題3", "youtubeUrl": "https://youtu.be/ZrhzkWzmrvM" },
+            { "id": "24", "title": "演習問題4" }
           ]
         },
         {
           "fieldName": "第2編 熱 / 第1章 熱とエネルギー",
           "folderId": "02/01",
-          "problems": []
+          "problems": [
+            { "id": "1", "title": "問1", "youtubeUrl": "https://youtu.be/LIgkfJK_cdY" },
+            { "id": "2", "title": "問2", "youtubeUrl": "https://youtu.be/3Xw0L_VF9p0" },
+            { "id": "3", "title": "問3", "youtubeUrl": "https://youtu.be/iSd4dGxsyfo" },
+            { "id": "4", "title": "問4", "youtubeUrl": "https://youtu.be/CMyx9zmz8qc" },
+            { "id": "5", "title": "例題1", "youtubeUrl": "https://youtu.be/3L8-6yBmw3k" },
+            { "id": "6", "title": "類題1", "youtubeUrl": "https://youtu.be/2mzNAwSEC34" },
+            { "id": "7", "title": "思考学習" },
+            { "id": "8", "title": "問5" },
+            { "id": "9", "title": "問6" },
+            { "id": "10", "title": "問7" },
+            { "id": "11", "title": "問a" },
+            { "id": "12", "title": "問b" },
+            { "id": "13", "title": "問c" },
+            { "id": "14", "title": "問d" },
+            { "id": "15", "title": "問e" },
+            { "id": "16", "title": "問8" },
+            { "id": "17", "title": "演習問題1", "youtubeUrl": "https://youtu.be/Pze7vzLZMME" },
+            { "id": "18", "title": "演習問題2" },
+            { "id": "19", "title": "演習問題3" },
+            { "id": "20", "title": "演習問題4" }
+          ]
         },
         {
           "fieldName": "第3編 波 / 第1章 波の性質",
           "folderId": "03/01",
           "problems": [
+            { "id": "1", "title": "問1" },
+            { "id": "2", "title": "問2" },
+            { "id": "3", "title": "問3" },
+            { "id": "4", "title": "問4" },
+            { "id": "5", "title": "問5" },
+            { "id": "6", "title": "問6" },
+            { "id": "7", "title": "問7" },
+            { "id": "8", "title": "問a" },
+            { "id": "9", "title": "問b" },
+            { "id": "10", "title": "問8" },
             {
-              "id": "basic_03_01_11",
+              "id": "11",
               "title": "例題1：波形の移動",
               "desc": "波のグラフの読み取りと、波の進行による波形の変化",
               "explanationPath": "data/explanations/textbook_basic/03/01/11.html"
             },
             {
-              "id": "basic_03_01_12",
+              "id": "12",
               "title": "類題1：波形の移動",
               "desc": "負の向きに進む波の作図と周期の計算",
               "explanationPath": "data/explanations/textbook_basic/03/01/12.html"
             },
             {
-              "id": "basic_03_01_13",
+              "id": "13",
               "title": "例題2：y-x図とy-t図",
               "desc": "y-x図から波長・振幅を読み取り、計算で周期を求め、y-t図を描く等価変換の問題。",
-              "explanationPath": "data/explanations/textbook_basic/03/01/13.html",
-              "youtubeUrl": "https://youtu.be/fVGSxyCvqfk"
+              "explanationPath": "data/explanations/textbook_basic/03/01/13.html"
             },
-            {
-              "id": "basic_03_01_14",
-              "title": "等加速度直線運動の式",
-              "youtubeUrl": "https://youtu.be/mD80xtCh9L4"
-            },
-            {
-              "id": "basic_03_01_15",
-              "title": "等加速度直線運動のグラフ",
-              "youtubeUrl": "https://youtu.be/Z2atHIiWVGw"
-            },
-            {
-              "id": "basic_03_01_16",
-              "title": "等加速度直線運動のグラフ",
-              "youtubeUrl": "https://youtu.be/EVLCktOrcGI"
-            },
-            {
-              "id": "basic_03_01_17",
-              "title": "瞬間の速度",
-              "youtubeUrl": "https://youtu.be/rqHlSO6vImQ"
-            },
+            { "id": "14", "title": "類題2" },
+            { "id": "15", "title": "問9" },
+            { "id": "16", "title": "例題3" },
+            { "id": "17", "title": "類題3" },
             {
               "id": "18",
               "title": "問10：重ね合わせの原理",
               "desc": "互いに逆向きに進む三角波の重ね合わせを作図する問題",
-              "explanationPath": "data/explanations/textbook_basic/03/01/18.html",
-              "youtubeUrl": "https://youtu.be/6v304lr4bjA"
+              "explanationPath": "data/explanations/textbook_basic/03/01/18.html"
             },
             {
-              "id": "basic_03_01_19",
+              "id": "19",
               "title": "問11：定在波",
               "desc": "互いに逆向きに進む波が重なってできる定在波の、節の間隔や腹の振幅・周期を求める問題",
               "explanationPath": "data/explanations/textbook_basic/03/01/19.html"
             },
             {
-              "id": "basic_03_01_20",
+              "id": "20",
               "title": "問12：波の反射（自由端・固定端）",
               "desc": "パルス波の自由端反射と固定端反射を作図し、合成波の形状を理解する。",
               "explanationPath": "data/explanations/textbook_basic/03/01/20.html"
             },
             {
-              "id": "basic_03_01_21",
+              "id": "21",
               "title": "例題4：正弦波の反射",
               "desc": "自由端の位置をx=9とした場合における波の反射と合成プロセス。入射波の谷が原点にある瞬間をターゲットに、合成波形の形成をシミュレーションします。",
-              "explanationPath": "data/explanations/textbook_basic/03/01/21.html",
-              "youtubeUrl": "https://youtu.be/zDUf7brTt_k"
+              "explanationPath": "data/explanations/textbook_basic/03/01/21.html"
             },
             {
-              "id": "basic_03_01_22",
+              "id": "22",
               "title": "類題4：正弦波の反射",
               "desc": "入射波の谷が原点に来る瞬間における、固定端反射による定常波の作図シミュレーション（ラベルなし）。",
-              "explanationPath": "data/explanations/textbook_basic/03/01/22.html",
-              "youtubeUrl": "https://youtu.be/mopVihTqa2g"
+              "explanationPath": "data/explanations/textbook_basic/03/01/22.html"
             },
+            { "id": "23", "title": "問13" },
+            { "id": "24", "title": "問14" },
+            { "id": "25", "title": "問15" },
+            { "id": "26", "title": "類題5" },
             {
-              "id": "basic_03_01_28",
+              "id": "27",
               "title": "演習問題1：波形の移動",
               "desc": "波形グラフから波の要素を読み取り、媒質の速度の向きから進行方向を決定する方法と、時間の経過による波形の移動を作図する問題。",
-              "explanationPath": "data/explanations/textbook_basic/03/01/28.html",
-              "youtubeUrl": "https://youtu.be/kI2PnftMOGU"
+              "explanationPath": "data/explanations/textbook_basic/03/01/28.html"
             },
             {
-              "id": "basic_03_01_29",
+              "id": "28",
               "title": "演習問題2：縦波",
               "desc": "縦波の横波表示グラフから、傾きの正負を用いて密・疎を判定し、波の進行に伴う密の移動を求める問題",
-              "explanationPath": "data/explanations/textbook_basic/03/01/29.html",
-              "youtubeUrl": "https://youtu.be/MxnOTJnBKpw"
+              "explanationPath": "data/explanations/textbook_basic/03/01/29.html"
             },
             {
-              "id": "basic_03_01_30",
+              "id": "29",
               "title": "演習問題3：正弦波の反射",
               "desc": "自由端反射における合成波の作図と定在波の節の位置、振動周期を求める問題",
-              "explanationPath": "data/explanations/textbook_basic/03/01/30.html",
-              "youtubeUrl": "https://youtu.be/KwU_mwxvKxs"
-            }
+              "explanationPath": "data/explanations/textbook_basic/03/01/30.html"
+            },
+            { "id": "30", "title": "演習問題4" }
           ]
         },
         {
           "fieldName": "第3編 波 / 第2章 音",
           "folderId": "03/02",
           "problems": [
-            {
-              "id": "16",
-              "title": "演習問題1：弦の振動",
-              "desc": "弦の共振実験から波長と波の速さを求める問題（物基707）",
-              "explanationPath": "data/explanations/textbook_basic/03/02/16.html",
-              "youtubeUrl": ""
-            },
+            { "id": "1", "title": "問16" },
+            { "id": "2", "title": "問17" },
+            { "id": "3", "title": "問18" },
+            { "id": "4", "title": "類題6" },
+            { "id": "5", "title": "問19" },
+            { "id": "6", "title": "問20" },
+            { "id": "7", "title": "例題7" },
+            { "id": "8", "title": "類題7" },
+            { "id": "9", "title": "問21" },
+            { "id": "10", "title": "問22" },
+            { "id": "11", "title": "問23" },
+            { "id": "12", "title": "問24" },
+            { "id": "13", "title": "例題8" },
+            { "id": "14", "title": "類題8" },
+            { "id": "15", "title": "問25" },
+            { "id": "16", "title": "思考学習" },
             {
               "id": "17",
-              "title": "演習問題2：気柱の振動",
-              "desc": "開管の3倍振動から次の固有振動数を求める問題（物基707）",
-              "explanationPath": "data/explanations/textbook_basic/03/02/17.html",
-              "youtubeUrl": "https://youtu.be/GN5r3pGQ3P4"
+              "title": "演習問題1：弦の振動",
+              "desc": "弦の共振実験から波長と波の速さを求める問題（物基707）",
+              "explanationPath": "data/explanations/textbook_basic/03/02/16.html"
             },
             {
               "id": "18",
+              "title": "演習問題2：気柱の振動",
+              "desc": "開管の3倍振動から次の固有振動数を求める問題（物基707）",
+              "explanationPath": "data/explanations/textbook_basic/03/02/17.html"
+            },
+            {
+              "id": "19",
               "title": "演習問題3：気柱の共鳴",
               "desc": "水の入った円筒管の共鳴実験から音の速さと開口端補正を求める問題（物基707）",
               "explanationPath": "data/explanations/textbook_basic/03/02/18.html"
-            }
+            },
+            { "id": "20", "title": "演習問題4" }
+          ]
+        },
+        {
+          "fieldName": "第4編 電気 / 第1章",
+          "folderId": "04/01",
+          "problems": [
+            { "id": "1", "title": "問1" },
+            { "id": "2", "title": "問2" },
+            { "id": "3", "title": "問3" },
+            { "id": "4", "title": "問4" },
+            { "id": "5", "title": "問5" },
+            { "id": "6", "title": "問6" },
+            { "id": "7", "title": "問7" },
+            { "id": "8", "title": "類題1" },
+            { "id": "9", "title": "問8" },
+            { "id": "10", "title": "問9" },
+            { "id": "11", "title": "問10" },
+            { "id": "12", "title": "思考学習" },
+            { "id": "13", "title": "問a" },
+            { "id": "14", "title": "問b" },
+            { "id": "15", "title": "問c" },
+            { "id": "16", "title": "問d" },
+            { "id": "17", "title": "問11" },
+            { "id": "18", "title": "問12" },
+            { "id": "19", "title": "演習問題1" },
+            { "id": "20", "title": "演習問題2" },
+            { "id": "21", "title": "演習問題3" },
+            { "id": "22", "title": "演習問題4" }
+          ]
+        },
+        {
+          "fieldName": "第4編 電気 / 第2章",
+          "folderId": "04/02",
+          "problems": [
+            { "id": "1", "title": "問13" },
+            { "id": "2", "title": "問14" },
+            { "id": "3", "title": "問15" },
+            { "id": "4", "title": "問16" },
+            { "id": "5", "title": "演習問題1" },
+            { "id": "6", "title": "演習問題2" },
+            { "id": "7", "title": "演習問題3" },
+            { "id": "8", "title": "演習問題4" },
+            { "id": "9", "title": "演習問題5" }
+          ]
+        },
+        {
+          "fieldName": "その他 / 物理量と単位",
+          "folderId": "other/butsu",
+          "problems": [
+            { "id": "1", "title": "ワーク1~5", "youtubeUrl": "https://youtu.be/706A7-nD_mI" }
           ]
         }
       ]
