@@ -11,38 +11,6 @@ let currentPath = null;
 let audioPlayer = null;
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 戻るボタン: 直前の位置に戻る
-  const backLink = document.querySelector("a.btn-back-circle");
-  if (backLink) {
-    backLink.addEventListener("click", function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // sessionStorageに保存された前のページのURLを確認
-      var previousUrl = sessionStorage.getItem('previousPageUrl');
-      
-      // 履歴がある場合は戻る
-      if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
-        // 前のページのURLをsessionStorageに保存（次回の戻るボタン用）
-        sessionStorage.setItem('previousPageUrl', document.referrer);
-        window.history.back();
-      } else if (previousUrl && previousUrl !== window.location.href) {
-        // sessionStorageに保存されたURLがある場合はそこに戻る
-        window.location.href = previousUrl;
-      } else {
-        // フォールバック: index.htmlへ
-        const path = window.location.pathname || "";
-        const indexPath = path.replace(/[^/]*$/, "index.html");
-        window.location.href = indexPath || "index.html";
-      }
-    });
-  }
-  
-  // ページ読み込み時に現在のURLをsessionStorageに保存（次回の戻るボタン用）
-  if (document.referrer && document.referrer !== window.location.href) {
-    sessionStorage.setItem('previousPageUrl', document.referrer);
-  }
-  
   // スクロール時にタイトル行を隠す（滑らかなアニメーション）
   var headerTop = document.querySelector('.prob-header-top');
   var headerTopRow = headerTop ? headerTop.querySelector('.header-top-row') : null;
@@ -100,8 +68,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ★追加: index.html から渡されるパスパラメータを取得
+  // ★追加: index.html から渡されるパスパラメータを取得（空でも「指定あり」として扱う）
   const directPath = params.get("path");
+  const hasPathParam = params.has("path");
+  const hasYoutubeParam = !!params.get("youtube");
 
   // 従来のパラメータ
   const probId = params.get("id");
@@ -264,8 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- メイン読み込み処理 ---
-  if (directPath) {
-    loadExplanationByPath(directPath);
+  // path が空でも youtube があれば動画のみ表示するため、path パラメータの有無または youtube の有無で判定
+  if (hasPathParam || hasYoutubeParam) {
+    loadExplanationByPath(directPath || "");
   } else if (probId) {
     loadProblemById(probId, srcPath);
   } else {
@@ -434,15 +405,31 @@ function loadExplanationByPath(path) {
   const textTarget = document.getElementById("text-target");
   if (!textTarget) return;
 
-  const fileName = path.split("/").pop();
-  updateTitle(fileName);
-  updateBookmarkButton(path);
-
-  const loader = showLoading("解説を読み込み中...");
-  
-  // 教員モードかどうかを確認
   const params = new URLSearchParams(window.location.search);
   const isAdminMode = params.get("admin") === "1";
+  const loader = showLoading("解説を読み込み中...");
+
+  // 解説HTMLがなく動画のみのとき: URL の youtube パラメータを使う
+  const youtubeParam = params.get("youtube");
+  if (!path || path.trim() === "") {
+    const videoUrl = youtubeParam ? decodeURIComponent(youtubeParam) : "";
+    if (videoUrl && videoUrl.trim()) {
+      const problem = {
+        youtubeUrl: videoUrl.trim(),
+        title: params.get("title") ? decodeURIComponent(params.get("title")) : "解説動画",
+      };
+      currentProblem = { youtubeUrl: problem.youtubeUrl };
+      hideLoading(loader);
+      renderExplanation(textTarget, "", problem);
+      if (problem.title) updateTitle(problem.title);
+      updateBookmarkButton("");
+      return;
+    }
+  } else {
+    const fileName = path.split("/").pop();
+    updateTitle(fileName);
+    updateBookmarkButton(path);
+  }
 
   // 問題データを検索して公開設定を確認
   findProblemByPath(path)
@@ -462,18 +449,20 @@ function loadExplanationByPath(path) {
         currentProblem.youtubeUrl = problem.youtubeUrl;
       }
       
-      // 解説ページがない場合は動画のみ表示
-      if (!path || path.trim() === '') {
-        if (problem && problem.youtubeUrl) {
+      // 解説ページがない場合は動画のみ表示（URLのyoutubeパラメータがあればそれも利用）
+      if (!path || path.trim() === "") {
+        const videoUrl = (problem && problem.youtubeUrl) ? problem.youtubeUrl : (youtubeParam ? decodeURIComponent(youtubeParam) : "");
+        if (videoUrl && videoUrl.trim()) {
+          const videoProblem = problem || { youtubeUrl: videoUrl.trim(), title: "解説動画" };
+          if (!videoProblem.youtubeUrl) videoProblem.youtubeUrl = videoUrl.trim();
           hideLoading(loader);
-          renderExplanation(textTarget, '', problem);
-          if (problem.title) updateTitle(problem.title);
-          return;
-        } else {
-          hideLoading(loader);
-          showError("解説または動画が見つかりませんでした。");
+          renderExplanation(textTarget, "", videoProblem);
+          if (videoProblem.title) updateTitle(videoProblem.title);
           return;
         }
+        hideLoading(loader);
+        showError("解説または動画が見つかりませんでした。");
+        return;
       }
       
       // 通常の読み込み処理
@@ -943,7 +932,7 @@ function setupCardReactionsInner(container, cards) {
     memoArea.className = "card-memo-area";
     const textarea = document.createElement("textarea");
     textarea.className = "card-memo-input";
-    textarea.placeholder = "疑問点メモ";
+    textarea.placeholder = "疑問点・感想";
     memoArea.appendChild(textarea);
 
     // ボタンエリア
@@ -1318,28 +1307,6 @@ function setupCardTabs(container, problem) {
   tabBar.setAttribute('role', 'tablist');
   tabBar.setAttribute('aria-label', '解説セクション');
 
-  // 戻るボタンを最初からタブの一番左に表示
-  var tabBackBtn = document.createElement('button');
-  tabBackBtn.className = 'compact-back-btn';
-  tabBackBtn.innerHTML = '←';
-  tabBackBtn.setAttribute('aria-label', '一覧に戻る');
-  tabBackBtn.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    var previousUrl = sessionStorage.getItem('previousPageUrl');
-    if (window.history.length > 1 && document.referrer && document.referrer !== window.location.href) {
-      sessionStorage.setItem('previousPageUrl', document.referrer);
-      window.history.back();
-    } else if (previousUrl && previousUrl !== window.location.href) {
-      window.location.href = previousUrl;
-    } else {
-      var path = window.location.pathname || '';
-      var indexPath = path.replace(/[^/]*$/, 'index.html');
-      window.location.href = indexPath || 'index.html';
-    }
-  });
-  tabBar.appendChild(tabBackBtn);
-
   var tabButtons = [];
 
   // MathJaxマークアップを除去または簡略化する関数
@@ -1553,63 +1520,63 @@ function setupCardTabs(container, problem) {
 }
 
 /**
- * YouTube動画タブを作成
+ * YouTube動画タブを作成（URLがあれば必ずタブを生成し、埋め込みで横幅余白を狭く表示）
  */
 function createYouTubeTab(youtubeUrl) {
+  var rawUrl = (youtubeUrl && youtubeUrl.trim()) ? youtubeUrl.trim() : '';
   var card = document.createElement('div');
   card.className = 'card youtube-tab';
-  
+  card.setAttribute('data-youtube-tab', 'true');
+
   var heading = document.createElement('h3');
   heading.textContent = 'YouTube解説動画';
   card.appendChild(heading);
-  
+
+  var embedWrap = document.createElement('div');
+  embedWrap.className = 'youtube-embed-wrap';
+
   var embedContainer = document.createElement('div');
   embedContainer.className = 'youtube-embed-container';
-  embedContainer.style.cssText = 'position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; margin: 20px 0;';
-  
-  // YouTube URLから動画IDを抽出
-  var videoId = extractYouTubeVideoId(youtubeUrl);
+
+  var videoId = rawUrl ? extractYouTubeVideoId(rawUrl) : null;
   if (videoId) {
     var iframe = document.createElement('iframe');
     iframe.src = 'https://www.youtube.com/embed/' + videoId;
-    iframe.style.cssText = 'position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;';
     iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
     iframe.setAttribute('allowfullscreen', '');
     iframe.setAttribute('loading', 'lazy');
+    iframe.setAttribute('title', 'YouTube解説動画');
     embedContainer.appendChild(iframe);
-  } else {
-    // URLが無効な場合はリンクを表示
+  } else if (rawUrl) {
     var link = document.createElement('a');
-    link.href = youtubeUrl;
+    link.href = rawUrl;
     link.target = '_blank';
     link.rel = 'noopener noreferrer';
     link.textContent = 'YouTube動画を開く';
-    link.style.cssText = 'display: inline-block; padding: 12px 24px; background: #ff0000; color: #fff; border-radius: 8px; text-decoration: none; margin: 20px 0;';
+    link.className = 'youtube-fallback-link';
     embedContainer.appendChild(link);
   }
-  
-  card.appendChild(embedContainer);
+
+  embedWrap.appendChild(embedContainer);
+  card.appendChild(embedWrap);
   return card;
 }
 
 /**
- * YouTube URLから動画IDを抽出
+ * YouTube URLから動画IDを抽出（複数形式に対応）
  */
 function extractYouTubeVideoId(url) {
-  if (!url) return null;
-  
-  // 様々なYouTube URL形式に対応
+  if (!url || typeof url !== 'string') return null;
+  var s = url.trim();
   var patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
-    /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/watch\?[^#&]*v=([a-zA-Z0-9_-]{11})/,
+    /youtu\.be\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/,
+    /(?:^|[?&])v=([a-zA-Z0-9_-]{11})(?:[&]|$)/,
   ];
-  
   for (var i = 0; i < patterns.length; i++) {
-    var match = url.match(patterns[i]);
-    if (match && match[1]) {
-      return match[1];
-    }
+    var match = s.match(patterns[i]);
+    if (match && match[1]) return match[1];
   }
-  
   return null;
 }

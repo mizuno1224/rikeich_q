@@ -198,13 +198,27 @@ h1 {
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
   border: 1px solid #f1f5f9;
 }
+.subject-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #f1f5f9;
+}
 .subject-name {
   font-size: 1.4rem;
   font-weight: 700;
   color: var(--col-primary);
-  margin: 0 0 20px 0;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #f1f5f9;
+  margin: 0;
+}
+.index-legend {
+  font-size: 0.8rem;
+  color: #64748b;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .part-name {
   font-size: 1.1rem;
@@ -257,8 +271,19 @@ h1 {
   font-size: 1rem;
   user-select: none;
   transition: background 0.2s;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fff;
+  box-shadow: 0 1px 0 0 #e2e8f0;
+}
+.field-details[open] .field-summary {
+  background: #f8fafc;
 }
 .field-summary:hover {
+  background: #f1f5f9;
+}
+.field-details[open] .field-summary:hover {
   background: #f1f5f9;
 }
 .field-summary::-webkit-details-marker,
@@ -312,6 +337,7 @@ h1 {
   align-items: center;
   padding: 10px 14px;
   background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
   color: var(--col-text);
   font-weight: 500;
@@ -320,9 +346,10 @@ h1 {
   font-size: 0.95rem;
 }
 .prob-link:hover {
-  background: #fff;
+  background: #eff6ff;
+  border-color: var(--col-primary-light);
   color: var(--col-primary);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
 }
 .prob-link-disabled {
   opacity: 0.5;
@@ -337,29 +364,147 @@ h1 {
   background: #e2e8f0 !important;
   color: #94a3b8 !important;
 }
+/* 📖・📹 をまとめて右詰めで表示 */
+.prob-marks-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.prob-expl-mark,
 .prob-video-mark {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  margin-left: 8px;
-  font-size: 1rem;
-  opacity: 0.8;
+  font-size: 0.9rem;
   flex-shrink: 0;
 }
+.prob-expl-mark { opacity: 0.9; }
+.prob-video-mark { opacity: 0.85; }
 .prob-link-video-only {
-  background: #fff3cd !important;
-  border: 1px solid #ffc107;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0;
 }
 .prob-link-video-only:hover {
-  background: #ffe69c !important;
-  border-color: #ff9800;
+  background: #eff6ff !important;
+  border-color: var(--col-primary-light) !important;
+  color: var(--col-primary) !important;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
 }
+
+/* 生徒画面: HTML/動画がない問題はグレーアウト表示 */
+.prob-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.prob-item .prob-link {
+  flex: 1;
+  min-width: 0;
+}
+.prob-link-no-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #e2e8f0 !important;
+  border-radius: 10px;
+  color: #94a3b8 !important;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: default;
+  opacity: 0.85;
+}
+.prob-mark-none {
+  opacity: 0.4;
+}
+.prob-request-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+/* ボタンサイズは作成有無・リクエスト有無で変えない */
+.btn-request {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 7.5em;
+  box-sizing: border-box;
+  transition: background 0.2s, color 0.2s;
+}
+.btn-request:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+.btn-request.btn-request-done {
+  cursor: pointer;
+  opacity: 0.95;
+}
+.btn-request.btn-request-created {
+  cursor: default;
+  pointer-events: none;
+  opacity: 0.75;
+  border-color: #cbd5e1 !important;
+  background: #e2e8f0 !important;
+  color: #64748b !important;
+}
+.btn-request-created.btn-request-html { border-color: #cbd5e1 !important; background: #e2e8f0 !important; color: #64748b !important; }
+.btn-request-created.btn-request-video { border-color: #cbd5e1 !important; background: #e2e8f0 !important; color: #64748b !important; }
+.btn-request-html { border-color: #93c5fd; background: #eff6ff; color: #1d4ed8; }
+.btn-request-html:hover:not(.btn-request-created) { background: #dbeafe; }
+.btn-request-video { border-color: #fcd34d; background: #fffbeb; color: #b45309; }
+.btn-request-video:hover:not(.btn-request-created) { background: #fef3c7; }
+
 .prob-empty {
   color: #94a3b8;
   font-size: 0.85rem;
   padding: 6px 10px;
   font-style: italic;
 }
+
+/* 教員画面: コンテンツ作成リクエスト一覧 */
+.content-requests-section {
+  margin-bottom: 24px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+.content-requests-heading {
+  font-size: 1.1rem;
+  margin: 0 0 12px 0;
+  color: #475569;
+}
+.content-requests-list { font-size: 0.9rem; }
+.content-requests-ul { list-style: none; padding: 0; margin: 0; }
+.content-requests-li {
+  padding: 8px 0;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.content-requests-li:last-child { border-bottom: none; }
+.content-requests-type {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.content-requests-type-html { background: #dbeafe; color: #1d4ed8; }
+.content-requests-type-video { background: #fef3c7; color: #b45309; }
+.content-requests-title { font-weight: 500; color: var(--col-text); }
+.content-requests-meta { color: #64748b; font-size: 0.85rem; }
+.content-requests-time { color: #94a3b8; font-size: 0.8rem; margin-left: auto; }
+.content-requests-empty { color: #94a3b8; margin: 0; }
 
 .empty-msg {
   text-align: center;

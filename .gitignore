@@ -63,6 +63,15 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.*
+!.env.example
+
+# Firebase / GCP 秘密（絶対にコミットしない）
+*-service-account*.json
+*firebase*admin*.json
+*-credentials.json
+*.pem
+secret*.json
 
 # dataconnect generated files
 .dataconnect

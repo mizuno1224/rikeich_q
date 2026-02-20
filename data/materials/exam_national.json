@@ -2,37 +2,23 @@
   "materialName": "国公立入試",
   "subjects": [
     {
-      "subjectName": "九州大学",
-      "folderName": "kyushu",
+      "subjectName": "北海道大学",
+      "folderName": "hokkaido",
       "fields": [
         {
-          "fieldName": "2018年度",
-          "folderId": "2018",
+          "fieldName": "2022年度",
+          "folderId": "2022",
           "problems": [
-            {
-              "id": "2018_zenki_1",
-              "title": "前期 大問1",
-              "desc": "台上の振り子の運動（運動量保存・エネルギー保存）",
-              "explanationPath": "data/explanations/exam_national/kyushu/2018/2018_zenki_1.html"
-            }
+            { "id": "2022_1", "title": "前期 大問１", "youtubeUrl": "https://youtu.be/lsJrzyUpeCA" },
+            { "id": "2022_2", "title": "前期 大問２", "youtubeUrl": "https://youtu.be/Dw9pJsovbBs" },
+            { "id": "2022_3", "title": "前期 大問３", "youtubeUrl": "https://youtu.be/5eV4RNi1DV4" }
           ]
-        }
-      ]
-    },
-    {
-      "subjectName": "東京都立",
-      "folderName": "tokyotoritu",
-      "fields": [
+        },
         {
-          "fieldName": "2025年度",
-          "folderId": "2025",
+          "fieldName": "2023年度",
+          "folderId": "2023",
           "problems": [
-            {
-              "id": "2025_zenki_1",
-              "title": "前期 大問1",
-              "desc": "立方体の浮き沈みと単振動",
-              "explanationPath": "data/explanations/exam_national/tokyotoritu/2025/2025_zenki_1.html"
-            }
+            { "id": "2023_1", "title": "前期 大問１" }
           ]
         }
       ]
@@ -64,6 +50,52 @@
               "explanationPath": "data/explanations/exam_national/tohoku/2017/2017_zenki_1.html"
             }
           ]
+        },
+        {
+          "fieldName": "2023年度",
+          "folderId": "2023",
+          "problems": [
+            { "id": "2023_2", "title": "前期 大問２" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "筑波大学",
+      "folderName": "tsukuba",
+      "fields": [
+        {
+          "fieldName": "2019年度",
+          "folderId": "2019",
+          "problems": [
+            {
+              "id": "2019_zenki_2",
+              "title": "前期 大問2",
+              "desc": "コンデンサー回路と誘電体",
+              "explanationPath": "data/explanations/exam_national/tsukuba/2019/2019_zenki_2.html"
+            }
+          ]
+        },
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 大問〔Ⅰ〕", "youtubeUrl": "https://youtu.be/rvhptR58Wug" },
+            { "id": "2022_2", "title": "前期 大問〔Ⅱ〕", "youtubeUrl": "https://youtu.be/FsuJqlOi3ms" },
+            { "id": "2022_3", "title": "前期 大問〔Ⅲ〕", "youtubeUrl": "https://youtu.be/y4SJxFNWKXg" }
+          ]
+        },
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            {
+              "id": "2024_3",
+              "title": "大問3",
+              "desc": "薄膜干渉（くさび形空気層）",
+              "explanationPath": "data/explanations/exam_national/tsukuba/2024/2024_3.html"
+            }
+          ]
         }
       ]
     },
@@ -86,30 +118,220 @@
       ]
     },
     {
-      "subjectName": "筑波大学",
-      "folderName": "tsukuba",
+      "subjectName": "東京大学",
+      "folderName": "tokyo",
       "fields": [
         {
-          "fieldName": "2019年度",
-          "folderId": "2019",
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 第１問", "youtubeUrl": "https://youtu.be/wp8xB-YhI48" },
+            { "id": "2022_2", "title": "前期 第２問", "youtubeUrl": "https://youtu.be/71HsMBmJVsU" },
+            { "id": "2022_3", "title": "前期 第３問", "youtubeUrl": "https://youtu.be/RhWXeSj0BGo" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "東京工業大学",
+      "folderName": "titech",
+      "fields": [
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 大問１", "youtubeUrl": "https://youtu.be/6LcF8xEpTIs" },
+            { "id": "2022_2", "title": "前期 大問２", "youtubeUrl": "https://youtu.be/TZqHXCPXK7Y" },
+            { "id": "2022_3", "title": "前期 大問３", "youtubeUrl": "https://youtu.be/21WiWIzE0uo" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "東京医科歯科大学",
+      "folderName": "tmd",
+      "fields": [
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 大問１", "youtubeUrl": "https://youtu.be/e_N_HMirjNY" },
+            { "id": "2022_2", "title": "前期 大問２", "youtubeUrl": "https://youtu.be/Kz09aZhGrFs" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "東京都立大学",
+      "folderName": "tokyotoritu",
+      "fields": [
+        {
+          "fieldName": "2025年度",
+          "folderId": "2025",
           "problems": [
             {
-              "id": "2019_zenki_2",
-              "title": "前期 大問2",
-              "desc": "コンデンサー回路と誘電体",
-              "explanationPath": "data/explanations/exam_national/tsukuba/2019/2019_zenki_2.html"
+              "id": "2025_zenki_1",
+              "title": "前期 大問1",
+              "desc": "立方体の浮き沈みと単振動",
+              "explanationPath": "data/explanations/exam_national/tokyotoritu/2025/2025_zenki_1.html"
             }
           ]
+        }
+      ]
+    },
+    {
+      "subjectName": "横浜市立大学",
+      "folderName": "yokohama_cu",
+      "fields": [
+        {
+          "fieldName": "2018年度",
+          "folderId": "2018",
+          "problems": [
+            { "id": "2018_2", "title": "前期 大問２" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "静岡大学",
+      "folderName": "shizuoka",
+      "fields": [
+        {
+          "fieldName": "2020年度",
+          "folderId": "2020",
+          "problems": [
+            { "id": "2020_all", "title": "前期 全問題", "youtubeUrl": "https://youtu.be/F2VAPn2b4WU" }
+          ]
         },
+        {
+          "fieldName": "2023年度",
+          "folderId": "2023",
+          "problems": [
+            { "id": "2023_1", "title": "前期 大問１" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "名古屋大学",
+      "folderName": "nagoya",
+      "fields": [
+        {
+          "fieldName": "2020年度",
+          "folderId": "2020",
+          "problems": [
+            { "id": "2020_all_1", "title": "前期 全問題 (1)", "youtubeUrl": "https://youtu.be/Spp5Ab6cWUU" },
+            { "id": "2020_all_2", "title": "前期 全問題 (2)", "youtubeUrl": "https://youtu.be/oO7IrvD2jX0" }
+          ]
+        },
+        {
+          "fieldName": "2021年度",
+          "folderId": "2021",
+          "problems": [
+            { "id": "2021_3", "title": "前期 大問Ⅲ" }
+          ]
+        },
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 問題Ⅰ", "youtubeUrl": "https://youtu.be/tywISRNp8sM" },
+            { "id": "2022_2", "title": "前期 問題Ⅱ", "youtubeUrl": "https://youtu.be/c0mnFUvQDjw" },
+            { "id": "2022_3", "title": "前期 問題Ⅲ", "youtubeUrl": "https://youtu.be/e7d6XX7KBrA" }
+          ]
+        },
+        {
+          "fieldName": "2025年度",
+          "folderId": "2025",
+          "problems": [
+            { "id": "2025_1", "title": "前期 問題Ⅰ", "youtubeUrl": "https://youtu.be/eDr8MCoPBVg" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "名古屋市立大学",
+      "folderName": "nagoya_cu",
+      "fields": [
+        {
+          "fieldName": "2020年度",
+          "folderId": "2020",
+          "problems": [
+            { "id": "2020_yaku", "title": "中期（薬） 全問題", "youtubeUrl": "https://youtu.be/qerGA0JYPSY" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "愛知教育大学",
+      "folderName": "aichi_edu",
+      "fields": [
+        {
+          "fieldName": "2021年度",
+          "folderId": "2021",
+          "problems": [
+            { "id": "2021_1", "title": "前期 大問Ⅰ", "youtubeUrl": "https://youtu.be/31hmTIgIcoI" },
+            { "id": "2021_2", "title": "前期 大問Ⅱ", "youtubeUrl": "https://youtu.be/PMcgYo0Oc7Y" },
+            { "id": "2021_3", "title": "前期 大問Ⅲ", "youtubeUrl": "https://youtu.be/GfbdIACqm6U" },
+            { "id": "2021_4", "title": "前期 大問Ⅳ", "youtubeUrl": "https://youtu.be/kyTJmrm4-lg" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "京都大学",
+      "folderName": "kyoto",
+      "fields": [
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "前期 問題番号Ⅰ", "youtubeUrl": "https://youtu.be/3oeG3uFV9Gg" },
+            { "id": "2022_2", "title": "前期 問題番号Ⅱ", "youtubeUrl": "https://youtu.be/cyulCFkw4kE" },
+            { "id": "2022_3", "title": "前期 問題番号Ⅲ", "youtubeUrl": "https://youtu.be/gubZ-nskY_s" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "大阪大学",
+      "folderName": "osaka",
+      "fields": [
         {
           "fieldName": "2024年度",
           "folderId": "2024",
           "problems": [
+            { "id": "2024_3", "title": "前期 大問３" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "大阪公立大学",
+      "folderName": "osaka_mu",
+      "fields": [
+        {
+          "fieldName": "2024年度",
+          "folderId": "2024",
+          "problems": [
+            { "id": "2024_1", "title": "前期 第１問" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "九州大学",
+      "folderName": "kyushu",
+      "fields": [
+        {
+          "fieldName": "2018年度",
+          "folderId": "2018",
+          "problems": [
             {
-              "id": "2024_3",
-              "title": "大問3",
-              "desc": "薄膜干渉（くさび形空気層）",
-              "explanationPath": "data/explanations/exam_national/tsukuba/2024/2024_3.html"
+              "id": "2018_zenki_1",
+              "title": "前期 大問1",
+              "desc": "台上の振り子の運動（運動量保存・エネルギー保存）",
+              "explanationPath": "data/explanations/exam_national/kyushu/2018/2018_zenki_1.html"
             }
           ]
         }

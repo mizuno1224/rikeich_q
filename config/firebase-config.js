@@ -10,3 +10,11 @@ window.firebaseConfig = {
   messagingSenderId: "779478068459",
   appId: "1:779478068459:web:6f223b0116b2b2b08122ae"
 };
+
+/**
+ * コンテンツ作成リクエストをスプレッドシートに記録する場合の Web アプリ URL。
+ * Google Apps Script で「ウェブアプリとして導入」した URL を指定してください。
+ * 空の場合は Firestore（content_requests）に保存します。
+ * @example "https://script.google.com/macros/s/xxxxx/exec"
+ */
+window.contentRequestSpreadsheetUrl = "";

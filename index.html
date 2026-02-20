@@ -47,6 +47,10 @@
         -->
         <a href="index.html#bookmarks" class="btn-bookmarks-link" id="link-to-bookmarks">⭐ ブックマーク一覧</a>
       </div>
+      <section id="content-requests-section" class="content-requests-section" aria-label="コンテンツ作成リクエスト" style="display: none;">
+        <h2 class="content-requests-heading">📋 コンテンツ作成リクエスト</h2>
+        <div id="content-requests-list" class="content-requests-list">読み込み中...</div>
+      </section>
       <div id="content-area" role="main"></div>
 
       <div class="ad-slot ad-slot--top" aria-label="広告"></div>
@@ -79,6 +83,7 @@
     </div>
 
     <script src="js/error-handler.js"></script>
+    <script src="config/firebase-config.js"></script>
     <script src="js/index.js"></script>
     <script>
       if ("serviceWorker" in navigator) {

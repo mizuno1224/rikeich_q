@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/admin.css" />
   <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/jsxgraph/distrib/jsxgraph.css" />
 
+  <script src="config/firebase-config.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -102,6 +103,7 @@
                   👁️ プレビュー
                 </button>
                 <button id="tab-analyze" class="view-tab">📈 分析</button>
+                <button id="tab-requests" class="view-tab">📋 リクエスト</button>
               </div>
             </div>
 
@@ -124,6 +126,11 @@
               <div id="analyze-container">
                 <p>データを読み込んでいます...</p>
               </div>
+            </div>
+
+            <div id="view-requests" class="view-content" style="padding: 20px; background: #f8fafc; overflow-y: auto">
+              <h3 style="margin: 0 0 12px 0; color: #475569">コンテンツ作成リクエスト（生徒・教員から送信）</h3>
+              <div id="admin-requests-list">読み込み中...</div>
             </div>
           </div>
         </div>
@@ -206,23 +213,12 @@
   <script src="js/admin-actions.js"></script>
 
   <script>
-    // ▼▼▼ Firebaseコンソールからコピーした内容をここに貼る ▼▼▼
-    const firebaseConfig = {
-      apiKey: "AIzaSyBObf6A_NDje3mpW1qxsfrNGnikdeDQOsA",
-      authDomain: "rikeich-q.firebaseapp.com",
-      projectId: "rikeich-q",
-      storageBucket: "rikeich-q.firebasestorage.app",
-      messagingSenderId: "779478068459",
-      appId: "1:779478068459:web:6f223b0116b2b2b08122ae"
-    };
-    // ▲▲▲▲▲▲
-
-    if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
-      firebase.initializeApp(firebaseConfig);
+    if (window.firebaseConfig && window.firebaseConfig.apiKey && window.firebaseConfig.apiKey !== "YOUR_API_KEY") {
+      firebase.initializeApp(window.firebaseConfig);
       window.db = firebase.firestore();
       console.log("Firebase initialized!");
     } else {
-      console.warn("Firebase設定が完了していません。admin.htmlのソースコードを編集してAPIキーを設定してください。");
+      console.warn("Firebase設定が完了していません。config/firebase-config.js を編集してください。");
     }
   </script>
 </body>

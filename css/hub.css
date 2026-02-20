@@ -96,6 +96,12 @@
 .hub-card--test:hover   { border-color: var(--col-warning); }
 .hub-card--admin:hover  { border-color: #475569; }
 
+/* フッターのスタッフ用リンク（控えめに表示） */
+.site-footer-staff {
+  font-size: 0.9em;
+  color: var(--col-text-sub);
+}
+
 @media (max-width: 480px) {
   .hub-title { font-size: 1.6rem; }
   .hub-grid  { grid-template-columns: 1fr; gap: 16px; }

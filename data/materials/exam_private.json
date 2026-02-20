@@ -6,6 +6,15 @@
       "folderName": "waseda_sci",
       "fields": [
         {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "理工 大問〔Ⅰ〕", "youtubeUrl": "https://youtu.be/r887t-zeSTs" },
+            { "id": "2022_2", "title": "理工 大問〔Ⅱ〕", "youtubeUrl": "https://youtu.be/Qvgy-dR-6k8" },
+            { "id": "2022_3", "title": "理工 大問〔Ⅲ〕", "youtubeUrl": "https://youtu.be/KZhn4S8vhq8" }
+          ]
+        },
+        {
           "fieldName": "2024年度",
           "folderId": "2024",
           "problems": [
@@ -16,6 +25,21 @@
               "explanationPath": "data/explanations/exam_private/waseda_sci/2024/2024_sci_zenki.html",
               "layout": "article"
             }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "慶應義塾大学",
+      "folderName": "keio",
+      "fields": [
+        {
+          "fieldName": "2022年度",
+          "folderId": "2022",
+          "problems": [
+            { "id": "2022_1", "title": "理工 大問１", "youtubeUrl": "https://youtu.be/xBTiJDEYRwM" },
+            { "id": "2022_2", "title": "理工 大問２", "youtubeUrl": "https://youtu.be/7Blo-Znt-kk" },
+            { "id": "2022_3", "title": "理工 大問３", "youtubeUrl": "https://youtu.be/abqQ2EdLXRM" }
           ]
         }
       ]
@@ -112,6 +136,35 @@
               "explanationPath": "data/explanations/exam_private/ritsumei/2026/2026_ritsumei_3.html",
               "layout": "article"
             }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "近畿大学",
+      "folderName": "kindai",
+      "fields": [
+        {
+          "fieldName": "2021年度",
+          "folderId": "2021",
+          "problems": [
+            { "id": "2021_1", "title": "Ａ日程1/30 全問題", "youtubeUrl": "https://youtu.be/bfRHJcHgqqM" }
+          ]
+        }
+      ]
+    },
+    {
+      "subjectName": "名城大学",
+      "folderName": "meijo",
+      "fields": [
+        {
+          "fieldName": "2021年度",
+          "folderId": "2021",
+          "problems": [
+            { "id": "2021_1", "title": "Ａ方式2/2 大問１", "youtubeUrl": "https://youtu.be/JYb2AYmVyKs" },
+            { "id": "2021_2", "title": "Ａ方式2/2 大問２", "youtubeUrl": "https://youtu.be/EgJ3Ym2qc_8" },
+            { "id": "2021_3", "title": "Ａ方式2/2 大問３", "youtubeUrl": "https://youtu.be/qyp88F9xdBo" },
+            { "id": "2021_4", "title": "Ａ方式2/2 大問４", "youtubeUrl": "https://youtu.be/8xLg8VN137U" }
           ]
         }
       ]

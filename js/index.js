@@ -38,6 +38,50 @@ document.addEventListener("DOMContentLoaded", () => {
       footerInner.insertBefore(hubLink, footerInner.firstChild);
       footerInner.insertBefore(hubSep, hubLink.nextSibling);
     }
+    var reqSection = document.getElementById("content-requests-section");
+    if (reqSection) {
+      reqSection.style.display = "block";
+      loadContentRequestsList();
+    }
+  }
+
+  function loadContentRequestsList() {
+    var listEl = document.getElementById("content-requests-list");
+    if (!listEl) return;
+    ensureIndexFirebase().then(function () {
+      if (!window.db) {
+        listEl.innerHTML = "<p>Firebase未設定のためリクエスト一覧を表示できません。</p>";
+        return;
+      }
+      var col = window.db.collection("content_requests");
+      var q = col.orderBy("timestamp", "desc").limit(100);
+      q.get().then(function (snap) {
+        if (snap.empty) {
+          listEl.innerHTML = "<p class=\"content-requests-empty\">リクエストはまだありません。</p>";
+          return;
+        }
+        var html = "<ul class=\"content-requests-ul\">";
+        snap.forEach(function (d) {
+          var t = d.data();
+          var typeLabel = t.type === "html" ? "HTML解説" : "動画";
+          var ts = t.timestamp && (t.timestamp.toDate ? t.timestamp.toDate() : t.timestamp);
+          var timeStr = ts ? (ts.getFullYear() + "/" + (ts.getMonth() + 1) + "/" + ts.getDate() + " " + ts.getHours() + ":" + String(ts.getMinutes()).padStart(2, "0")) : "";
+          html += "<li class=\"content-requests-li\">";
+          html += "<span class=\"content-requests-type content-requests-type-" + (t.type || "") + "\">" + escapeHtml(typeLabel) + "</span> ";
+          html += "<span class=\"content-requests-title\">" + escapeHtml(t.problemTitle || "") + "</span>";
+          html += " <span class=\"content-requests-meta\">" + escapeHtml(t.materialName || "") + " / " + escapeHtml(t.fieldName || "") + "</span>";
+          html += " <span class=\"content-requests-time\">" + timeStr + "</span>";
+          html += "</li>";
+        });
+        html += "</ul>";
+        listEl.innerHTML = html;
+      }).catch(function (err) {
+        console.warn("content_requests get failed", err);
+        listEl.innerHTML = "<p>リクエスト一覧の取得に失敗しました。</p>";
+      });
+    }).catch(function () {
+      listEl.innerHTML = "<p>リクエスト一覧の取得に失敗しました。</p>";
+    });
   }
 
   initQRCode();
@@ -214,9 +258,73 @@ document.addEventListener("DOMContentLoaded", () => {
       .finally(() => hideLoading(loadingEl));
   }
 
+  /** HTML用・動画用のボタンまたは作成済み表示を1つ組み立て */
+  function buildSlot(type, hasContent, dataAttrs) {
+    var label = type === "html" ? "📖" : "📹";
+    if (hasContent) {
+      return '<span class="btn-request btn-request-created btn-request-' + type + '" disabled aria-disabled="true">' + label + '作成済み</span>';
+    }
+    return '<button type="button" class="btn-request btn-request-' + type + '" data-request-type="' + type + '"' + dataAttrs + '>' + label + 'リクエスト</button>';
+  }
+
+  /** 1問分のHTMLを組み立て（生徒は作成済み＝押せないボタン、未作成＝リクエスト/リクエスト済みボタン） */
+  function buildProblemRow(p, opts) {
+    var esc = opts.esc;
+    var isTeacherMode = opts.isTeacherMode;
+    var materialName = opts.materialName || "";
+    var subjectName = opts.subjectName || "";
+    var fieldName = opts.fieldName || "";
+    var path = p.explanationPath || "";
+    var isPDF = /\.pdf$/i.test(path) || path.includes("pdfs/") || path.includes("\\pdfs\\");
+    var hasExplanation = path && !isPDF;
+    var hasYouTube = !!(p.youtubeUrl && p.youtubeUrl.trim());
+    var title = esc(p.title);
+    var dataAttrs = ' data-material="' + esc(materialName) + '" data-subject="' + esc(subjectName) + '" data-field="' + esc(fieldName) + '" data-path="' + esc(path) + '" data-title="' + esc(p.title) + '" data-search-text="' + esc(path + " " + p.title) + '"';
+
+    if (isTeacherMode) {
+      var marks = '<span class="prob-marks-wrap">' +
+        (hasExplanation ? '<span class="prob-expl-mark">📖作成済み</span>' : '<span class="prob-expl-mark prob-mark-none">📖</span>') +
+        (hasYouTube ? '<span class="prob-video-mark">📹作成済み</span>' : '<span class="prob-video-mark prob-mark-none">📹</span>') +
+        '</span>';
+      if (isPDF || (!hasExplanation && !hasYouTube)) {
+        return '<div class="prob-item">' +
+          '<a href="#" class="prob-link prob-link-disabled" onclick="return false;"><span>' + title + '</span>' + marks + '</a>' +
+          '</div>';
+      }
+      if (!hasExplanation && hasYouTube) {
+        var targetUrl = "viewer.html?path=" + encodeURIComponent(path || "") + "&youtube=" + encodeURIComponent(p.youtubeUrl) + (p.title ? "&title=" + encodeURIComponent(p.title) : "") + "&admin=1";
+        return '<div class="prob-item">' +
+          '<a href="' + targetUrl + '" class="prob-link prob-link-video-only"><span>' + title + '</span>' + marks + '</a></div>';
+      }
+      var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + "&admin=1";
+      return '<div class="prob-item">' +
+        '<a href="' + targetUrl + '" class="prob-link"><span>' + title + '</span>' + marks + '</a></div>';
+    }
+
+    // 生徒: 右側は常に2スロット（📖用・📹用）。作成済み＝押せないボタン、未作成＝リクエストボタン
+    var btns = '<div class="prob-request-btns">' +
+      buildSlot("html", hasExplanation, dataAttrs) +
+      buildSlot("video", hasYouTube, dataAttrs) +
+      '</div>';
+
+    if (isPDF || (!hasExplanation && !hasYouTube)) {
+      return '<div class="prob-item prob-item-no-content">' +
+        '<span class="prob-link prob-link-no-content"><span>' + title + '</span></span>' + btns + '</div>';
+    }
+    if (!hasExplanation && hasYouTube) {
+      var targetUrl = "viewer.html?path=" + encodeURIComponent(path || "") + "&youtube=" + encodeURIComponent(p.youtubeUrl) + (p.title ? "&title=" + encodeURIComponent(p.title) : "");
+      return '<div class="prob-item">' +
+        '<a href="' + targetUrl + '" class="prob-link prob-link-video-only" data-youtube-url="' + esc(p.youtubeUrl) + '"><span>' + title + '</span></a>' + btns + '</div>';
+    }
+    var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + "";
+    return '<div class="prob-item">' +
+      '<a href="' + targetUrl + '" class="prob-link"><span>' + title + '</span></a>' + btns + '</div>';
+  }
+
   function renderContent(material) {
     const esc = (s) => (s == null ? "" : escapeHtml(String(s)));
     const isTextbook = material.materialName === "物理基礎" || material.materialName === "物理" || material.materialName === "リードLight" || material.materialName === "リードα";
+    const materialName = material.materialName || "";
     let html = '<div class="subject-grid">';
     if (material.subjects) {
       material.subjects.forEach((subject) => {
@@ -224,10 +332,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!hasFields) return;
 
         html += '<div class="subject-card">';
-        html += '<h3 class="subject-name">' + esc(subject.subjectName) + '</h3>';
+        html += '<div class="subject-header"><h3 class="subject-name">' + esc(subject.subjectName) + '</h3><span class="index-legend" aria-hidden="true">📖：解説ページ　📹：解説動画</span></div>';
 
         if (isTextbook) {
-          // 編ごとにグループ化し、ボタン（summary）には章のみ表示
           var partGroups = {};
           var partOrder = [];
           subject.fields.forEach(function (field) {
@@ -249,99 +356,89 @@ document.addEventListener("DOMContentLoaded", () => {
             items.forEach(function (item) {
               var field = item.field;
               var problems = field.problems || [];
-              var isEmpty = problems.length === 0;
+              var publicProblems = problems.filter(function (p) { return p.isPublic !== false; });
+              var isEmpty = publicProblems.length === 0;
+              var explCount = problems.filter(function (p) {
+                var path = p.explanationPath || "";
+                var isPDF = /\.pdf$/i.test(path) || path.includes("pdfs/") || path.includes("\\pdfs\\");
+                return path && !isPDF;
+              }).length;
+              var videoCount = problems.filter(function (p) { return p.youtubeUrl && p.youtubeUrl.trim(); }).length;
+              var countText = problems.length + "件";
+              if (explCount > 0 || videoCount > 0) countText += "（解説" + explCount + " / 動画" + videoCount + "）";
               html += '<li class="field-item" data-empty="' + isEmpty + '">';
               html += '<details class="field-details">';
-              html += '<summary class="field-summary"><span class="field-name">' + esc(item.chapterName) + '</span><span class="field-count">' + problems.length + '件</span></summary>';
+              html += '<summary class="field-summary"><span class="field-name">' + esc(item.chapterName) + '</span><span class="field-count">' + countText + '</span></summary>';
               html += '<div class="field-body">';
               if (isEmpty) {
                 html += '<p class="prob-empty">問題はまだ登録されていません</p>';
               } else {
                 html += '<div class="prob-grid">';
+                var opts = { esc: esc, isTeacherMode: isTeacherMode, materialName: materialName, subjectName: subject.subjectName, fieldName: item.chapterName };
                 problems.forEach(function (p) {
-                  // 非公開の問題は教員モード以外では表示しない
-                  if (!isTeacherMode && p.isPublic === false) {
-                    return;
-                  }
-                  var path = p.explanationPath || "";
-                  var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
-                  var hasExplanation = path && !isPDF;
-                  var hasYouTube = p.youtubeUrl && p.youtubeUrl.trim();
-                  var title = esc(p.title);
-                  
-                  // 動画ありマーク
-                  var videoMark = hasYouTube ? '<span class="prob-video-mark" title="動画解説あり">📹</span>' : '';
-                  
-                  if (isPDF || (!hasExplanation && !hasYouTube)) {
-                    // PDFからの解説ページ、または解説も動画もない問題はグレーアウトして無効化
-                    html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span>' + videoMark + '</a>';
-                  } else if (!hasExplanation && hasYouTube) {
-                    // 解説なし・動画ありの場合は動画のみ見られるようにボタンを有効化
-                    var targetUrl = "viewer.html?path=" + encodeURIComponent(path || '') + (isTeacherMode ? "&admin=1" : "");
-                    html += '<a href="' + targetUrl + '" class="prob-link prob-link-video-only" data-search-text="' + esc(path + " " + p.title) + '" data-youtube-url="' + esc(p.youtubeUrl) + '"><span>' + title + '</span>' + videoMark + '</a>';
-                  } else {
-                    // 通常の解説ページ
-                    var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                    html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span>' + videoMark + '</a>';
-                  }
+                  if (p.isPublic === false) return;
+                  html += buildProblemRow(p, opts);
                 });
-                html += '</div>';
+                html += "</div>";
               }
-              html += '</div></details></li>';
+              html += "</div></details></li>";
             });
-            html += '</ul>';
+            html += "</ul>";
           });
         } else {
           html += '<ul class="field-list">';
           subject.fields.forEach(function (field) {
             var problems = field.problems || [];
-            var isEmpty = problems.length === 0;
+            var publicProblems = problems.filter(function (p) { return p.isPublic !== false; });
+            var isEmpty = publicProblems.length === 0;
+            var explCount = problems.filter(function (p) {
+              var path = p.explanationPath || "";
+              var isPDF = /\.pdf$/i.test(path) || path.includes("pdfs/") || path.includes("\\pdfs\\");
+              return path && !isPDF;
+            }).length;
+            var videoCount = problems.filter(function (p) { return p.youtubeUrl && p.youtubeUrl.trim(); }).length;
+            var countText = problems.length + "件";
+            if (explCount > 0 || videoCount > 0) countText += "（解説" + explCount + " / 動画" + videoCount + "）";
             html += '<li class="field-item" data-empty="' + isEmpty + '">';
             html += '<details class="field-details">';
-            html += '<summary class="field-summary"><span class="field-name">' + esc(field.fieldName) + '</span><span class="field-count">' + problems.length + '件</span></summary>';
+            html += '<summary class="field-summary"><span class="field-name">' + esc(field.fieldName) + '</span><span class="field-count">' + countText + '</span></summary>';
             html += '<div class="field-body">';
             if (isEmpty) {
               html += '<p class="prob-empty">問題はまだ登録されていません</p>';
             } else {
               html += '<div class="prob-grid">';
+              var opts = { esc: esc, isTeacherMode: isTeacherMode, materialName: materialName, subjectName: subject.subjectName, fieldName: field.fieldName };
               problems.forEach(function (p) {
-                // 非公開の問題は教員モード以外では表示しない
-                if (!isTeacherMode && p.isPublic === false) {
-                  return;
-                }
-                var path = p.explanationPath || "";
-                var isPDF = /\.pdf$/i.test(path) || path.includes('pdfs/') || path.includes('\\pdfs\\');
-                var hasExplanation = path && !isPDF;
-                var hasYouTube = p.youtubeUrl && p.youtubeUrl.trim();
-                var title = esc(p.title);
-                
-                // 動画ありマーク
-                var videoMark = hasYouTube ? '<span class="prob-video-mark" title="動画解説あり">📹</span>' : '';
-                
-                if (isPDF || (!hasExplanation && !hasYouTube)) {
-                  // PDFからの解説ページ、または解説も動画もない問題はグレーアウトして無効化
-                  html += '<a href="#" class="prob-link prob-link-disabled" data-search-text="' + esc(path + " " + p.title) + '" onclick="return false;"><span>' + title + '</span>' + videoMark + '</a>';
-                } else if (!hasExplanation && hasYouTube) {
-                  // 解説なし・動画ありの場合は動画のみ見られるようにボタンを有効化
-                  var targetUrl = "viewer.html?path=" + encodeURIComponent(path || '') + (isTeacherMode ? "&admin=1" : "");
-                  html += '<a href="' + targetUrl + '" class="prob-link prob-link-video-only" data-search-text="' + esc(path + " " + p.title) + '" data-youtube-url="' + esc(p.youtubeUrl) + '"><span>' + title + '</span>' + videoMark + '</a>';
-                } else {
-                  // 通常の解説ページ
-                  var targetUrl = "viewer.html?path=" + encodeURIComponent(p.explanationPath) + (isTeacherMode ? "&admin=1" : "");
-                  html += '<a href="' + targetUrl + '" class="prob-link" data-search-text="' + esc(path + " " + p.title) + '"><span>' + title + '</span>' + videoMark + '</a>';
-                }
+                if (p.isPublic === false) return;
+                html += buildProblemRow(p, opts);
               });
-              html += '</div>';
+              html += "</div>";
             }
-            html += '</div></details></li>';
+            html += "</div></details></li>";
           });
-          html += '</ul>';
+          html += "</ul>";
         }
-        html += '</div>';
+        html += "</div>";
       });
     }
-    html += '</div>';
+    html += "</div>";
     contentArea.innerHTML = html;
+    applyRequestedStateToButtons();
+  }
+
+  function applyRequestedStateToButtons() {
+    contentArea.querySelectorAll(".btn-request[data-request-type]").forEach(function (btn) {
+      if (btn.disabled && btn.classList.contains("btn-request-created")) return;
+      var path = (btn.getAttribute("data-path") || "").replace(/^\s+|\s+$/g, "");
+      var type = btn.getAttribute("data-request-type");
+      if (!type) return;
+      var key = "content_req_" + type + "_" + path;
+      if (localStorage.getItem(key)) {
+        btn.textContent = "リクエスト済み";
+        btn.classList.add("btn-request-done");
+        btn.setAttribute("data-requested", "1");
+      }
+    });
   }
 
   // 問題検索機能は一時無効
@@ -521,11 +618,145 @@ document.addEventListener("DOMContentLoaded", () => {
     var link = e.target.closest("a.prob-link");
     if (link && link.href && link.href.indexOf("viewer.html") !== -1 && !link.classList.contains("prob-link-disabled")) {
       sessionStorage.setItem("indexScrollPosition", window.scrollY.toString());
-      // viewer.htmlに遷移する前に現在のURLを保存
       sessionStorage.setItem("previousPageUrl", window.location.href);
     }
   });
+
+  // コンテンツ作成リクエストボタン（送信 or リクエスト済みのときはキャンセル）
+  contentArea.addEventListener("click", function (e) {
+    var btn = e.target.closest(".btn-request");
+    if (!btn || !btn.getAttribute("data-request-type")) return;
+    if (btn.disabled && btn.classList.contains("btn-request-created")) return;
+    var type = btn.getAttribute("data-request-type");
+    if (type !== "html" && type !== "video") return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (btn.getAttribute("data-requested") === "1") {
+      cancelContentRequest(btn);
+      return;
+    }
+    submitContentRequest({
+      type: type,
+      materialName: btn.getAttribute("data-material") || "",
+      subjectName: btn.getAttribute("data-subject") || "",
+      fieldName: btn.getAttribute("data-field") || "",
+      problemPath: btn.getAttribute("data-path") || "",
+      problemTitle: btn.getAttribute("data-title") || ""
+    }, btn);
+  });
 });
+
+/** Firebase 遅延読み込み（リクエスト送信時） */
+var indexFirebaseReady = null;
+function ensureIndexFirebase() {
+  if (window.db) return Promise.resolve();
+  if (indexFirebaseReady) return indexFirebaseReady;
+  var c = window.firebaseConfig;
+  if (!c || !c.apiKey || c.apiKey === "YOUR_API_KEY") {
+    indexFirebaseReady = Promise.resolve();
+    return indexFirebaseReady;
+  }
+  indexFirebaseReady = new Promise(function (resolve, reject) {
+    function loadScript(src) {
+      return new Promise(function (res, rej) {
+        var s = document.createElement("script");
+        s.src = src;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js")
+      .then(function () { return loadScript("https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"); })
+      .then(function () {
+        firebase.initializeApp(c);
+        window.db = firebase.firestore();
+        resolve();
+      })
+      .catch(reject);
+  });
+  return indexFirebaseReady;
+}
+
+/** コンテンツ作成リクエストを送信（スプレッドシートURLがあればPOST、なければFirestore） */
+function submitContentRequest(record, buttonEl) {
+  var payload = {
+    type: record.type,
+    materialName: (record.materialName || "").substring(0, 200),
+    subjectName: (record.subjectName || "").substring(0, 200),
+    fieldName: (record.fieldName || "").substring(0, 200),
+    problemPath: (record.problemPath || "").substring(0, 512),
+    problemTitle: (record.problemTitle || "").substring(0, 500),
+    timestamp: new Date().toISOString()
+  };
+
+  function markRequestDone() {
+    var path = (record.problemPath || "").replace(/^\s+|\s+$/g, "");
+    var key = "content_req_" + record.type + "_" + path;
+    try { localStorage.setItem(key, "1"); } catch (e) {}
+    if (buttonEl) {
+      buttonEl.textContent = "リクエスト済み";
+      buttonEl.classList.add("btn-request-done");
+      buttonEl.setAttribute("data-requested", "1");
+    }
+    if (record.type === "html") alert("📖 解説HTMLの作成リクエストを送信しました。"); else alert("📹 動画の作成リクエストを送信しました。");
+  }
+
+  var spreadsheetUrl = typeof window.contentRequestSpreadsheetUrl === "string" && window.contentRequestSpreadsheetUrl.trim();
+  if (spreadsheetUrl) {
+    fetch(spreadsheetUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).then(function (res) {
+      if (res && res.ok) markRequestDone();
+      else throw new Error("送信に失敗しました");
+    }).catch(function () {
+      alert("スプレッドシートへの送信に失敗しました。URLとスクリプトのCORS設定をご確認ください。");
+    });
+    return;
+  }
+
+  ensureIndexFirebase().then(function () {
+    if (!window.db) {
+      alert("リクエストの送信に必要な設定がありません。config/firebase-config.js と Firestore ルールをご確認ください。");
+      return;
+    }
+    var Timestamp = (typeof firebase !== "undefined" && firebase.firestore && firebase.firestore.Timestamp) ? firebase.firestore.Timestamp : null;
+    var doc = {
+      type: payload.type,
+      materialName: payload.materialName,
+      subjectName: payload.subjectName,
+      fieldName: payload.fieldName,
+      problemPath: payload.problemPath,
+      problemTitle: payload.problemTitle,
+      timestamp: Timestamp ? Timestamp.now() : new Date()
+    };
+    window.db.collection("content_requests").add(doc).then(markRequestDone).catch(function (err) {
+      console.warn("content_requests add failed", err);
+      var msg = "リクエストの送信に失敗しました。";
+      if (err && err.message) msg += "\n（" + err.message + "）";
+      alert(msg);
+    });
+  }).catch(function (err) {
+    var msg = "リクエストの送信に失敗しました。";
+    if (err && err.message) msg += "\n（" + err.message + "）";
+    alert(msg);
+  });
+}
+
+/** リクエスト済みをキャンセル（ローカルのみ。Firestore の記録は削除しません） */
+function cancelContentRequest(buttonEl) {
+  var path = (buttonEl.getAttribute("data-path") || "").replace(/^\s+|\s+$/g, "");
+  var type = buttonEl.getAttribute("data-request-type");
+  if (!type) return;
+  var key = "content_req_" + type + "_" + path;
+  try { localStorage.removeItem(key); } catch (e) {}
+  buttonEl.textContent = type === "html" ? "📖リクエスト" : "📹リクエスト";
+  buttonEl.classList.remove("btn-request-done");
+  buttonEl.removeAttribute("data-requested");
+}
 
 function getBookmarksList() {
   const raw = localStorage.getItem("rikeich_bookmarks");

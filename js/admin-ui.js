@@ -2470,11 +2470,13 @@ function setupTabSwitching() {
     if(ui.tabSpreadsheet) ui.tabSpreadsheet.classList.remove("active");
     if(ui.tabPreview) ui.tabPreview.classList.remove("active");
     if(ui.tabAnalyze) ui.tabAnalyze.classList.remove("active");
+    if(ui.tabRequests) ui.tabRequests.classList.remove("active");
     
     if(ui.viewEditor) ui.viewEditor.classList.remove("active");
     if(ui.viewSpreadsheet) ui.viewSpreadsheet.classList.remove("active");
     if(ui.viewPreview) ui.viewPreview.classList.remove("active");
     if(ui.viewAnalyze) ui.viewAnalyze.classList.remove("active");
+    if(ui.viewRequests) ui.viewRequests.classList.remove("active");
   };
 
   if(ui.tabEdit) {
@@ -2546,6 +2548,19 @@ function setupTabSwitching() {
     };
   }
 
+  if (ui.tabRequests && ui.viewRequests) {
+    ui.tabRequests.onclick = () => {
+      resetActive();
+      ui.tabRequests.classList.add("active");
+      ui.viewRequests.classList.add("active");
+      if (ui.editingTitle) ui.editingTitle.style.display = "none";
+      if (ui.editingId) ui.editingId.style.display = "none";
+      const editorHeader = document.querySelector(".editor-header");
+      if (editorHeader) editorHeader.style.display = "none";
+      renderAdminContentRequests();
+    };
+  }
+
   if (ui.formContainer) {
     ui.formContainer.addEventListener('input', (e) => {
       if (e.target.classList.contains('visual-editor')) {
@@ -2555,6 +2570,49 @@ function setupTabSwitching() {
       }
     });
   }
+}
+
+/**
+ * 管理画面: コンテンツ作成リクエスト一覧を Firestore から取得して表示
+ */
+function renderAdminContentRequests() {
+  const listEl = ui.adminRequestsList;
+  if (!listEl) return;
+  listEl.innerHTML = "読み込み中...";
+  if (!window.db) {
+    listEl.innerHTML = "<p>Firebase未設定のためリクエスト一覧を表示できません。</p>";
+    return;
+  }
+  const esc = (s) => {
+    if (s == null) return "";
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  };
+  window.db.collection("content_requests").orderBy("timestamp", "desc").limit(100).get()
+    .then((snap) => {
+      if (snap.empty) {
+        listEl.innerHTML = "<p>リクエストはまだありません。</p>";
+        return;
+      }
+      let html = '<ul style="list-style:none;padding:0;margin:0">';
+      snap.forEach((d) => {
+        const t = d.data();
+        const typeLabel = t.type === "html" ? "HTML解説" : "動画";
+        const ts = t.timestamp && (t.timestamp.toDate ? t.timestamp.toDate() : t.timestamp);
+        const timeStr = ts ? (ts.getFullYear() + "/" + (ts.getMonth() + 1) + "/" + ts.getDate() + " " + ts.getHours() + ":" + String(ts.getMinutes()).padStart(2, "0")) : "";
+        html += '<li style="padding:8px 0;border-bottom:1px solid #e2e8f0">';
+        html += '<span style="padding:2px 8px;border-radius:6px;font-size:0.75rem;font-weight:600;margin-right:8px;' + (t.type === "html" ? "background:#dbeafe;color:#1d4ed8" : "background:#fef3c7;color:#b45309") + '">' + esc(typeLabel) + "</span> ";
+        html += "<strong>" + esc(t.problemTitle || "") + "</strong> ";
+        html += "<span style=\"color:#64748b;font-size:0.85rem\">" + esc(t.materialName || "") + " / " + esc(t.fieldName || "") + "</span>";
+        html += " <span style=\"color:#94a3b8;font-size:0.8rem\">" + esc(timeStr) + "</span>";
+        html += "</li>";
+      });
+      html += "</ul>";
+      listEl.innerHTML = html;
+    })
+    .catch((err) => {
+      console.warn("content_requests get failed", err);
+      listEl.innerHTML = "<p>リクエスト一覧の取得に失敗しました。</p>";
+    });
 }
 
 /**

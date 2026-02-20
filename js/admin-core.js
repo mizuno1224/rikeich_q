@@ -47,12 +47,15 @@ document.addEventListener("DOMContentLoaded", () => {
     tabSpreadsheet: document.getElementById("tab-spreadsheet"),
     tabPreview: document.getElementById("tab-preview"),
     tabAnalyze: document.getElementById("tab-analyze"),
+    tabRequests: document.getElementById("tab-requests"),
     viewEditor: document.getElementById("view-editor"),
     viewSpreadsheet: document.getElementById("view-spreadsheet"),
     viewPreview: document.getElementById("view-preview"),
     viewAnalyze: document.getElementById("view-analyze"),
+    viewRequests: document.getElementById("view-requests"),
     
     spreadsheetContainer: document.getElementById("spreadsheet-container"),
+    adminRequestsList: document.getElementById("admin-requests-list"),
     
     formContainer: document.getElementById("form-container"),
     previewContainer: document.getElementById("preview-container"),

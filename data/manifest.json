@@ -1,13 +1,13 @@
 [
   {
     "id": "textbook_basic",
-    "name": "物理基礎",
+    "name": "物理基礎教科書",
     "path": "data/materials/textbook_basic.json",
     "type": "standard"
   },
   {
     "id": "textbook_physics",
-    "name": "物理",
+    "name": "物理教科書",
     "path": "data/materials/textbook_physics.json",
     "type": "standard"
   },

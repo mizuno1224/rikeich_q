@@ -1,9 +1,38 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // 生徒の反応・メモ用。閲覧者からの書き込みと管理画面からの読み取りのみ許可
+    // 生徒の反応・メモ用。許可するフィールドのみ書き込み可。削除は不可。
     match /student_logs/{docId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['userId', 'contentId', 'cardIndex', 'reaction', 'memo', 'timestamp'])
+        && request.resource.data.userId is string
+        && request.resource.data.contentId is string
+        && request.resource.data.cardIndex is int
+        && (request.resource.data.reaction == null || request.resource.data.reaction is string)
+        && request.resource.data.memo is string
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.userId.size() <= 256
+        && request.resource.data.contentId.size() <= 512
+        && request.resource.data.memo.size() <= 10000;
+      allow delete: if false;
+    }
+    // コンテンツ作成リクエスト（HTML/動画）。生徒・教員が送信。教員・管理画面で参照。
+    match /content_requests/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['type', 'materialName', 'subjectName', 'fieldName', 'problemPath', 'problemTitle', 'timestamp'])
+        && request.resource.data.type in ['html', 'video']
+        && request.resource.data.materialName is string
+        && request.resource.data.subjectName is string
+        && request.resource.data.fieldName is string
+        && request.resource.data.problemPath is string
+        && request.resource.data.problemTitle is string
+        && request.resource.data.timestamp is timestamp
+        && request.resource.data.materialName.size() <= 200
+        && request.resource.data.subjectName.size() <= 200
+        && request.resource.data.fieldName.size() <= 200
+        && request.resource.data.problemPath.size() <= 512
+        && request.resource.data.problemTitle.size() <= 500;
+      allow update, delete: if false;
     }
     // 上記以外のコレクションは拒否（将来の誤公開を防ぐ）
     match /{document=**} {
