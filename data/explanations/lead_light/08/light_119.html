@@ -1,0 +1,969 @@
+<h2 class="prob-title-sub">編末問題119 気柱の振動</h2>
+
+<div class="card">
+  <h3>解法の全体像</h3>
+  <p>
+    ガラス管の一方にピストン（<strong>閉端</strong>）、もう一方が管口（<strong>開端</strong>）になっている<span class="highlight">閉管の気柱共鳴</span>の問題です。
+    閉端は音波の変位の<strong>節</strong>、開端は変位の<strong>腹</strong>になり、共鳴は $l + \varDelta l = \dfrac{\lambda}{4},\ \dfrac{3\lambda}{4},\ \dfrac{5\lambda}{4},\ \ldots$ のときに起こります。
+  </p>
+  <ul>
+    <li><strong>ステップ1</strong>：閉管の共鳴条件から、1回目の共鳴のとき $l + \varDelta l$ が波長の何倍かを判断する。</li>
+    <li><strong>ステップ2</strong>：1回目と2回目の共鳴の管長の差 $l_2 - l_1 = \dfrac{\lambda}{2}$ を利用して波長 $\lambda$ を求める。</li>
+    <li><strong>ステップ3</strong>：$v = f\lambda$ で音速を求め、$l_1 + \varDelta l = \dfrac{\lambda}{4}$ から開口端補正 $\varDelta l$ を求める。</li>
+    <li><strong>ステップ4</strong>：3回目の共鳴条件と、音速変更後の共鳴振動数を求める。</li>
+  </ul>
+
+  <h4>気柱共鳴のシミュレーション</h4>
+  <p>
+    スライダーでピストンの位置 $l$ を変えると、閉管内に立つ定在波（変位）が表示されます。管口（左端）付近が<strong>腹</strong>、ピストン面が<strong>節</strong>になるときに共鳴が起こります。<strong>再生ボタン</strong>で定在波の振動の様子も確認できます。
+  </p>
+  <div id="sim-119-overview" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-119-overview';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var cW, cH;
+        var mL = 80, mR = 30, mT = 50, mB = 20;
+        var lambda = 60.0;
+        var deltaL = 1.3;
+        var lVal = 13.7;
+        var time = 0;
+        var isPlaying = false;
+        var playBtnEl, sliderEl, valSpan;
+
+        function tubeLeft() { return mL; }
+        function tubeRight() { return cW - mR; }
+        function tubeW() { return tubeRight() - tubeLeft(); }
+        function lToPx(x) { return tubeLeft() + x / 80 * tubeW(); }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(360, Math.max(280, cW * 0.50));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;padding:0 4px;';
+          el.appendChild(ctr);
+
+          playBtnEl = document.createElement('button');
+          playBtnEl.textContent = '\u25B6 \u518D\u751F';
+          playBtnEl.style.padding = '4px 12px';
+          playBtnEl.onclick = function() {
+            isPlaying = !isPlaying;
+            playBtnEl.textContent = isPlaying ? '\u25A0 \u505C\u6B62' : '\u25B6 \u518D\u751F';
+          };
+          ctr.appendChild(playBtnEl);
+
+          var lLabel = document.createElement('span');
+          lLabel.textContent = 'l = ';
+          lLabel.style.fontWeight = 'bold';
+          ctr.appendChild(lLabel);
+
+          sliderEl = document.createElement('input');
+          sliderEl.type = 'range';
+          sliderEl.min = '5';
+          sliderEl.max = '75';
+          sliderEl.step = '0.1';
+          sliderEl.value = '13.7';
+          sliderEl.style.cssText = 'flex:1;min-width:100px;cursor:pointer;';
+          sliderEl.oninput = function() {
+            lVal = parseFloat(sliderEl.value);
+            valSpan.textContent = lVal.toFixed(1) + ' cm';
+          };
+          ctr.appendChild(sliderEl);
+
+          valSpan = document.createElement('span');
+          valSpan.textContent = '13.7 cm';
+          valSpan.style.cssText = 'min-width:60px;font-weight:bold;color:#1976D2;';
+          ctr.appendChild(valSpan);
+        };
+
+        p.draw = function() {
+          if (isPlaying) time += 0.04;
+          p.background(255);
+
+          var tubeY = cH * 0.32;
+          var tubeH = 50;
+          var openX = lToPx(0);
+          var pistonX = lToPx(lVal);
+          var dlPx = lToPx(deltaL) - lToPx(0);
+
+          p.fill(230, 240, 250);
+          p.stroke(80);
+          p.strokeWeight(2);
+          p.rect(openX, tubeY, pistonX - openX, tubeH);
+
+          p.fill(140);
+          p.noStroke();
+          p.rect(pistonX, tubeY - 5, 10, tubeH + 10);
+          p.stroke(100);
+          p.strokeWeight(1);
+          for (var yy = tubeY - 5; yy < tubeY + tubeH + 5; yy += 6) {
+            p.line(pistonX + 10, yy, pistonX + 18, yy - 5);
+          }
+
+          p.noStroke();
+          p.fill(80);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u30D4\u30B9\u30C8\u30F3', pistonX + 5, tubeY + tubeH + 10);
+
+          p.fill(180, 200, 180);
+          p.noStroke();
+          p.rect(openX - dlPx, tubeY, dlPx, tubeH);
+
+          var spkX = openX - dlPx - 35;
+          p.fill(100);
+          p.stroke(80);
+          p.strokeWeight(1.5);
+          p.triangle(spkX, tubeY + tubeH / 2 - 18, spkX, tubeY + tubeH / 2 + 18, spkX + 20, tubeY + tubeH / 2);
+          p.noStroke();
+          p.fill(80);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('\u97F3\u6E90', spkX + 10, tubeY + tubeH + 10);
+          p.text('570 Hz', spkX + 10, tubeY + tubeH + 22);
+
+          var effL = lVal + deltaL;
+          var k = 2 * Math.PI / lambda;
+          var omega = 2 * Math.PI * 3;
+          var sinT = Math.sin(omega * time);
+
+          var startX = openX - dlPx;
+          var endX = pistonX;
+          var steps = 150;
+          var dx = (endX - startX) / steps;
+
+          var maxAmp = tubeH * 0.35;
+          p.stroke(25, 118, 210, 180);
+          p.strokeWeight(2);
+          p.noFill();
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var px = startX + i * dx;
+            var xPhys = (px - startX) / (endX - startX) * effL;
+            var amp = Math.cos(k * (effL - xPhys)) * sinT;
+            p.vertex(px, tubeY + tubeH / 2 - amp * maxAmp);
+          }
+          p.endShape();
+
+          p.stroke(25, 118, 210, 60);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([3, 3]);
+          p.beginShape();
+          for (var j = 0; j <= steps; j++) {
+            var px2 = startX + j * dx;
+            var xPhys2 = (px2 - startX) / (endX - startX) * effL;
+            var env = Math.cos(k * (effL - xPhys2));
+            p.vertex(px2, tubeY + tubeH / 2 - env * maxAmp);
+          }
+          p.endShape();
+          p.beginShape();
+          for (var j2 = 0; j2 <= steps; j2++) {
+            var px3 = startX + j2 * dx;
+            var xPhys3 = (px3 - startX) / (endX - startX) * effL;
+            var env2 = -Math.cos(k * (effL - xPhys3));
+            p.vertex(px3, tubeY + tubeH / 2 - env2 * maxAmp);
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          var lPxStart = openX;
+          var lPxEnd = pistonX;
+          var arrY = tubeY + tubeH + 38;
+          p.stroke(220, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(lPxStart, arrY, lPxEnd, arrY);
+          p.fill(220, 60, 50);
+          p.noStroke();
+          p.triangle(lPxStart, arrY, lPxStart + 6, arrY - 4, lPxStart + 6, arrY + 4);
+          p.triangle(lPxEnd, arrY, lPxEnd - 6, arrY - 4, lPxEnd - 6, arrY + 4);
+          p.textSize(12);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('l = ' + lVal.toFixed(1) + ' cm', (lPxStart + lPxEnd) / 2, arrY + 5);
+
+          var dlArrY = tubeY - 12;
+          var dlStart = openX - dlPx;
+          var dlEnd = openX;
+          p.stroke(46, 125, 50);
+          p.strokeWeight(1.5);
+          p.line(dlStart, dlArrY, dlEnd, dlArrY);
+          p.fill(46, 125, 50);
+          p.noStroke();
+          p.triangle(dlStart, dlArrY, dlStart + 5, dlArrY - 3, dlStart + 5, dlArrY + 3);
+          p.triangle(dlEnd, dlArrY, dlEnd - 5, dlArrY - 3, dlEnd - 5, dlArrY + 3);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u0394l', (dlStart + dlEnd) / 2, dlArrY - 3);
+
+          p.noStroke();
+          p.fill(80);
+          p.textSize(10);
+          p.textAlign(p.LEFT, p.BOTTOM);
+          p.text('\u7BA1\u53E3\uFF08\u958B\u7AEF\uFF09', openX, tubeY - 3);
+
+          var nRes = 0;
+          for (var n = 1; n <= 10; n++) {
+            var lRes = (2 * n - 1) * lambda / 4 - deltaL;
+            if (lRes > 0 && lRes < 75) nRes++;
+          }
+          var resText = 'l + \u0394l = ' + effL.toFixed(1) + ' cm';
+          var ratio = effL / lambda;
+          var isResonance = false;
+          for (var n2 = 1; n2 <= 10; n2++) {
+            var target = (2 * n2 - 1) / 4;
+            if (Math.abs(ratio - target) < 0.01) {
+              isResonance = true;
+              resText += '  = ' + (2 * n2 - 1) + '\u03BB/4 \u2190 \u5171\u9CF4\uFF01';
+              break;
+            }
+          }
+          p.textSize(14);
+          p.textStyle(p.BOLD);
+          p.textAlign(p.RIGHT, p.TOP);
+          p.fill(isResonance ? p.color(220, 60, 50) : p.color(60));
+          p.text(resText, cW - mR, 8);
+          p.textStyle(p.NORMAL);
+
+          if (isResonance) {
+            p.fill(220, 60, 50, 30);
+            p.noStroke();
+            p.rect(openX - dlPx, tubeY, pistonX - (openX - dlPx), tubeH);
+          }
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(360, Math.max(280, cW * 0.50));
+          p.resizeCanvas(cW, cH);
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <div class="box-note">
+    <strong>閉管の共鳴条件</strong><br>
+    管口（開端）が<strong>腹</strong>、ピストン（閉端）が<strong>節</strong>になるため、
+    $$ l + \varDelta l = \frac{(2n - 1)}{4}\lambda \quad (n = 1,\ 2,\ 3,\ \ldots) $$
+    すなわち $\dfrac{\lambda}{4},\ \dfrac{3\lambda}{4},\ \dfrac{5\lambda}{4},\ \ldots$ のとき共鳴する。
+  </div>
+</div>
+
+<!-- ===== (1)(a) 1回目の共鳴 ===== -->
+<div class="card">
+  <h3>(1)(a) 1回目の共鳴のとき $l + \varDelta l$ は波長の何倍か</h3>
+
+  <h4>考え方</h4>
+  <p>
+    閉管で<span class="highlight">最初に共鳴が起こるのは、管内に定在波の腹と節が1組だけできるとき</span>です。このとき管の有効長（$l + \varDelta l$）には波長の $\dfrac{1}{4}$ が収まっています。
+  </p>
+
+  <div id="sim-119-1a" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-119-1a';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var cW, cH;
+        var mL = 60, mR = 30, mT = 30, mB = 50;
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(220, Math.max(160, cW * 0.30));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var tubeY = mT;
+          var tubeH = cH - mT - mB;
+          var tubeL = cW - mL - mR;
+
+          p.fill(235, 242, 250);
+          p.stroke(80);
+          p.strokeWeight(2);
+          p.rect(mL, tubeY, tubeL, tubeH);
+
+          p.fill(140);
+          p.noStroke();
+          p.rect(mL + tubeL, tubeY - 4, 8, tubeH + 8);
+
+          var steps = 120;
+          var maxAmp = tubeH * 0.38;
+          var midY = tubeY + tubeH / 2;
+
+          p.stroke(200, 200, 200, 120);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([3, 3]);
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) {
+            var frac = i / steps;
+            var env = Math.cos(Math.PI / 2 * frac);
+            p.vertex(mL + frac * tubeL, midY - env * maxAmp);
+          }
+          p.endShape();
+          p.beginShape();
+          for (var i2 = 0; i2 <= steps; i2++) {
+            var frac2 = i2 / steps;
+            var env2 = -Math.cos(Math.PI / 2 * frac2);
+            p.vertex(mL + frac2 * tubeL, midY - env2 * maxAmp);
+          }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          p.stroke(25, 118, 210);
+          p.strokeWeight(2.5);
+          p.noFill();
+          p.beginShape();
+          for (var j = 0; j <= steps; j++) {
+            var frac3 = j / steps;
+            var disp = Math.cos(Math.PI / 2 * frac3);
+            p.vertex(mL + frac3 * tubeL, midY - disp * maxAmp);
+          }
+          p.endShape();
+
+          p.fill(25, 118, 210);
+          p.noStroke();
+          p.textSize(12);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u8179', mL, midY - maxAmp - 4);
+
+          p.fill(220, 60, 50);
+          p.ellipse(mL + tubeL, midY, 10, 10);
+          p.textSize(12);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u7BC0', mL + tubeL, midY - maxAmp - 4);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(11);
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('\u958B\u7AEF\uFF08\u8179\uFF09', mL, tubeY + tubeH + 6);
+          p.textAlign(p.RIGHT, p.TOP);
+          p.text('\u9589\u7AEF\uFF08\u7BC0\uFF09', mL + tubeL + 8, tubeY + tubeH + 6);
+
+          var arrY2 = tubeY + tubeH + 26;
+          p.stroke(46, 125, 50);
+          p.strokeWeight(1.5);
+          p.line(mL, arrY2, mL + tubeL, arrY2);
+          p.fill(46, 125, 50);
+          p.noStroke();
+          p.triangle(mL, arrY2, mL + 6, arrY2 - 4, mL + 6, arrY2 + 4);
+          p.triangle(mL + tubeL, arrY2, mL + tubeL - 6, arrY2 - 4, mL + tubeL - 6, arrY2 + 4);
+          p.textSize(13);
+          p.textStyle(p.BOLD);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('l + \u0394l = \u03BB/4', mL + tubeL / 2, arrY2 + 5);
+          p.textStyle(p.NORMAL);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(220, Math.max(160, cW * 0.30));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    1回目の共鳴（基本振動）では、管の有効長に $\dfrac{\lambda}{4}$ が収まるので
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $l + \varDelta l$ は音の波長の $\dfrac{1}{4}$ 倍（$\dfrac{\lambda}{4}$）に相当する。
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>閉管では開端が腹・閉端が節になるため、最初の共鳴は $l + \varDelta l = \dfrac{\lambda}{4}$ のとき。</p>
+  </div>
+</div>
+
+<!-- ===== (1)(b) 波長 ===== -->
+<div class="card">
+  <h3>(1)(b) 1回目と2回目の共鳴から波長を求める</h3>
+
+  <h4>考え方</h4>
+  <p>
+    1回目の共鳴と2回目の共鳴では、管内の定在波の腹と節の数が1組分増えます。したがって管長の差は
+    $$ l_2 - l_1 = \frac{\lambda}{2} $$
+    という関係があります。これは<span class="highlight">開口端補正 $\varDelta l$ が打ち消し合う</span>ため、$l$ の差だけで波長が求まる便利な式です。
+  </p>
+
+  <div id="sim-119-1b" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-119-1b';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var cW, cH;
+        var mL = 50, mR = 20;
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(340, Math.max(260, cW * 0.50));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var usableW = cW - mL - mR;
+          var scale = usableW / 55;
+
+          var tubeH = 40;
+          var gap = 28;
+          var topY1 = 30;
+          var topY2 = topY1 + tubeH + gap + 40;
+
+          function drawTube(yTop, effL, label, nMode) {
+            var x0 = mL;
+            var tubeW = effL * scale;
+            p.fill(235, 242, 250);
+            p.stroke(80);
+            p.strokeWeight(1.5);
+            p.rect(x0, yTop, tubeW, tubeH);
+
+            p.fill(140);
+            p.noStroke();
+            p.rect(x0 + tubeW, yTop - 3, 7, tubeH + 6);
+
+            var steps = 100;
+            var maxAmp = tubeH * 0.35;
+            var midY = yTop + tubeH / 2;
+            var kEff = (2 * nMode - 1) * Math.PI / 2;
+
+            p.stroke(25, 118, 210);
+            p.strokeWeight(2);
+            p.noFill();
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var disp = Math.cos(kEff * frac);
+              p.vertex(x0 + frac * tubeW, midY - disp * maxAmp);
+            }
+            p.endShape();
+
+            p.stroke(25, 118, 210, 80);
+            p.strokeWeight(1);
+            p.drawingContext.setLineDash([3, 3]);
+            p.beginShape();
+            for (var j = 0; j <= steps; j++) {
+              var frac2 = j / steps;
+              var env = -Math.cos(kEff * frac2);
+              p.vertex(x0 + frac2 * tubeW, midY - env * maxAmp);
+            }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
+
+            p.noStroke();
+            p.fill(30);
+            p.textSize(12);
+            p.textStyle(p.BOLD);
+            p.textAlign(p.LEFT, p.BOTTOM);
+            p.text(label, x0, yTop - 4);
+            p.textStyle(p.NORMAL);
+
+            return tubeW;
+          }
+
+          var dl = 1.3;
+          var effL1 = 13.7 + dl;
+          var effL2 = 43.7 + dl;
+
+          var tubeW1 = drawTube(topY1, effL1, '1\u56DE\u76EE\u306E\u5171\u9CF4: l\u2081 = 13.7 cm', 1);
+          p.noStroke();
+          p.fill(46, 125, 50);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('l + \u0394l = \u03BB/4', mL + tubeW1 / 2, topY1 + tubeH + 4);
+
+          var tubeW2 = drawTube(topY2, effL2, '2\u56DE\u76EE\u306E\u5171\u9CF4: l\u2082 = 43.7 cm', 2);
+          p.noStroke();
+          p.fill(46, 125, 50);
+          p.textSize(11);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('l + \u0394l = 3\u03BB/4', mL + tubeW2 / 2, topY2 + tubeH + 4);
+
+          var diffArrY = topY2 + tubeH + 22;
+          var diffStart = mL + tubeW1;
+          var diffEnd = mL + tubeW2;
+          p.stroke(220, 60, 50);
+          p.strokeWeight(1.5);
+          p.line(diffStart, diffArrY, diffEnd, diffArrY);
+          p.fill(220, 60, 50);
+          p.noStroke();
+          p.triangle(diffStart, diffArrY, diffStart + 6, diffArrY - 4, diffStart + 6, diffArrY + 4);
+          p.triangle(diffEnd, diffArrY, diffEnd - 6, diffArrY - 4, diffEnd - 6, diffArrY + 4);
+          p.textSize(12);
+          p.textStyle(p.BOLD);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text('l\u2082 \u2212 l\u2081 = 30.0 cm = \u03BB/2  \u2234 \u03BB = 60.0 cm', (diffStart + diffEnd) / 2, diffArrY + 5);
+          p.textStyle(p.NORMAL);
+
+          var bracketX = mL + tubeW2 + 20;
+          p.stroke(80);
+          p.strokeWeight(1);
+          p.line(bracketX, topY1 + tubeH / 2, bracketX + 8, topY1 + tubeH / 2);
+          p.line(bracketX, topY2 + tubeH / 2, bracketX + 8, topY2 + tubeH / 2);
+          p.line(bracketX + 8, topY1 + tubeH / 2, bracketX + 8, topY2 + tubeH / 2);
+          p.noStroke();
+          p.fill(80);
+          p.textSize(11);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text('\u5DEE = \u03BB/2', bracketX + 12, (topY1 + topY2 + tubeH) / 2);
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(340, Math.max(260, cW * 0.50));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    1回目の共鳴のときの管長 $l_1 = 13.7$ cm、2回目のときの管長 $l_2 = 43.7$ cm なので
+    $$ l_2 - l_1 = 43.7 - 13.7 = 30.0 \text{ cm} $$
+    これが $\dfrac{\lambda}{2}$ に等しいから
+    $$ \frac{\lambda}{2} = 30.0 \text{ cm} $$
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $$ \lambda = 60.0 \text{ cm} = 0.600 \text{ m} $$
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>連続する共鳴の管長差 $l_2 - l_1 = \dfrac{\lambda}{2}$ は、開口端補正 $\varDelta l$ に依存せず波長が求まる重要公式。</p>
+  </div>
+</div>
+
+<!-- ===== (1)(c) 音速と開口端補正 ===== -->
+<div class="card">
+  <h3>(1)(c) 音の速さと開口端補正 $\varDelta l$</h3>
+
+  <h4>考え方</h4>
+  <p>
+    音の速さは $v = f\lambda$ で求まります。開口端補正 $\varDelta l$ は、1回目の共鳴条件
+    $$ l_1 + \varDelta l = \frac{\lambda}{4} $$
+    に既知の値を代入して求めます。
+  </p>
+
+  <p>
+    <strong>音の速さ</strong>：振動数 $f = 570$ Hz、波長 $\lambda = 0.600$ m なので
+    $$ v = f\lambda = 570 \times 0.600 = 342 \text{ m/s} $$
+  </p>
+  <p>
+    <strong>開口端補正</strong>：1回目の共鳴で $l_1 + \varDelta l = \dfrac{\lambda}{4}$ だから
+    $$ 13.7 + \varDelta l = \frac{60.0}{4} = 15.0 $$
+    $$ \varDelta l = 15.0 - 13.7 = 1.3 \text{ cm} $$
+  </p>
+
+  <h4>検算：2回目の共鳴で確認</h4>
+  <p>
+    2回目の共鳴条件は $l_2 + \varDelta l = \dfrac{3\lambda}{4}$ なので
+    $$ 43.7 + 1.3 = 45.0 \text{ cm},\quad \frac{3 \times 60.0}{4} = 45.0 \text{ cm} \quad \checkmark $$
+    一致するので正しいことが確認できます。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    音の速さ $v = 342$ m/s、開口端補正 $\varDelta l = 1.3$ cm
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>$v = f\lambda$ で音速を求めた後、1回目の共鳴条件 $l_1 + \varDelta l = \dfrac{\lambda}{4}$ から $\varDelta l$ を求める。2回目の共鳴条件 $l_2 + \varDelta l = \dfrac{3\lambda}{4}$ で検算するとよい。</p>
+  </div>
+</div>
+
+<!-- ===== (2) 3回目の共鳴 ===== -->
+<div class="card">
+  <h3>(2) 3回目の共鳴のとき $l + \varDelta l$ は波長の何倍か</h3>
+
+  <h4>考え方</h4>
+  <p>
+    閉管の共鳴条件は $l + \varDelta l = \dfrac{(2n-1)}{4}\lambda$ なので、$n = 1, 2, 3$ でそれぞれ $\dfrac{\lambda}{4},\ \dfrac{3\lambda}{4},\ \dfrac{5\lambda}{4}$ です。
+  </p>
+
+  <div id="sim-119-2" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-119-2';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var cW, cH;
+        var mL = 50, mR = 20;
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(380, Math.max(300, cW * 0.55));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var usableW = cW - mL - mR;
+          var lambda = 60.0;
+          var dl = 1.3;
+          var modes = [
+            { n: 1, l: 13.7, label: '1\u56DE\u76EE', color: [25, 118, 210] },
+            { n: 2, l: 43.7, label: '2\u56DE\u76EE', color: [46, 125, 50] },
+            { n: 3, l: 73.7, label: '3\u56DE\u76EE', color: [220, 60, 50] }
+          ];
+          var maxEffL = modes[2].l + dl;
+          var scale = usableW / (maxEffL + 5);
+
+          var tubeH = 34;
+          var gapY = 22;
+          var startY = 28;
+
+          for (var m = 0; m < modes.length; m++) {
+            var mode = modes[m];
+            var yTop = startY + m * (tubeH + gapY + 24);
+            var effL = mode.l + dl;
+            var tubeW = effL * scale;
+
+            p.fill(240, 245, 250);
+            p.stroke(80);
+            p.strokeWeight(1.5);
+            p.rect(mL, yTop, tubeW, tubeH);
+
+            p.fill(140);
+            p.noStroke();
+            p.rect(mL + tubeW, yTop - 3, 6, tubeH + 6);
+
+            var steps = 100;
+            var maxAmp = tubeH * 0.35;
+            var midY = yTop + tubeH / 2;
+            var kEff = (2 * mode.n - 1) * Math.PI / 2;
+
+            p.stroke(mode.color[0], mode.color[1], mode.color[2]);
+            p.strokeWeight(2);
+            p.noFill();
+            p.beginShape();
+            for (var i = 0; i <= steps; i++) {
+              var frac = i / steps;
+              var disp = Math.cos(kEff * frac);
+              p.vertex(mL + frac * tubeW, midY - disp * maxAmp);
+            }
+            p.endShape();
+
+            p.stroke(mode.color[0], mode.color[1], mode.color[2], 80);
+            p.strokeWeight(1);
+            p.drawingContext.setLineDash([3, 3]);
+            p.beginShape();
+            for (var j = 0; j <= steps; j++) {
+              var frac2 = j / steps;
+              var env = -Math.cos(kEff * frac2);
+              p.vertex(mL + frac2 * tubeW, midY - env * maxAmp);
+            }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
+
+            p.noStroke();
+            p.fill(30);
+            p.textSize(11);
+            p.textAlign(p.LEFT, p.BOTTOM);
+            var modeLabel = mode.label + ': l = ' + mode.l.toFixed(1) + ' cm';
+            p.text(modeLabel, mL, yTop - 3);
+
+            p.fill(mode.color[0], mode.color[1], mode.color[2]);
+            p.textSize(11);
+            p.textAlign(p.CENTER, p.TOP);
+            var ratioText = 'l + \u0394l = ' + (2 * mode.n - 1) + '\u03BB/4';
+            p.text(ratioText, mL + tubeW / 2, yTop + tubeH + 3);
+          }
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(380, Math.max(300, cW * 0.55));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    3回目の共鳴は $n = 3$ にあたるので
+    $$ l + \varDelta l = \frac{(2 \times 3 - 1)}{4}\lambda = \frac{5}{4}\lambda $$
+  </p>
+  <p>
+    このときの管長は $l = \dfrac{5\lambda}{4} - \varDelta l = \dfrac{5 \times 60.0}{4} - 1.3 = 75.0 - 1.3 = 73.7$ cm です。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $l + \varDelta l$ は波長の $\dfrac{5}{4}$ 倍に相当する。
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>閉管の共鳴は $n$ 回目で $l + \varDelta l = \dfrac{(2n-1)}{4}\lambda$。<strong>奇数倍の $\dfrac{\lambda}{4}$</strong> のときだけ共鳴が起こる（偶数倍は起こらない）。</p>
+  </div>
+</div>
+
+<!-- ===== (3) 振動数を下げたときの共鳴 ===== -->
+<div class="card">
+  <h3>(3) 振動数を下げたときに共鳴が起こる振動数</h3>
+
+  <h4>考え方</h4>
+  <p>
+    今度は<span class="highlight">管長を固定して振動数を変える</span>問題です。音速 $v = 360$ m/s、管の有効長 $l + \varDelta l = 45.0$ cm $= 0.450$ m が一定で、振動数を $570$ Hz からゆっくり下げていきます。
+  </p>
+  <p>
+    共鳴条件は同じく $l + \varDelta l = \dfrac{(2n-1)}{4}\lambda$ ですが、$\lambda = \dfrac{v}{f}$ なので振動数に書き直すと
+    $$ l + \varDelta l = \frac{(2n-1)}{4} \cdot \frac{v}{f} $$
+    これを $f$ について解くと
+    $$ f = \frac{(2n-1)\,v}{4(l + \varDelta l)} $$
+    値を代入すると
+    $$ f = \frac{(2n-1) \times 360}{4 \times 0.450} = (2n-1) \times 200 \text{ Hz} $$
+  </p>
+
+  <div id="sim-119-3" class="sim-embed"></div>
+  <script>
+    (function() {
+      var targetId = 'sim-119-3';
+      var el = document.getElementById(targetId);
+      if (!el) return;
+
+      var sketch = function(p) {
+        var cW, cH;
+        var mL = 70, mR = 30, mT = 40, mB = 50;
+        var fMax = 700;
+        var fSlider = 570;
+        var sliderEl, valSpan;
+
+        function fPx(f) { return mL + (f / fMax) * (cW - mL - mR); }
+        function yCenter() { return mT + (cH - mT - mB) / 2; }
+
+        p.setup = function() {
+          cW = el.clientWidth;
+          cH = Math.min(220, Math.max(160, cW * 0.28));
+          p.createCanvas(cW, cH).parent(el);
+          p.textFont('sans-serif');
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;padding:0 4px;';
+          el.appendChild(ctr);
+
+          var label = document.createElement('span');
+          label.textContent = 'f = ';
+          label.style.fontWeight = 'bold';
+          ctr.appendChild(label);
+
+          sliderEl = document.createElement('input');
+          sliderEl.type = 'range';
+          sliderEl.min = '50';
+          sliderEl.max = '600';
+          sliderEl.step = '1';
+          sliderEl.value = '570';
+          sliderEl.style.cssText = 'flex:1;min-width:100px;cursor:pointer;';
+          sliderEl.oninput = function() {
+            fSlider = parseInt(sliderEl.value);
+            valSpan.textContent = fSlider + ' Hz';
+            p.redraw();
+          };
+          ctr.appendChild(sliderEl);
+
+          valSpan = document.createElement('span');
+          valSpan.textContent = '570 Hz';
+          valSpan.style.cssText = 'min-width:60px;font-weight:bold;color:#1976D2;';
+          ctr.appendChild(valSpan);
+
+          p.noLoop();
+        };
+
+        p.draw = function() {
+          p.background(255);
+          var plotH = cH - mT - mB;
+
+          p.stroke(200);
+          p.strokeWeight(0.5);
+          for (var gf = 0; gf <= 700; gf += 100) {
+            p.line(fPx(gf), mT, fPx(gf), cH - mB);
+          }
+
+          p.stroke(60);
+          p.strokeWeight(1.5);
+          p.line(mL, cH - mB, cW - mR, cH - mB);
+          p.line(mL, mT, mL, cH - mB);
+
+          p.noStroke();
+          p.fill(60);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lf = 0; lf <= 700; lf += 100) {
+            p.text(lf, fPx(lf), cH - mB + 4);
+          }
+          p.textSize(11);
+          p.text('\u632F\u52D5\u6570 f [Hz]', (mL + cW - mR) / 2, cH - 10);
+
+          var resFreqs = [200, 600];
+          var resLabels = ['n=1', 'n=2'];
+          var resColors = [[46, 125, 50], [100, 100, 100]];
+
+          for (var i = 0; i < resFreqs.length; i++) {
+            var fR = resFreqs[i];
+            var xR = fPx(fR);
+            var inRange = fR <= 570;
+            var col = inRange ? resColors[0] : resColors[1];
+            p.stroke(col[0], col[1], col[2], inRange ? 200 : 80);
+            p.strokeWeight(2);
+            p.line(xR, mT, xR, cH - mB);
+
+            p.noStroke();
+            p.fill(col[0], col[1], col[2]);
+            p.textSize(11);
+            p.textAlign(p.CENTER, p.BOTTOM);
+            p.text(fR + ' Hz', xR, mT - 2);
+            p.textSize(9);
+            p.text(resLabels[i], xR, mT + 14);
+
+            if (!inRange) {
+              p.fill(150);
+              p.textSize(9);
+              p.textAlign(p.CENTER, p.TOP);
+              p.text('(\u7BC4\u56F2\u5916)', xR, mT + 22);
+            }
+          }
+
+          var xSlider = fPx(fSlider);
+          p.stroke(220, 60, 50);
+          p.strokeWeight(1.5);
+          p.drawingContext.setLineDash([4, 3]);
+          p.line(xSlider, mT, xSlider, cH - mB);
+          p.drawingContext.setLineDash([]);
+          p.fill(220, 60, 50);
+          p.noStroke();
+          p.triangle(xSlider, cH - mB, xSlider - 5, cH - mB + 8, xSlider + 5, cH - mB + 8);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          p.text(fSlider + ' Hz', xSlider, cH - mB + 10);
+
+          var startX = fPx(570);
+          var endX = fPx(50);
+          var arrY = mT + plotH * 0.5;
+          p.stroke(80);
+          p.strokeWeight(1.5);
+          p.line(startX, arrY, endX, arrY);
+          p.fill(80);
+          p.noStroke();
+          p.triangle(endX, arrY, endX + 8, arrY - 4, endX + 8, arrY + 4);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.fill(80);
+          p.text('570 Hz \u304B\u3089\u4E0B\u3052\u3066\u3044\u304F', (startX + endX) / 2, arrY - 4);
+
+          var isResonance = false;
+          for (var j = 0; j < resFreqs.length; j++) {
+            if (Math.abs(fSlider - resFreqs[j]) < 3) {
+              isResonance = true;
+              break;
+            }
+          }
+          if (isResonance) {
+            p.noStroke();
+            p.fill(220, 60, 50);
+            p.textSize(14);
+            p.textStyle(p.BOLD);
+            p.textAlign(p.RIGHT, p.TOP);
+            p.text('\u5171\u9CF4\uFF01', cW - mR, 8);
+            p.textStyle(p.NORMAL);
+          }
+        };
+
+        p.windowResized = function() {
+          var parent = document.getElementById(targetId);
+          if (!parent) return;
+          cW = parent.clientWidth;
+          cH = Math.min(220, Math.max(160, cW * 0.28));
+          p.resizeCanvas(cW, cH);
+          p.redraw();
+        };
+      };
+
+      var myP5 = new p5(sketch);
+      if (!window.p5Instances) window.p5Instances = [];
+      window.p5Instances.push(myP5);
+    })();
+  </script>
+
+  <p>
+    各 $n$ での共鳴振動数は
+  </p>
+  <ul>
+    <li>$n = 1$：$f = 1 \times 200 = 200$ Hz</li>
+    <li>$n = 2$：$f = 3 \times 200 = 600$ Hz</li>
+    <li>$n = 3$：$f = 5 \times 200 = 1000$ Hz …</li>
+  </ul>
+  <p>
+    振動数を $570$ Hz からゆっくりと下げていくので、<span class="highlight">$570$ Hz 以下で最初に出会う共鳴振動数</span>を探します。
+    $n = 2$ の $600$ Hz は出発点の $570$ Hz より大きいので到達できず、$n = 1$ の $200$ Hz が共鳴の起こる振動数です。
+  </p>
+
+  <div class="box-note">
+    <strong>答え：</strong><br>
+    $$ f = 200 \text{ Hz} $$
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>管長を固定して振動数を変える場合も、共鳴条件 $l + \varDelta l = \dfrac{(2n-1)\lambda}{4}$ を $f = \dfrac{(2n-1)\,v}{4(l + \varDelta l)}$ と書き直す。$n = 1, 2, 3, \ldots$ を代入し、指定範囲にある振動数を選ぶ。</p>
+  </div>
+</div>
+
+<!-- ===== 解法のポイント ===== -->
+<div class="box-alert">
+  <span class="box-alert-label">Point</span>
+  <h3>解法のポイント</h3>
+  <ul>
+    <li><strong>閉管の共鳴条件</strong>：開端が腹・閉端が節なので、$l + \varDelta l = \dfrac{(2n-1)}{4}\lambda$（$n = 1, 2, 3, \ldots$）。<strong>奇数倍の $\dfrac{\lambda}{4}$</strong> のときだけ共鳴する。</li>
+    <li><strong>連続共鳴の差</strong>：$l_2 - l_1 = \dfrac{\lambda}{2}$ は開口端補正 $\varDelta l$ に依存しないため、管長の差だけから波長を直接求められる。</li>
+    <li><strong>開口端補正の求め方</strong>：$l_1 + \varDelta l = \dfrac{\lambda}{4}$ に波長と管長を代入して求める。検算は2回目の共鳴条件で行う。</li>
+    <li><strong>振動数を変える問題</strong>：$f = \dfrac{(2n-1)\,v}{4(l + \varDelta l)}$ と書き直し、指定範囲に入る $n$ を探す。</li>
+  </ul>
+</div>

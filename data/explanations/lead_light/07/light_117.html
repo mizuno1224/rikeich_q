@@ -14,7 +14,7 @@
 
   <h4>入射波・反射波・定在波のシミュレーション</h4>
   <p>
-    入射波（青）・反射波（赤）・合成波＝定在波（緑）をリアルタイムで確認できます。再生・停止のほか、コマ送り・コマ戻しで1コマずつ進めたり戻したりできます。チェックボックスで表示の切り替えが可能です。
+    問題の初期状態（$t = 0$）から始まり、<strong>再生ボタン</strong>を押すと入射波（青）が固定端に向かって進み、壁で反射した反射波（赤）が右へ広がっていく様子を確認できます。合成波（緑）は反射波が届いた領域で定在波として現れます。チェックボックスで表示の切り替えが可能です。
   </p>
   <div id="sim-117-overview" class="sim-embed"></div>
   <script>
@@ -31,26 +31,44 @@
         var omega = 2 * Math.PI * v / lambda;
         var phi0 = -Math.PI / 2;
         var time = 0;
-        var isPlaying = true;
+        var isPlaying = false;
         var dtStep = 0.05;
         var showInc = true;
         var showRef = true;
         var showStand = true;
+        var showTrans = true;
+        var playBtnEl;
+        var xFront0 = 1.0;
 
-        var mL = 65, mR = 25, mT = 30, mB = 40;
-        var xMin = -0.5, xMax = 10;
+        var mL = 55, mR = 20, mT = 30, mB = 40;
+        var xMin = -2.5, xMax = 8;
         var yMin = -2.8, yMax = 2.8;
         var cW, cH;
 
         function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
         function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
 
-        function yInc(x, t) { return A * Math.sin(k * x + omega * t + phi0); }
-        function yRef(x, t) { return -A * Math.sin(-k * x + omega * t + phi0); }
+        function yIncRaw(x, t) { return A * Math.sin(k * x + omega * t + phi0); }
+        function yRefRaw(x, t) { return -A * Math.sin(-k * x + omega * t + phi0); }
+
+        var tReflect = xFront0 / v;
+        function incFront(t) { return Math.max(0, xFront0 - v * t); }
+        function refFront(t) { return t >= tReflect ? v * (t - tReflect) : 0; }
+        function transFront(t) { return t >= tReflect ? -(v * (t - tReflect)) : 0; }
+
+        function yInc(x, t) { return x >= incFront(t) ? yIncRaw(x, t) : 0; }
+        function yRef(x, t) {
+          if (t < tReflect || x > refFront(t)) return 0;
+          return yRefRaw(x, t);
+        }
+        function yTrans(x, t) {
+          if (t < tReflect || x > 0 || x < transFront(t)) return 0;
+          return yIncRaw(x, t);
+        }
 
         p.setup = function() {
           cW = el.clientWidth;
-          cH = Math.min(320, Math.max(240, cW * 0.45));
+          cH = Math.min(340, Math.max(250, cW * 0.48));
           p.createCanvas(cW, cH).parent(el);
           p.textFont('sans-serif');
 
@@ -58,17 +76,21 @@
           ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
           el.appendChild(ctr);
 
-          var playBtn = document.createElement('button');
-          playBtn.textContent = '\u25B6 / \u25A0';
-          playBtn.style.padding = '4px 12px';
-          playBtn.onclick = function() { isPlaying = !isPlaying; };
-          ctr.appendChild(playBtn);
+          playBtnEl = document.createElement('button');
+          playBtnEl.textContent = '\u25B6 \u518D\u751F';
+          playBtnEl.style.padding = '4px 12px';
+          playBtnEl.onclick = function() {
+            isPlaying = !isPlaying;
+            playBtnEl.textContent = isPlaying ? '\u25A0 \u505C\u6B62' : '\u25B6 \u518D\u751F';
+          };
+          ctr.appendChild(playBtnEl);
 
           var stepBackBtn = document.createElement('button');
           stepBackBtn.textContent = '\u2190 \u30B3\u30DE\u623B\u3057';
           stepBackBtn.style.padding = '4px 12px';
           stepBackBtn.onclick = function() {
             isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
             time = Math.max(0, time - dtStep);
           };
           ctr.appendChild(stepBackBtn);
@@ -78,6 +100,7 @@
           stepFwdBtn.style.padding = '4px 12px';
           stepFwdBtn.onclick = function() {
             isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
             time = time + dtStep;
           };
           ctr.appendChild(stepFwdBtn);
@@ -85,7 +108,11 @@
           var resetBtn = document.createElement('button');
           resetBtn.textContent = '\u30EA\u30BB\u30C3\u30C8';
           resetBtn.style.padding = '4px 12px';
-          resetBtn.onclick = function() { time = 0; };
+          resetBtn.onclick = function() {
+            time = 0;
+            isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
+          };
           ctr.appendChild(resetBtn);
 
           function addCb(label, color, checked, cb) {
@@ -98,30 +125,40 @@
             lbl.appendChild(document.createTextNode(label));
             ctr.appendChild(lbl);
           }
-          addCb('\u5165\u5C04\u6CE2', '#1976D2', true, function(v) { showInc = v; });
-          addCb('\u53CD\u5C04\u6CE2', '#D32F2F', true, function(v) { showRef = v; });
-          addCb('\u5408\u6210\u6CE2', '#2E7D32', true, function(v) { showStand = v; });
+          addCb('\u5165\u5C04\u6CE2', '#1976D2', true, function(val) { showInc = val; });
+          addCb('\u53CD\u5C04\u6CE2', '#D32F2F', true, function(val) { showRef = val; });
+          addCb('\u5408\u6210\u6CE2', '#2E7D32', true, function(val) { showStand = val; });
+          addCb('\u900F\u904E\u6CE2', '#E65100', true, function(val) { showTrans = val; });
         };
 
         p.draw = function() {
-          if (isPlaying) time += 0.018;
+          if (isPlaying) time += 0.008;
           p.background(255);
 
-          /* wall at x=0 */
+          var iF = incFront(time);
+          var rF = refFront(time);
+          var tF = transFront(time);
+
+          /* negative-x background (behind wall) */
           var wallX = xPx(0);
-          p.fill(180);
           p.noStroke();
-          p.rect(wallX - 10, mT - 5, 10, cH - mT - mB + 10);
-          p.stroke(120);
+          p.fill(245, 243, 240);
+          p.rect(mL, mT, wallX - mL, cH - mT - mB);
+
+          /* wall at x=0 */
+          p.fill(160);
+          p.noStroke();
+          p.rect(wallX - 4, mT - 3, 8, cH - mT - mB + 6);
+          p.stroke(100);
           p.strokeWeight(1);
-          for (var yy = mT - 5; yy < cH - mB + 5; yy += 8) {
-            p.line(wallX - 10, yy, wallX, yy - 6);
+          for (var yy = mT - 3; yy < cH - mB + 3; yy += 7) {
+            p.line(wallX - 4, yy, wallX + 4, yy - 5);
           }
 
           /* grid */
           p.stroke(220);
           p.strokeWeight(0.5);
-          for (var gx = 0; gx <= 10; gx += 1) {
+          for (var gx = -2; gx <= 8; gx += 1) {
             p.line(xPx(gx), mT, xPx(gx), cH - mB);
           }
           for (var gy = -2; gy <= 2; gy += 1) {
@@ -137,69 +174,146 @@
           /* axis labels */
           p.noStroke();
           p.fill(60);
-          p.textSize(12);
+          p.textSize(11);
           p.textAlign(p.CENTER, p.TOP);
-          for (var lx = 0; lx <= 10; lx += 2) {
+          for (var lx = -2; lx <= 8; lx += 2) {
             p.text(lx, xPx(lx), cH - mB + 4);
           }
           p.textAlign(p.CENTER, p.BOTTOM);
-          p.text('x [cm]', cW - mR, cH - 4);
+          p.text('x [cm]', cW - mR + 5, cH - 4);
           p.textAlign(p.RIGHT, p.CENTER);
           for (var ly = -2; ly <= 2; ly += 1) {
-            if (ly !== 0) p.text(ly, mL - 6, yPx(ly));
+            if (ly !== 0) p.text(ly, mL - 5, yPx(ly));
           }
           p.textAlign(p.CENTER, p.BOTTOM);
-          p.text('y [cm]', mL + 15, mT - 4);
+          p.text('y [cm]', mL + 12, mT - 4);
 
-          /* draw wave curves */
-          var steps = 300;
-          var dx = (xMax - 0) / steps;
+          /* incident wavefront indicator */
+          if (iF > 0 && iF < xMax) {
+            p.stroke(25, 118, 210, 80);
+            p.strokeWeight(1);
+            p.drawingContext.setLineDash([3, 3]);
+            p.line(xPx(iF), mT, xPx(iF), cH - mB);
+            p.drawingContext.setLineDash([]);
+          }
 
-          function drawWave(fn, col, sw, dashed) {
-            p.stroke(col);
-            p.strokeWeight(sw);
+          /* reflected wavefront indicator */
+          if (time >= tReflect && rF > 0 && rF < xMax) {
+            p.stroke(211, 47, 47, 80);
+            p.strokeWeight(1);
+            p.drawingContext.setLineDash([3, 3]);
+            p.line(xPx(rF), mT, xPx(rF), cH - mB);
+            p.drawingContext.setLineDash([]);
+            p.noStroke();
+            p.fill(211, 47, 47);
+            p.textSize(9);
+            p.textAlign(p.CENTER, p.BOTTOM);
+            p.text('\u53CD\u5C04\u6CE2\u524D\u7DDA', xPx(rF), mT - 1);
+          }
+
+          /* transmitted wavefront indicator */
+          if (time >= tReflect && tF < 0 && tF > xMin) {
+            p.stroke(230, 81, 0, 80);
+            p.strokeWeight(1);
+            p.drawingContext.setLineDash([3, 3]);
+            p.line(xPx(tF), mT, xPx(tF), cH - mB);
+            p.drawingContext.setLineDash([]);
+          }
+
+          /* draw waves — positive x region (x: 0 to 8) */
+          var stepsPos = 250;
+          var dxPos = xMax / stepsPos;
+
+          /* incident wave (x >= 0) */
+          if (showInc) {
+            p.stroke(25, 118, 210, 180);
+            p.strokeWeight(2);
             p.noFill();
-            if (dashed) p.drawingContext.setLineDash([6, 4]);
+            p.drawingContext.setLineDash([6, 4]);
             p.beginShape();
-            for (var i = 0; i <= steps; i++) {
-              var xx = i * dx;
-              var yy = fn(xx);
-              p.vertex(xPx(xx), yPx(yy));
+            for (var i = 0; i <= stepsPos; i++) {
+              var xx = i * dxPos;
+              p.vertex(xPx(xx), yPx(yInc(xx, time)));
             }
             p.endShape();
-            if (dashed) p.drawingContext.setLineDash([]);
+            p.drawingContext.setLineDash([]);
           }
 
-          if (showInc) {
-            drawWave(function(x) { return yInc(x, time); }, p.color(25, 118, 210, 180), 2, true);
+          /* reflected wave (x >= 0) */
+          if (showRef && time >= tReflect) {
+            p.stroke(211, 47, 47, 180);
+            p.strokeWeight(2);
+            p.noFill();
+            p.drawingContext.setLineDash([6, 4]);
+            p.beginShape();
+            for (var j = 0; j <= stepsPos; j++) {
+              var xx2 = j * dxPos;
+              p.vertex(xPx(xx2), yPx(yRef(xx2, time)));
+            }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
           }
-          if (showRef) {
-            drawWave(function(x) { return yRef(x, time); }, p.color(211, 47, 47, 180), 2, true);
-          }
+
+          /* composite wave (x >= 0) */
           if (showStand) {
-            drawWave(function(x) { return yInc(x, time) + yRef(x, time); }, p.color(46, 125, 50), 3, false);
+            p.stroke(46, 125, 50);
+            p.strokeWeight(3);
+            p.noFill();
+            p.beginShape();
+            for (var m = 0; m <= stepsPos; m++) {
+              var xx3 = m * dxPos;
+              p.vertex(xPx(xx3), yPx(yInc(xx3, time) + yRef(xx3, time)));
+            }
+            p.endShape();
           }
 
-          /* time display */
+          /* transmitted wave (x < 0, behind wall) */
+          if (showTrans && time >= tReflect) {
+            var stepsNeg = 80;
+            var dxNeg = Math.abs(xMin) / stepsNeg;
+            p.stroke(230, 81, 0, 200);
+            p.strokeWeight(2);
+            p.noFill();
+            p.drawingContext.setLineDash([6, 4]);
+            p.beginShape();
+            for (var n = 0; n <= stepsNeg; n++) {
+              var xxn = -n * dxNeg;
+              p.vertex(xPx(xxn), yPx(yTrans(xxn, time)));
+            }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
+          }
+
+          /* time display — top right, large */
           p.noStroke();
-          p.fill(80);
-          p.textSize(13);
-          p.textAlign(p.LEFT, p.TOP);
-          var tDisp = (time % (0.80 * 5)).toFixed(2);
-          p.text('t = ' + tDisp + ' s', mL + 10, mT + 4);
+          p.fill(30);
+          p.textSize(18);
+          p.textStyle(p.BOLD);
+          p.textAlign(p.RIGHT, p.TOP);
+          p.text('t = ' + time.toFixed(2) + ' s', cW - mR - 4, mT + 4);
+          p.textStyle(p.NORMAL);
 
           /* fixed end label */
-          p.fill(100);
+          p.fill(80);
           p.textSize(11);
           p.textAlign(p.CENTER, p.BOTTOM);
           p.text('\u56FA\u5B9A\u7AEF', wallX, mT - 6);
+
+          /* initial state hint */
+          if (time < 0.01 && !isPlaying) {
+            p.noStroke();
+            p.fill(100);
+            p.textSize(12);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text('\u25B6 \u3092\u62BC\u3059\u3068\u53CD\u5C04\u306E\u69D8\u5B50\u304C\u59CB\u307E\u308A\u307E\u3059', xPx(4), cH - 12);
+          }
         };
 
         p.windowResized = function() {
           var parent = document.getElementById(targetId);
           if (!parent) return;
           cW = parent.clientWidth;
-          cH = Math.min(320, Math.max(240, cW * 0.45));
+          cH = Math.min(340, Math.max(250, cW * 0.48));
           p.resizeCanvas(cW, cH);
         };
       };
@@ -209,6 +323,10 @@
       window.p5Instances.push(myP5);
     })();
   </script>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>固定端反射では入射波と反射波が干渉して<strong>定在波</strong>ができる。グラフから基本量を読み、波形のずれ・節・腹の位置を押さえる流れで解く。</p>
+  </div>
 </div>
 
 <!-- ===== (1) 振幅・波長・速さ・振動数・周期 ===== -->
@@ -272,14 +390,14 @@
           p.textAlign(p.CENTER, p.BOTTOM);
           p.text('y [cm]', mL + 15, mT - 4);
 
-          /* incident wave at t=0: y = -cos(kx) */
+          /* incident wave at t=0: y = -cos(kx) for x>=1, 0 otherwise */
           p.stroke(25, 118, 210);
           p.strokeWeight(2.5);
           p.noFill();
           p.beginShape();
           for (var i = 0; i <= 400; i++) {
             var xx = i / 400 * 10;
-            var yy = -Math.cos(k * xx);
+            var yy = (xx >= 1.0) ? -Math.cos(k * xx) : 0;
             p.vertex(xPx(xx), yPx(yy));
           }
           p.endShape();
@@ -365,13 +483,17 @@
   </p>
   <p>
     <strong>振動数と周期</strong>：$v = f\lambda$ より
-    $$ f = \frac{v}{\lambda} = \frac{5.0}{4.0} = 1.25 \text{ Hz} $$
+    $$ f = \frac{v}{\lambda} = \frac{5.0}{4.0} = 1.25 \approx 1.3 \text{ Hz} $$
     $$ T = \frac{1}{f} = \frac{1}{1.25} = 0.80 \text{ s} $$
   </p>
 
   <div class="box-note">
     <strong>答え：</strong><br>
-    振幅 $A = 1.0$ cm、波長 $\lambda = 4.0$ cm、速さ $v = 5.0$ cm/s、振動数 $f = 1.25$ Hz（$= \frac{5}{4}$ Hz）、周期 $T = 0.80$ s
+    振幅 $A = 1.0$ cm、波長 $\lambda = 4.0$ cm、速さ $v = 5.0$ cm/s、振動数 $f = 1.3$ Hz、周期 $T = 0.80$ s
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>グラフから振幅 $A$ と波長 $\lambda$ を読み、「山が進んだ距離÷かかった時間」で速さ $v$ を求める。$v = f\lambda$ と $T = 1/f$ で振動数・周期を出す。</p>
   </div>
 </div>
 
@@ -397,14 +519,32 @@
       if (!el) return;
 
       var sketch = function(p) {
+        var A = 1.0;
         var mL = 65, mR = 30, mT = 30, mB = 40;
         var xMin = -0.3, xMax = 10;
         var yMin = -1.7, yMax = 1.7;
         var cW, cH;
         var k = Math.PI / 2;
+        var v = 5.0;
+        var omega = 2 * Math.PI * v / 4.0;
+        var phi0 = -Math.PI / 2;
+        var xFront0 = 1.0;
+        var tReflect = xFront0 / v;
+        var sliderTime = 0;
+        var sliderEl, valSpan;
 
         function xPx(x) { return mL + (x - xMin) / (xMax - xMin) * (cW - mL - mR); }
         function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+
+        function yIncRaw(x, t) { return A * Math.sin(k * x + omega * t + phi0); }
+        function yRefRaw(x, t) { return -A * Math.sin(-k * x + omega * t + phi0); }
+        function incFront(t) { return Math.max(0, xFront0 - v * t); }
+        function refFront(t) { return t >= tReflect ? v * (t - tReflect) : 0; }
+        function yInc(x, t) { return x >= incFront(t) ? yIncRaw(x, t) : 0; }
+        function yRef(x, t) {
+          if (t < tReflect || x > refFront(t)) return 0;
+          return yRefRaw(x, t);
+        }
 
         p.setup = function() {
           cW = el.clientWidth;
@@ -412,10 +552,53 @@
           p.createCanvas(cW, cH).parent(el);
           p.textFont('sans-serif');
           p.noLoop();
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:13px;padding:0 4px;';
+          el.appendChild(ctr);
+
+          var label = document.createElement('span');
+          label.textContent = 't = ';
+          label.style.fontWeight = 'bold';
+          ctr.appendChild(label);
+
+          sliderEl = document.createElement('input');
+          sliderEl.type = 'range';
+          sliderEl.min = '0';
+          sliderEl.max = '1.60';
+          sliderEl.step = '0.01';
+          sliderEl.value = '0';
+          sliderEl.style.cssText = 'flex:1;min-width:120px;cursor:pointer;';
+          sliderEl.oninput = function() {
+            sliderTime = parseFloat(sliderEl.value);
+            valSpan.textContent = sliderTime.toFixed(2) + ' s';
+            p.redraw();
+          };
+          ctr.appendChild(sliderEl);
+
+          valSpan = document.createElement('span');
+          valSpan.textContent = '0.00 s';
+          valSpan.style.cssText = 'min-width:50px;font-weight:bold;color:#1976D2;';
+          ctr.appendChild(valSpan);
         };
 
         p.draw = function() {
           p.background(255);
+          var t = sliderTime;
+          var shift = v * t;
+          var iF = incFront(t);
+          var rF = refFront(t);
+
+          /* wall at x=0 */
+          var wallX = xPx(0);
+          p.fill(180);
+          p.noStroke();
+          p.rect(wallX - 6, mT - 3, 6, cH - mT - mB + 6);
+          p.stroke(120);
+          p.strokeWeight(1);
+          for (var yw = mT - 3; yw < cH - mB + 3; yw += 7) {
+            p.line(wallX - 6, yw, wallX, yw - 5);
+          }
 
           /* grid */
           p.stroke(230);
@@ -427,7 +610,7 @@
           p.stroke(60);
           p.strokeWeight(1.5);
           p.line(mL, yPx(0), cW - mR, yPx(0));
-          p.line(xPx(0), mT, xPx(0), cH - mB);
+          p.line(wallX, mT, wallX, cH - mB);
 
           p.noStroke();
           p.fill(60);
@@ -440,8 +623,9 @@
           p.text('-1', mL - 6, yPx(-1));
           p.textAlign(p.CENTER, p.BOTTOM);
           p.text('y [cm]', mL + 15, mT - 4);
+          p.text('\u56FA\u5B9A\u7AEF', wallX, mT - 4);
 
-          /* t=0 wave (gray dashed) */
+          /* t=0 incident wave (gray dashed, with wavefront) */
           p.stroke(180);
           p.strokeWeight(1.5);
           p.drawingContext.setLineDash([6, 4]);
@@ -449,55 +633,87 @@
           p.beginShape();
           for (var i = 0; i <= 400; i++) {
             var xx = i / 400 * 10;
-            p.vertex(xPx(xx), yPx(-Math.cos(k * xx)));
+            p.vertex(xPx(xx), yPx(yInc(xx, 0)));
           }
           p.endShape();
           p.drawingContext.setLineDash([]);
 
-          /* t=0.40s wave (blue solid) */
+          /* incident wave at slider time (blue solid) */
           p.stroke(25, 118, 210);
           p.strokeWeight(2.5);
           p.noFill();
           p.beginShape();
           for (var j = 0; j <= 400; j++) {
             var xx2 = j / 400 * 10;
-            p.vertex(xPx(xx2), yPx(Math.cos(k * xx2)));
+            p.vertex(xPx(xx2), yPx(yInc(xx2, t)));
           }
           p.endShape();
 
+          /* reflected wave at slider time (red dashed) */
+          if (t >= tReflect) {
+            p.stroke(211, 47, 47);
+            p.strokeWeight(2);
+            p.noFill();
+            p.drawingContext.setLineDash([6, 4]);
+            p.beginShape();
+            for (var r = 0; r <= 400; r++) {
+              var xx3 = r / 400 * 10;
+              p.vertex(xPx(xx3), yPx(yRef(xx3, t)));
+            }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
+          }
+
           /* legend */
-          p.noStroke();
-          p.textSize(12);
-          p.textAlign(p.LEFT, p.CENTER);
-          var legX = xPx(6.5), legY = yPx(1.3);
+          var legX = xPx(6.5), legY = yPx(1.35);
           p.stroke(180);
           p.strokeWeight(1.5);
           p.drawingContext.setLineDash([6, 4]);
-          p.line(legX, legY, legX + 30, legY);
+          p.line(legX, legY, legX + 25, legY);
           p.drawingContext.setLineDash([]);
           p.noStroke();
           p.fill(120);
-          p.text(' t = 0', legX + 34, legY);
+          p.textSize(11);
+          p.textAlign(p.LEFT, p.CENTER);
+          p.text(' t = 0', legX + 28, legY);
 
+          var ly2 = legY + 16;
           p.stroke(25, 118, 210);
           p.strokeWeight(2.5);
-          p.line(legX, legY + 20, legX + 30, legY + 20);
+          p.line(legX, ly2, legX + 25, ly2);
           p.noStroke();
           p.fill(25, 118, 210);
-          p.text(' t = 0.40 s', legX + 34, legY + 20);
+          p.text(' \u5165\u5C04\u6CE2 t=' + t.toFixed(2), legX + 28, ly2);
 
-          /* shift arrow */
-          var arrY2 = yPx(-1.35);
-          var x0 = xPx(6), x1 = xPx(4);
-          p.stroke(220, 60, 50);
-          p.strokeWeight(1.5);
-          p.line(x0, arrY2, x1, arrY2);
-          p.fill(220, 60, 50);
-          p.noStroke();
-          p.triangle(x1, arrY2, x1 + 7, arrY2 - 4, x1 + 7, arrY2 + 4);
-          p.textSize(11);
-          p.textAlign(p.CENTER, p.TOP);
-          p.text('2.0 cm \u5DE6\u3078\u79FB\u52D5', (x0 + x1) / 2, arrY2 + 5);
+          if (t >= tReflect) {
+            var ly3 = ly2 + 16;
+            p.stroke(211, 47, 47);
+            p.strokeWeight(2);
+            p.drawingContext.setLineDash([6, 4]);
+            p.line(legX, ly3, legX + 25, ly3);
+            p.drawingContext.setLineDash([]);
+            p.noStroke();
+            p.fill(211, 47, 47);
+            p.text(' \u53CD\u5C04\u6CE2 t=' + t.toFixed(2), legX + 28, ly3);
+          }
+
+          /* shift arrow for incident wave peak */
+          if (shift > 0.1) {
+            var arrY2 = yPx(-1.35);
+            var peakOld = xPx(6);
+            var peakNew = xPx(Math.max(0, 6 - shift));
+            if (6 - shift >= 0) {
+              p.stroke(220, 60, 50);
+              p.strokeWeight(1.5);
+              p.line(peakOld, arrY2, peakNew, arrY2);
+              p.fill(220, 60, 50);
+              p.noStroke();
+              p.triangle(peakNew, arrY2, peakNew + 7, arrY2 - 4, peakNew + 7, arrY2 + 4);
+              p.textSize(11);
+              p.textAlign(p.CENTER, p.TOP);
+              p.text(shift.toFixed(1) + ' cm \u5DE6\u3078\u79FB\u52D5', (peakOld + peakNew) / 2, arrY2 + 5);
+            }
+          }
         };
 
         p.windowResized = function() {
@@ -520,6 +736,10 @@
     <strong>答え：</strong><br>
     $t = 0$ の波形を左に $2.0$ cm ずらしたグラフ。<br>
     $x = 0$ で $y = 1$（山）、$x = 2$ で $y = -1$（谷）、$x = 4$ で $y = 1$（山）…（上の図参照）
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>波は形を保ったまま進むので、ある時刻の $y$-$x$ グラフは $t = 0$ のグラフを<strong>進行方向に $vt$ だけずらす</strong>だけでよい。左向きなら左にずらす。</p>
   </div>
 
   <h4>別解：三角関数で表すと</h4>
@@ -547,6 +767,10 @@
   <p>
     入射波と反射波を三角関数で表し、重ね合わせると合成波は $y = 2\sin\!\left(\dfrac{\pi}{2}x\right)\sin\!\left(\dfrac{5\pi}{2}t\right)$ となります。この式から、節は $\sin\!\left(\dfrac{\pi}{2}x\right) = 0$ となる $x = 0, 2, 4, \ldots$、腹は振幅が最大になる $x = 1, 3, 5, \ldots$ と求まります。
   </p>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p><strong>固定端は必ず節</strong>。定在波では隣り合う節の間隔は $\dfrac{\lambda}{2}$、節と腹の間隔は $\dfrac{\lambda}{4}$ なので、$x = 0$ から順に節・腹の位置が決まる。</p>
+  </div>
 </div>
 
 <div class="card">
@@ -554,10 +778,13 @@
 
   <h4>考え方</h4>
   <p>
-    $x = 1.0$ cm は定在波の<strong>腹</strong>です。腹では、入射波と反射波が「山は山、谷は谷」で重なるため、振れ幅は入射波だけのときの <span class="highlight">2倍</span> になります。振幅は $2 \times 1.0 = 2.0$ cm です。振動の周期は、もとの波の周期と同じ $T = 0.80$ s です。
+    $x = 1.0$ cm は定在波の<strong>腹</strong>です。ただし、$t = 0$ の時点ではまだ反射波が $x = 1.0$ cm に届いていないので、<span class="highlight">$t = 0.40$ s まではまだ入射波しか来ておらず、振幅は $1.0$ cm</span> です。
   </p>
   <p>
-    腹の媒質は、時間とともに $y = 0 \to +2 \to 0 \to -2 \to 0$ とくり返し振動します。周期 $0.80$ s のうち、$t = 0$ で $y = 0$、$t = 0.20$ s（$T/4$ 後）で $y = +2.0$ cm の最大、$t = 0.40$ s（$T/2$ 後）で $y = 0$、$t = 0.60$ s（$3T/4$ 後）で $y = -2.0$ cm の最小、$t = 0.80$ s（$T$ 後）で $y = 0$ にもどります。つまり、<strong>振幅 $2.0$ cm・周期 $0.80$ s の正弦的な $y$-$t$ グラフ</strong>を描けばよいです（下の図参照）。
+    $t = 0.40$ s（$= T/2$）以降は反射波が重なり合い、定在波の腹として振れ幅が入射波の <span class="highlight">2倍</span>（$2A = 2.0$ cm）になります。振動の周期は、もとの波の周期と同じ $T = 0.80$ s です。
+  </p>
+  <p>
+    具体的には、$t = 0$ で $y = 0$、$t = 0.20$ s（$T/4$）で $y = +1.0$ cm、$t = 0.40$ s（$T/2$）で $y = 0$。ここから反射波と合成されるので、$t = 0.60$ s（$3T/4$）で $y = -2.0$ cm、$t = 0.80$ s（$T$）で $y = 0$、$t = 1.00$ s で $y = +2.0$ cm … というグラフになります（下の図参照）。
   </p>
 
   <div id="sim-117-q3a" class="sim-embed"></div>
@@ -568,90 +795,355 @@
       if (!el) return;
 
       var sketch = function(p) {
-        var mL = 65, mR = 30, mT = 30, mB = 40;
-        var tMin = -0.05, tMax = 2.0;
-        var yMin = -2.8, yMax = 2.8;
-        var cW, cH;
+        var A = 1.0;
+        var lambda = 4.0;
+        var kw = 2 * Math.PI / lambda;
+        var v = 5.0;
+        var omega = 2 * Math.PI * v / lambda;
+        var phi0 = -Math.PI / 2;
+        var xFront0 = 1.0;
+        var tReflect = xFront0 / v;
+        var xMark = 1.0;
+        var time = 0;
+        var isPlaying = false;
+        var dtStep = 0.04;
+        var tMaxSim = 2.0;
+        var trail = [];
+        var playBtnEl;
 
-        function tPx(t) { return mL + (t - tMin) / (tMax - tMin) * (cW - mL - mR); }
-        function yPx(y) { return mT + (yMax - y) / (yMax - yMin) * (cH - mT - mB); }
+        function yIncRaw(x, t) { return A * Math.sin(kw * x + omega * t + phi0); }
+        function yRefRaw(x, t) { return -A * Math.sin(-kw * x + omega * t + phi0); }
+        function incFront(t) { return Math.max(0, xFront0 - v * t); }
+        function refFront(t) { return t >= tReflect ? v * (t - tReflect) : 0; }
+        function yInc(x, t) { return x >= incFront(t) ? yIncRaw(x, t) : 0; }
+        function yRef(x, t) {
+          if (t < tReflect || x > refFront(t)) return 0;
+          return yRefRaw(x, t);
+        }
+        function yTotal(x, t) { return yInc(x, t) + yRef(x, t); }
+
+        /* layout */
+        var gap = 14;
+        var mL = 50, mR = 15, mTw = 24, mBw = 10;
+        var mTg = 8, mBg = 32;
+        var wXmin = -0.5, wXmax = 8, wYmin = -2.6, wYmax = 2.6;
+        var gTmin = -0.03, gTmax = 2.0, gYmin = -2.6, gYmax = 2.6;
+        var cW, hWave, hGraph, cH;
+
+        function wxPx(x) { return mL + (x - wXmin) / (wXmax - wXmin) * (cW - mL - mR); }
+        function wyPx(y) { return mTw + (wYmax - y) / (wYmax - wYmin) * (hWave - mTw - mBw); }
+        function gtPx(t) { return mL + (t - gTmin) / (gTmax - gTmin) * (cW - mL - mR); }
+        function gyPx(y) { return hWave + gap + mTg + (gYmax - y) / (gYmax - gYmin) * (hGraph - mTg - mBg); }
 
         p.setup = function() {
           cW = el.clientWidth;
-          cH = Math.min(280, Math.max(200, cW * 0.4));
+          hWave = Math.min(220, Math.max(160, cW * 0.30));
+          hGraph = Math.min(180, Math.max(140, cW * 0.25));
+          cH = hWave + gap + hGraph;
           p.createCanvas(cW, cH).parent(el);
           p.textFont('sans-serif');
-          p.noLoop();
+
+          var ctr = document.createElement('div');
+          ctr.style.cssText = 'margin-top:6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;';
+          el.appendChild(ctr);
+
+          playBtnEl = document.createElement('button');
+          playBtnEl.textContent = '\u25B6 \u518D\u751F';
+          playBtnEl.style.padding = '4px 12px';
+          playBtnEl.onclick = function() {
+            isPlaying = !isPlaying;
+            playBtnEl.textContent = isPlaying ? '\u25A0 \u505C\u6B62' : '\u25B6 \u518D\u751F';
+          };
+          ctr.appendChild(playBtnEl);
+
+          var stepBackBtn = document.createElement('button');
+          stepBackBtn.textContent = '\u2190';
+          stepBackBtn.style.padding = '4px 10px';
+          stepBackBtn.onclick = function() {
+            isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
+            time = Math.max(0, time - dtStep);
+            rebuildTrail();
+          };
+          ctr.appendChild(stepBackBtn);
+
+          var stepFwdBtn = document.createElement('button');
+          stepFwdBtn.textContent = '\u2192';
+          stepFwdBtn.style.padding = '4px 10px';
+          stepFwdBtn.onclick = function() {
+            isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
+            time = Math.min(tMaxSim, time + dtStep);
+            trail.push({ t: time, y: yTotal(xMark, time) });
+          };
+          ctr.appendChild(stepFwdBtn);
+
+          var resetBtn = document.createElement('button');
+          resetBtn.textContent = '\u30EA\u30BB\u30C3\u30C8';
+          resetBtn.style.padding = '4px 12px';
+          resetBtn.onclick = function() {
+            time = 0; trail = []; isPlaying = false;
+            playBtnEl.textContent = '\u25B6 \u518D\u751F';
+          };
+          ctr.appendChild(resetBtn);
         };
 
+        function rebuildTrail() {
+          trail = [];
+          var dt = 0.01;
+          for (var tt = 0; tt <= time + 0.001; tt += dt) {
+            trail.push({ t: tt, y: yTotal(xMark, tt) });
+          }
+        }
+
         p.draw = function() {
+          if (isPlaying && time < tMaxSim) {
+            time += 0.008;
+            if (time > tMaxSim) time = tMaxSim;
+            trail.push({ t: time, y: yTotal(xMark, time) });
+          }
           p.background(255);
-          var omega = 5 * Math.PI / 2;
-          var T = 0.80;
+
+          /* ====== TOP: wave y-x panel ====== */
+          var wallX = wxPx(0);
+
+          /* wall */
+          p.fill(160);
+          p.noStroke();
+          p.rect(wallX - 3, mTw, 6, hWave - mTw - mBw);
+          p.stroke(110);
+          p.strokeWeight(1);
+          for (var yw = mTw; yw < hWave - mBw; yw += 6) {
+            p.line(wallX - 3, yw, wallX + 3, yw - 4);
+          }
 
           /* grid */
-          p.stroke(230);
+          p.stroke(225);
           p.strokeWeight(0.5);
-          for (var gt = 0; gt <= 2.0; gt += 0.2) { p.line(tPx(gt), mT, tPx(gt), cH - mB); }
-          for (var gy = -2; gy <= 2; gy++) { p.line(mL, yPx(gy), cW - mR, yPx(gy)); }
+          for (var gx = 0; gx <= 8; gx += 1) { p.line(wxPx(gx), mTw, wxPx(gx), hWave - mBw); }
+          for (var gy = -2; gy <= 2; gy += 1) { p.line(mL, wyPx(gy), cW - mR, wyPx(gy)); }
 
           /* axes */
           p.stroke(60);
-          p.strokeWeight(1.5);
-          p.line(mL, yPx(0), cW - mR, yPx(0));
-          p.line(tPx(0), mT, tPx(0), cH - mB);
+          p.strokeWeight(1.2);
+          p.line(mL, wyPx(0), cW - mR, wyPx(0));
+          p.line(wallX, mTw, wallX, hWave - mBw);
 
+          /* labels */
           p.noStroke();
           p.fill(60);
-          p.textSize(11);
+          p.textSize(10);
           p.textAlign(p.CENTER, p.TOP);
-          for (var lt = 0; lt <= 2.0; lt += 0.40) {
-            p.text(lt.toFixed(2), tPx(lt), cH - mB + 4);
-          }
-          p.text('t [s]', cW - mR, cH - 6);
+          for (var lx = 0; lx <= 8; lx += 2) { p.text(lx, wxPx(lx), hWave - mBw + 2); }
+          p.text('x [cm]', cW - mR, hWave - mBw + 2);
           p.textAlign(p.RIGHT, p.CENTER);
-          p.text('2', mL - 6, yPx(2));
-          p.text('-2', mL - 6, yPx(-2));
-          p.textAlign(p.CENTER, p.BOTTOM);
-          p.text('y [cm]', mL + 15, mT - 4);
+          p.text('2', mL - 4, wyPx(2));
+          p.text('-2', mL - 4, wyPx(-2));
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('y [cm]', mL + 2, mTw);
 
-          /* y = 2 sin(5pi/2 * t) */
-          p.stroke(25, 118, 210);
+          /* x=1 vertical marker line */
+          p.stroke(230, 81, 0, 60);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([3, 3]);
+          p.line(wxPx(xMark), mTw, wxPx(xMark), hWave - mBw);
+          p.drawingContext.setLineDash([]);
+
+          /* draw waves */
+          var steps = 200;
+          var dx = wXmax / steps;
+
+          /* incident wave */
+          p.stroke(25, 118, 210, 150);
+          p.strokeWeight(1.5);
+          p.noFill();
+          p.drawingContext.setLineDash([5, 3]);
+          p.beginShape();
+          for (var i = 0; i <= steps; i++) { var xx = i * dx; p.vertex(wxPx(xx), wyPx(yInc(xx, time))); }
+          p.endShape();
+          p.drawingContext.setLineDash([]);
+
+          /* reflected wave */
+          if (time >= tReflect) {
+            p.stroke(211, 47, 47, 150);
+            p.strokeWeight(1.5);
+            p.noFill();
+            p.drawingContext.setLineDash([5, 3]);
+            p.beginShape();
+            for (var j = 0; j <= steps; j++) { var xx2 = j * dx; p.vertex(wxPx(xx2), wyPx(yRef(xx2, time))); }
+            p.endShape();
+            p.drawingContext.setLineDash([]);
+          }
+
+          /* composite wave */
+          p.stroke(46, 125, 50);
           p.strokeWeight(2.5);
           p.noFill();
           p.beginShape();
-          for (var i = 0; i <= 500; i++) {
-            var tt = i / 500 * 2.0;
-            var yy = 2 * Math.sin(omega * tt);
-            p.vertex(tPx(tt), yPx(yy));
+          for (var m = 0; m <= steps; m++) { var xx3 = m * dx; p.vertex(wxPx(xx3), wyPx(yTotal(xx3, time))); }
+          p.endShape();
+
+          /* marker dot on composite wave at x=1 */
+          var markY = yTotal(xMark, time);
+          p.fill(230, 81, 0);
+          p.stroke(255);
+          p.strokeWeight(2);
+          p.ellipse(wxPx(xMark), wyPx(markY), 14, 14);
+          p.noStroke();
+          p.fill(255);
+          p.textSize(8);
+          p.textAlign(p.CENTER, p.CENTER);
+          p.text('x=1', wxPx(xMark), wyPx(markY));
+
+          /* time display */
+          p.noStroke();
+          p.fill(30);
+          p.textSize(14);
+          p.textStyle(p.BOLD);
+          p.textAlign(p.RIGHT, p.TOP);
+          p.text('t = ' + time.toFixed(2) + ' s', cW - mR - 2, mTw + 2);
+          p.textStyle(p.NORMAL);
+
+          /* fixed end label */
+          p.fill(80);
+          p.textSize(9);
+          p.textAlign(p.CENTER, p.BOTTOM);
+          p.text('\u56FA\u5B9A\u7AEF', wallX, mTw - 1);
+
+          /* ====== BOTTOM: y-t graph panel ====== */
+          var gTop = hWave + gap + mTg;
+          var gBot = hWave + gap + hGraph - mBg;
+
+          /* panel label */
+          p.noStroke();
+          p.fill(80);
+          p.textSize(10);
+          p.textAlign(p.LEFT, p.BOTTOM);
+          p.text('x = 1.0 cm \u306E y-t \u30B0\u30E9\u30D5', mL, hWave + gap + mTg - 1);
+
+          /* grid */
+          p.stroke(225);
+          p.strokeWeight(0.5);
+          for (var gt2 = 0; gt2 <= 2.0; gt2 += 0.2) { p.line(gtPx(gt2), gTop, gtPx(gt2), gBot); }
+          for (var gy2 = -2; gy2 <= 2; gy2++) { p.line(mL, gyPx(gy2), cW - mR, gyPx(gy2)); }
+
+          /* axes */
+          p.stroke(60);
+          p.strokeWeight(1.2);
+          p.line(mL, gyPx(0), cW - mR, gyPx(0));
+          p.line(gtPx(0), gTop, gtPx(0), gBot);
+
+          /* labels */
+          p.noStroke();
+          p.fill(60);
+          p.textSize(10);
+          p.textAlign(p.CENTER, p.TOP);
+          for (var lt = 0; lt <= 2.0; lt += 0.40) { p.text(lt.toFixed(2), gtPx(lt), gBot + 3); }
+          p.text('t [s]', cW - mR, gBot + 3);
+          p.textAlign(p.RIGHT, p.CENTER);
+          p.text('2', mL - 4, gyPx(2));
+          p.text('1', mL - 4, gyPx(1));
+          p.text('-1', mL - 4, gyPx(-1));
+          p.text('-2', mL - 4, gyPx(-2));
+          p.textAlign(p.LEFT, p.TOP);
+          p.text('y [cm]', mL + 2, gTop);
+
+          /* t=0.40 boundary */
+          var tSwitch = 0.40;
+          p.stroke(220, 60, 50, 60);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([3, 3]);
+          p.line(gtPx(tSwitch), gTop, gtPx(tSwitch), gBot);
+          p.drawingContext.setLineDash([]);
+
+          /* reference full curve (light gray) */
+          p.stroke(200);
+          p.strokeWeight(1);
+          p.noFill();
+          p.beginShape();
+          for (var r = 0; r <= 400; r++) {
+            var rt = r / 400 * gTmax;
+            var ry = rt < tSwitch ? Math.sin(omega * rt) : 2 * Math.sin(omega * rt);
+            p.vertex(gtPx(rt), gyPx(ry));
           }
           p.endShape();
 
-          /* key points */
-          p.fill(220, 60, 50);
-          p.noStroke();
-          var pts = [
-            [0, 0], [0.20, 2], [0.40, 0], [0.60, -2], [0.80, 0],
-            [1.00, 2], [1.20, 0], [1.40, -2], [1.60, 0], [1.80, 2], [2.00, 0]
-          ];
-          for (var j = 0; j < pts.length; j++) {
-            p.ellipse(tPx(pts[j][0]), yPx(pts[j][1]), 6, 6);
+          /* y-t curve from t=0 to current time (always drawn from 0 so first 0.04s is visible) */
+          if (time > 0) {
+            p.noFill();
+            var dtSample = 0.008;
+            var tEndBlue = Math.min(time, tSwitch);
+            var tStartGreen = Math.min(tSwitch, time);
+
+            /* incident-only portion (blue) */
+            if (tEndBlue > 0) {
+              p.stroke(25, 118, 210);
+              p.strokeWeight(2.5);
+              p.beginShape();
+              for (var tt = 0; tt <= tEndBlue + 0.0005; tt += dtSample) {
+                var t = Math.min(tt, tEndBlue);
+                p.vertex(gtPx(t), gyPx(yTotal(xMark, t)));
+              }
+              p.endShape();
+            }
+
+            /* standing wave portion (green) */
+            if (time > tSwitch) {
+              p.stroke(46, 125, 50);
+              p.strokeWeight(2.5);
+              p.beginShape();
+              for (var tt = tStartGreen; tt <= time + 0.0005; tt += dtSample) {
+                var t = Math.min(tt, time);
+                p.vertex(gtPx(t), gyPx(yTotal(xMark, t)));
+              }
+              p.endShape();
+            }
           }
 
-          /* label */
-          p.fill(25, 118, 210);
-          p.textSize(12);
-          p.textAlign(p.LEFT, p.TOP);
-          p.text('x = 1.0 cm \u306E\u5909\u4F4D', tPx(0.05), mT + 6);
+          /* current point on y-t graph */
+          p.fill(230, 81, 0);
+          p.stroke(255);
+          p.strokeWeight(2);
+          p.ellipse(gtPx(time), gyPx(markY), 10, 10);
+
+          /* horizontal guide line connecting marker to y-t */
+          p.stroke(230, 81, 0, 40);
+          p.strokeWeight(1);
+          p.drawingContext.setLineDash([2, 2]);
+          p.line(mL, gyPx(markY), gtPx(time), gyPx(markY));
+          p.drawingContext.setLineDash([]);
+
+          /* region labels on y-t (only when not yet drawn) */
+          if (time < 0.05) {
+            p.noStroke();
+            p.textSize(9);
+            p.textAlign(p.CENTER, p.TOP);
+            p.fill(25, 118, 210, 120);
+            p.text('\u5165\u5C04\u6CE2\u306E\u307F', gtPx(0.20), gTop + 2);
+            p.text('\u632F\u5E45 1cm', gtPx(0.20), gTop + 13);
+            p.fill(46, 125, 50, 120);
+            p.text('\u5408\u6210\u6CE2', gtPx(1.2), gTop + 2);
+            p.text('\u632F\u5E45 2cm', gtPx(1.2), gTop + 13);
+          }
+
+          /* initial state hint */
+          if (time < 0.01 && !isPlaying) {
+            p.noStroke();
+            p.fill(100);
+            p.textSize(11);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text('\u25B6 \u3092\u62BC\u3059\u3068 x=1 \u306E\u5A92\u8CEA\u306E\u5909\u4F4D\u304C\u63CF\u304B\u308C\u307E\u3059', cW / 2, gTop + (gBot - gTop) / 2);
+          }
         };
 
         p.windowResized = function() {
           var parent = document.getElementById(targetId);
           if (!parent) return;
           cW = parent.clientWidth;
-          cH = Math.min(280, Math.max(200, cW * 0.4));
+          hWave = Math.min(220, Math.max(160, cW * 0.30));
+          hGraph = Math.min(180, Math.max(140, cW * 0.25));
+          cH = hWave + gap + hGraph;
           p.resizeCanvas(cW, cH);
-          p.redraw();
         };
       };
 
@@ -663,12 +1155,16 @@
 
   <div class="box-note">
     <strong>答え：</strong><br>
-    振幅 $2.0$ cm、周期 $0.80$ s の $y$-$t$ グラフ（$t = 0$ で $y = 0$ から始まり、なめらかに振動する形）。上の図参照。
+    $t = 0$ ～ $0.40$ s は入射波のみで振幅 $1.0$ cm、$t = 0.40$ s 以降は定在波の腹として振幅 $2.0$ cm。周期 $T = 0.80$ s。上の図参照。
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>反射波が届くまでは入射波のみ（振幅 $A$）。反射波が重なると<strong>腹</strong>の振れ幅は<strong>2倍</strong>（$2A$）になる。周期はもとの波の周期 $T$ と同じ。</p>
   </div>
 
   <h4>別解：三角関数で表すと</h4>
   <p>
-    定在波の式に $x = 1.0$ を代入すると $y = 2\sin\!\left(\dfrac{5\pi}{2}t\right)$ となり、振幅 $2.0$ cm・周期 $0.80$ s であることが式からも確認できます。
+    定在波の式に $x = 1.0$ を代入すると $y = 2\sin\!\left(\dfrac{5\pi}{2}t\right)$ となり、振幅 $2.0$ cm・周期 $0.80$ s であることが式からも確認できます。ただしこれは反射波が到達した $t \geq 0.40$ s 以降に成り立つ式です。
   </p>
 </div>
 
@@ -854,6 +1350,10 @@
     <strong>答え：</strong><br>
     <strong>節</strong>の位置（$x$ 座標）：$x = 0,\ 2.0,\ 4.0$ [cm]<br>
     <strong>腹</strong>の位置（$x$ 座標）：$x = 1.0,\ 3.0$ [cm]
+  </div>
+  <div class="box-alert">
+    <span class="box-alert-label">Point</span>
+    <p>固定端 $x = 0$ が節なので、$\dfrac{\lambda}{2} = 2.0$ cm ごとに節（$x = 0,\ 2.0,\ 4.0$）。腹は節と節のまん中（節から $\dfrac{\lambda}{4} = 1.0$ cm）で $x = 1.0,\ 3.0$。</p>
   </div>
 
   <h4>別解：三角関数の式から求める</h4>
