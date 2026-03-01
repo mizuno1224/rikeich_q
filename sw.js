@@ -1,7 +1,7 @@
 /* Service Worker: 解説データのキャッシュとオフライン対応
  * デプロイ時は `npm run deploy` を使うと CACHE_NAME のバージョンが自動で1つ上がる。
  */
-const CACHE_NAME = "rikeich-explanations-v10";
+const CACHE_NAME = "rikeich-explanations-v11";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
