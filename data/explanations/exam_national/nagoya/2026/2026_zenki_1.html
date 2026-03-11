@@ -8,23 +8,19 @@
   <link rel="stylesheet" href="../../../../../css/components.css">
   <link rel="stylesheet" href="../../../../../css/viewer.css">
   <style>
-    .circuit-svg, .diagram-svg { max-width: 480px; width: 100%; height: auto; display: block; margin: 16px auto; }
-    .chart-wrap { width: 100%; max-width: 520px; margin: 16px auto; }
-    .chart-wrap canvas { width: 100%; height: auto; display: block; border-radius: 8px; background: #fdfdfe; border: 1px solid #e2e8f0; }
-    .energy-bar-wrap { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; margin: 20px 0; }
-    .energy-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 80px; }
-    .energy-bar .bar-outer { width: 60px; height: 160px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; position: relative; overflow: hidden; }
-    .energy-bar .bar-fill { position: absolute; bottom: 0; width: 100%; border-radius: 0 0 5px 5px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #fff; flex-direction: column; transition: height 0.3s ease; }
-    .energy-bar .bar-label { font-size: 0.9rem; color: #334155; font-weight: bold; margin-top: 8px; }
-    .fill-e1 { background: #3b82f6; height: 100%; }
-    .fill-e2 { background: #10b981; height: 60%; bottom: 0; }
-    .fill-delta { background: #ef4444; height: 40%; bottom: 60%; }
+    .diagram-svg { max-width: 360px; width: 100%; height: auto; display: block; margin: 12px auto; }
     .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; }
     .sim-embed { width: 100%; max-width: 520px; margin: 16px auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; position: relative; overflow: hidden; }
-    .fig-inline { max-width: 100%; margin: 16px auto; text-align: center; }
-    .fig-inline img { max-width: 100%; height: auto; border-radius: 8px; border: 1px solid #e2e8f0; }
     .highlight { font-weight: bold; color: #d97706; background: #fef3c7; padding: 0 4px; border-radius: 2px; }
+    .intuition { background: #f0fdf4; border-left: 4px solid #10b981; padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 14px 0; }
+    .intuition-title { font-weight: bold; color: #059669; font-size: 0.88rem; margin-bottom: 4px; }
+    .energy-bar-wrap { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 20px 0; align-items: flex-end; }
+    .energy-bar { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .energy-bar .bar-outer { width: 54px; height: 120px; background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; position: relative; overflow: hidden; }
+    .energy-bar .bar-fill { position: absolute; bottom: 0; width: 100%; border-radius: 0 0 5px 5px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #fff; font-weight: bold; transition: height 0.3s; }
+    .energy-bar .bar-label { font-size: 0.8rem; color: #334155; font-weight: bold; margin-top: 6px; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
 </head>
 <body>
   <div class="viewer-container">
@@ -32,396 +28,844 @@
 
       <h2 class="prob-title-sub">大問：物理 問題Ⅰ</h2>
 
+      <!-- ==================== 解法の指針 ==================== -->
       <div class="card">
         <h3>解法の指針</h3>
-        <p>本問は、ばねを用いた発射台からの小球の打ち上げと、打ち上げられた小球の空中での運動（斜方投射）、および最高点における別の小球との衝突現象を複合的に考察する力学の問題です。発射台が固定されている場合と自由に動ける場合の比較、そして衝突前後での運動量や力学的エネルギーの変化を定量的に扱います。</p>
-        
+        <p>ばね付き発射台からの小球の打ち上げ、斜方投射、最高点での衝突を扱う力学の総合問題です。</p>
+
         <h4>問題の構成</h4>
         <ul>
           <li><strong>設問(1)</strong>：固定された発射台から打ち上げられる小球の速さの導出</li>
           <li><strong>設問(2)</strong>：可動式発射台における小球の速度成分と台の速さの幾何学的関係</li>
           <li><strong>設問(3)</strong>：小球と可動式発射台からなる系の水平方向の運動量保存則</li>
-          <li><strong>設問(4)</strong>：床の観測者から見た時の小球が発射される角度が発射台の角度より大きくなる理由</li>
-          <li><strong>設問(5)</strong>：斜方投射された小球が最高点に達するまでの時刻と高さの導出</li>
-          <li><strong>設問(6)</strong>：斜方投射された小球が最高点に達するまでに動いた水平距離の導出</li>
-          <li><strong>設問(7)</strong>：指定された位置（最高点）で衝突させるために必要な初期力学的エネルギーの導出</li>
-          <li><strong>設問(8)</strong>：最高点における小球同士の衝突前後の水平方向の運動量保存則</li>
-          <li><strong>設問(9)</strong>：反発係数を用いた衝突後の各小球の速さの導出</li>
-          <li><strong>設問(10)</strong>：衝突によって失われた力学的エネルギーの計算（空欄補充）</li>
+          <li><strong>設問(4)</strong>：床から見た発射角度が発射台の角度より大きくなる理由</li>
+          <li><strong>設問(5)</strong>：斜方投射された小球が最高点に達するまでの時刻と高さ</li>
+          <li><strong>設問(6)</strong>：最高点に達するまでの水平移動距離</li>
+          <li><strong>設問(7)</strong>：指定位置で衝突させるために必要な初期力学的エネルギー</li>
+          <li><strong>設問(8)</strong>：最高点における衝突の運動量保存則</li>
+          <li><strong>設問(9)</strong>：反発係数を用いた衝突後の各小球の速さ</li>
+          <li><strong>設問(10)</strong>：衝突によって失われた力学的エネルギー</li>
         </ul>
-        
+
         <div class="box-note">
           <strong>全体を貫くポイント</strong><br>
           <ul style="margin:8px 0 0 0; padding-left:1.2em;">
-            <li><span class="highlight">エネルギー保存則</span>と<span class="highlight">運動量保存則</span>を、どの物体（系）について、どの方向で適用するかを正確に見極める。</li>
-            <li>動く土台（発射台）上を運動する物体の速度は、「床から見た速度 ＝ 台から見た相対速度 ＋ 台の速度」のベクトル和で考える。</li>
-            <li>斜方投射は、水平方向の等速直線運動と、鉛直方向の鉛直投げ上げ運動に独立して分解して処理する。</li>
-            <li>衝突現象では、運動量保存則と<span class="highlight">反発係数</span>の定義式を連立させて衝突後の速度を求めるのが定石。</li>
+            <li><span class="highlight">エネルギー保存則</span>と<span class="highlight">運動量保存則</span>を「どの系に、どの方向で」適用するか見極める。</li>
+            <li>動く台上の速度は「床から見た速度 ＝ 台に対する相対速度 ＋ 台の速度」のベクトル和で考える。</li>
+            <li>斜方投射は水平方向の等速直線運動と、鉛直方向の鉛直投げ上げ運動に独立に分解。</li>
+            <li>衝突は運動量保存 ＋ <span class="highlight">反発係数</span>の定義式の連立が定石。</li>
           </ul>
         </div>
       </div>
 
+      <!-- ==================== 設問(1) ==================== -->
       <div class="card">
         <h3>設問(1)</h3>
-        
-        <svg class="diagram-svg" viewBox="0 0 400 200" aria-label="ばねの縮みと高さの関係">
-          <line x1="20" y1="160" x2="380" y2="160" stroke="#333" stroke-width="2" />
-          <polygon points="100,160 260,160 260,60" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-          <text x="140" y="150" font-size="14" fill="#333">$\phi$</text>
-          
-          <line x1="120" y1="148" x2="160" y2="123" stroke="#94a3b8" stroke-width="4" stroke-dasharray="2 2" />
-          <circle cx="160" cy="123" r="10" fill="#3b82f6" />
-          
-          <circle cx="260" cy="60" r="10" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 2" />
-          
-          <line x1="160" y1="123" x2="260" y2="123" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
-          <line x1="260" y1="123" x2="260" y2="60" stroke="#ef4444" stroke-width="2" />
-          <text x="270" y="95" font-size="14" fill="#ef4444">$d \sin\phi$</text>
-          <line x1="150" y1="110" x2="250" y2="48" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
-          <text x="190" y="70" font-size="14" fill="#333">$d$</text>
+
+        <svg class="diagram-svg" viewBox="0 0 430 196" aria-label="ばね付き固定発射台（初期位置と発射位置）">
           <defs>
-            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333" /></marker>
+            <marker id="q1-ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b82f6"/></marker>
+            <marker id="q1-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ef4444"/></marker>
+            <marker id="q1-ar2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ef4444"/></marker>
+            <marker id="q1-ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
+            <marker id="q1-ad2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
           </defs>
+          <!-- 床 -->
+          <line x1="20" y1="172" x2="420" y2="172" stroke="#94a3b8" stroke-width="2.5"/>
+          <line x1="30" y1="172" x2="21" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="42" y1="172" x2="33" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="54" y1="172" x2="45" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="66" y1="172" x2="57" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="78" y1="172" x2="69" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="90" y1="172" x2="81" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="102" y1="172" x2="93" y2="181" stroke="#94a3b8" stroke-width="1"/>
+          <!-- 固定壁（右）-->
+          <line x1="348" y1="172" x2="348" y2="53" stroke="#64748b" stroke-width="2.5"/>
+          <line x1="348" y1="60"  x2="358" y2="52"  stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="73"  x2="358" y2="65"  stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="86"  x2="358" y2="78"  stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="99"  x2="358" y2="91"  stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="112" x2="358" y2="104" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="125" x2="358" y2="117" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="138" x2="358" y2="130" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="151" x2="358" y2="143" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="348" y1="164" x2="358" y2="156" stroke="#94a3b8" stroke-width="1"/>
+          <!-- 斜面台（楔）: 頂点(44,172)-(348,172)-(348,53) -->
+          <polygon points="44,172 348,172 348,53" fill="#e8edf5" stroke="#64748b" stroke-width="2"/>
+          <!-- 直角マーカー (348,172) -->
+          <rect x="334" y="158" width="14" height="14" fill="none" stroke="#64748b" stroke-width="1.5"/>
+          <!-- 角度φ at (44,172) -->
+          <path d="M 84,172 A 40,40 0 0 1 80.5,153" fill="none" stroke="#475569" stroke-width="1.5"/>
+          <text x="87" y="169" font-size="14" fill="#475569" font-style="italic">φ</text>
+          <!-- ばね（zigzag：圧縮状態）(54,168)→(127,140) -->
+          <!-- 斜面方向(0.932,-0.365), 外向き法線(-0.365,-0.932), 振幅±6px で計算 -->
+          <polyline points="54,168 61,159 74,167 79,152 93,160 97,145 111,153 116,138 127,140"
+                    fill="none" stroke="#64748b" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- ばね付け根（壁への取付） -->
+          <line x1="47" y1="174" x2="57" y2="164" stroke="#64748b" stroke-width="3.5"/>
+          <!-- ばね定数ラベル -->
+          <text x="68" y="184" font-size="13" fill="#64748b" font-style="italic">k</text>
+          <!-- 初期位置の小球（圧縮時：ゴースト表示）center (138,136) -->
+          <circle cx="138" cy="136" r="12" fill="#3b82f6" fill-opacity="0.15" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5 2"/>
+          <text x="114" y="121" font-size="10" fill="#3b82f6">初期位置</text>
+          <text x="113" y="132" font-size="10" fill="#3b82f6">（圧縮時）</text>
+          <!-- 発射位置の小球（実線）center (210,107) -->
+          <circle cx="210" cy="107" r="12" fill="#3b82f6"/>
+          <text x="223" y="103" font-size="10" fill="#3b82f6">発射位置</text>
+          <!-- V₁ 矢印：斜面方向(0.932,-0.365)×42px = (39,15) -->
+          <line x1="210" y1="107" x2="249" y2="92" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#q1-ab)"/>
+          <text x="253" y="88" font-size="15" fill="#3b82f6" font-style="italic">V₁</text>
+          <!-- 寸法線 d（斜面方向、外側 12px オフセット： dir(-0.365,-0.932)） -->
+          <!-- start(134,125) end(206,96) -->
+          <line x1="134" y1="125" x2="206" y2="96" stroke="#475569" stroke-width="1.5"
+                marker-start="url(#q1-ad2)" marker-end="url(#q1-ad)"/>
+          <text x="162" y="103" font-size="14" fill="#475569" font-style="italic">d</text>
+          <!-- 寸法線 d sinφ（垂直方向） -->
+          <line x1="138" y1="136" x2="282" y2="136" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="210" y1="107" x2="282" y2="107" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="279" y1="136" x2="279" y2="107" stroke="#ef4444" stroke-width="1.5"
+                marker-start="url(#q1-ar2)" marker-end="url(#q1-ar)"/>
+          <text x="284" y="125" font-size="12" fill="#ef4444">d sinφ</text>
         </svg>
 
-        <p><strong>狙い：</strong>固定された斜面における、ばねの弾性力による打ち上げ時の<span class="highlight">力学的エネルギー保存則</span>の適用。</p>
-        <p><strong>設定：</strong>ばねを自然長から $d$ 縮めた状態（初期状態、速度0）から、自然長（発射位置）に達するまでの運動を考えます。基準高さを初期状態の小球の位置とすると、発射位置の高さは幾何学的に $d \sin\phi$ となります。</p>
-        <p><strong>立式・計算：</strong>初期状態の力学的エネルギー（弾性力による位置エネルギー）が、発射時の運動エネルギーと重力による位置エネルギーに変換されます。</p>
-        $$\frac{1}{2} k d^2 = \frac{1}{2} m V_1^2 + m g d \sin\phi$$
-        <p>この式を $V_1$ について解きます。</p>
-        $$\frac{1}{2} m V_1^2 = \frac{1}{2} k d^2 - m g d \sin\phi$$
-        $$V_1^2 = \frac{k}{m} d^2 - 2 g d \sin\phi$$
-        
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          ばねの弾性エネルギーが、小球の運動エネルギーと重力の位置エネルギーに変わる。斜面を距離 $d$ 登ると、高さは $d\sin\phi$ だけ上がる。
+        </div>
+
+        <p><strong>設定：</strong>ばねを自然長から $d$ だけ縮めた状態（初期状態、速度 $0$）から、自然長の位置（発射位置）に達するまでの運動を考えます。初期位置を高さの基準とすると、発射位置の高さは $d\sin\phi$ です。</p>
+
+        <p><strong>立式：</strong><span class="highlight">力学的エネルギー保存則</span>（摩擦なし）より、</p>
+        $$\underbrace{\frac{1}{2}kd^2}_{\text{ばねの弾性エネルギー}} = \underbrace{\frac{1}{2}mV_1^2}_{\text{運動エネルギー}} + \underbrace{mgd\sin\phi}_{\text{重力の位置エネルギー}}$$
+
+        <p><strong>計算：</strong>$V_1^2$ について整理します。</p>
+        $$\frac{1}{2}mV_1^2 = \frac{1}{2}kd^2 - mgd\sin\phi$$
+        $$mV_1^2 = kd^2 - 2mgd\sin\phi$$
+        $$V_1^2 = \frac{k}{m}d^2 - 2gd\sin\phi$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$V_1 = \sqrt{\frac{k}{m} d^2 - 2 g d \sin\phi}$$
+          $$V_1 = \sqrt{\frac{k}{m}d^2 - 2gd\sin\phi}$$
         </div>
+
+        <details>
+          <summary>補足：$V_1 > 0$ の条件</summary>
+          <div class="details-content">
+            <p>$V_1$ が実数になるには根号の中が正である必要があるため、$\frac{k}{m}d^2 > 2gd\sin\phi$ すなわち $kd > 2mg\sin\phi$ が条件です。ばねの力がmg sinφ（斜面方向の重力成分）に打ち勝つだけの縮みがあるということです。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>斜面上の移動距離 $d$ を用いて、鉛直方向の高さの変化 $d \sin\phi$ を正しく幾何学的に求めることが第一歩です。</p>
+          <p>斜面上の移動距離 $d$ と鉛直方向の高さ $d\sin\phi$ を混同しないこと。エネルギー保存では鉛直方向の高さ変化を使う。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(2) ==================== -->
       <div class="card">
         <h3>設問(2)</h3>
 
-        <svg class="diagram-svg" viewBox="0 0 350 200" aria-label="速度ベクトル関係図">
-          <line x1="50" y1="150" x2="300" y2="150" stroke="#ccc" stroke-width="1" stroke-dasharray="4 4"/>
-          <line x1="100" y1="180" x2="100" y2="30" stroke="#ccc" stroke-width="1" stroke-dasharray="4 4"/>
-          
-          <line x1="100" y1="150" x2="220" y2="150" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrow-blue)"/>
-          <text x="150" y="170" font-size="14" fill="#3b82f6">$V_{2x}$</text>
-          
-          <line x1="100" y1="150" x2="40" y2="150" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)"/>
-          <text x="60" y="170" font-size="14" fill="#ef4444">$V_3$</text>
-
-          <line x1="220" y1="150" x2="220" y2="70" stroke="#3b82f6" stroke-width="3" marker-end="url(#arrow-blue)"/>
-          <text x="230" y="110" font-size="14" fill="#3b82f6">$V_{2y}$</text>
-
-          <line x1="40" y1="150" x2="220" y2="70" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-green)"/>
-          <text x="100" y="100" font-size="14" fill="#10b981">相対速度 $\vec{v}_{rel}$</text>
-          
-          <path d="M 80 150 A 40 40 0 0 0 75 135" fill="none" stroke="#333" stroke-width="1.5"/>
-          <text x="85" y="145" font-size="14" fill="#333">$\phi$</text>
-
+        <svg class="diagram-svg" viewBox="0 0 435 205" aria-label="可動発射台と小球の速度ベクトル">
           <defs>
-            <marker id="arrow-blue" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" /></marker>
-            <marker id="arrow-red" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
-            <marker id="arrow-green" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981" /></marker>
+            <marker id="q2-ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b82f6"/></marker>
+            <marker id="q2-ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ef4444"/></marker>
+            <marker id="q2-ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#10b981"/></marker>
           </defs>
+          <!-- 床 -->
+          <line x1="20" y1="178" x2="420" y2="178" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="28"  y1="178" x2="20"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="40"  y1="178" x2="32"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="52"  y1="178" x2="44"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="64"  y1="178" x2="56"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="76"  y1="178" x2="68"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="88"  y1="178" x2="80"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="100" y1="178" x2="92"  y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="112" y1="178" x2="104" y2="186" stroke="#94a3b8" stroke-width="1"/>
+          <!-- 発射台（楔型カート）: (75,175)-(310,175)-(310,68) -->
+          <polygon points="75,175 310,175 310,68" fill="#dbeafe" stroke="#3b82f6" stroke-width="2"/>
+          <!-- 直角マーカー (310,175) -->
+          <rect x="296" y="161" width="14" height="14" fill="none" stroke="#3b82f6" stroke-width="1.5"/>
+          <!-- 角度φ at (75,175) -->
+          <!-- 斜面方向 (235,-107)/258.6=(0.908,-0.414), r=40 の点: (75+36.3,175-16.6)=(111,158) -->
+          <path d="M 115,175 A 40,40 0 0 1 111,158" fill="none" stroke="#475569" stroke-width="1.5"/>
+          <text x="118" y="172" font-size="14" fill="#475569" font-style="italic">φ</text>
+          <!-- 車輪 -->
+          <circle cx="118" cy="181" r="9" fill="#475569" stroke="#334155" stroke-width="1"/>
+          <circle cx="118" cy="181" r="4"  fill="#94a3b8"/>
+          <circle cx="258" cy="181" r="9" fill="#475569" stroke="#334155" stroke-width="1"/>
+          <circle cx="258" cy="181" r="4"  fill="#94a3b8"/>
+          <!-- 台の速度 V₃（左向き）-->
+          <line x1="75" y1="138" x2="28" y2="138" stroke="#ef4444" stroke-width="2.5" marker-end="url(#q2-ar)"/>
+          <text x="13" y="134" font-size="14" fill="#ef4444" font-style="italic">V₃</text>
+          <text x="9"  y="147" font-size="9"  fill="#ef4444">台の速度</text>
+          <!-- 小球（斜面上）center (235,103) -->
+          <!-- t≈0.68: (75+0.68×235, 175−0.68×107) = (234.8,102.2) -->
+          <circle cx="235" cy="103" r="13" fill="#3b82f6"/>
+          <text x="229" cy="103" y="107" font-size="10" fill="white" font-weight="bold">m</text>
+          <!-- 床から見た速度: V₂ₓ（右向き）-->
+          <line x1="248" y1="103" x2="296" y2="103" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#q2-ab)"/>
+          <text x="300" y="108" font-size="13" fill="#3b82f6" font-style="italic">V₂ₓ</text>
+          <!-- 床から見た速度: V₂ᵧ（上向き）-->
+          <line x1="235" y1="90" x2="235" y2="56" stroke="#3b82f6" stroke-width="2.5" marker-end="url(#q2-ab)"/>
+          <text x="240" y="53" font-size="13" fill="#3b82f6" font-style="italic">V₂ᵧ</text>
+          <!-- 台から見た相対速度（斜面上向き方向、破線）-->
+          <!-- dir (0.908,-0.414)×35px = (31.8,−14.5) → (267,88) -->
+          <line x1="235" y1="103" x2="267" y2="89" stroke="#10b981" stroke-width="2" stroke-dasharray="6 3" marker-end="url(#q2-ag)"/>
+          <text x="271" y="85" font-size="11" fill="#10b981">相対速度</text>
+          <text x="271" y="96" font-size="11" fill="#10b981">（角φ方向）</text>
+          <!-- ラベル -->
+          <text x="133" y="168" font-size="11" fill="#3b82f6" font-weight="bold">発射台（可動）</text>
+          <text x="29"  y="162" font-size="9"  fill="#ef4444">← 左へ移動</text>
+          <text x="355" y="195" font-size="10" fill="#94a3b8">床（なめらか）</text>
         </svg>
 
-        <p><strong>狙い：</strong>動く土台から見た<span class="highlight">相対速度</span>と、床から見た絶対速度のベクトル関係の立式。</p>
-        <p><strong>設定：</strong>床から見た小球の速度成分が $(V_{2x}, V_{2y})$、発射台の速度が $(-V_3, 0)$ です。</p>
-        <p><strong>立式・計算：</strong>発射台上から見た小球の相対速度 $\vec{v}_{rel}$ は、「小球の速度 − 発射台の速度」であるため、$\vec{v}_{rel} = (V_{2x} - (-V_3), V_{2y}) = (V_{2x} + V_3, V_{2y})$ となります。台から見ると小球は常に斜面に沿って動くため、この相対速度の向きが発射台の斜面の角度 $\phi$ に一致します。</p>
-        $$\tan\phi = \frac{V_{2y}}{V_{2x} + V_3}$$
-        
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          台が左に速さ $V_3$ で動くと、台の上に立っている人には小球が右に $V_3$ だけ余分に速く見える。台から見た小球は常に斜面に沿って（角度 $\phi$ で）動くので、この相対速度の向きが $\phi$ に一致する。
+        </div>
+
+        <p><strong>設定：</strong>床から見た小球の速度成分が $(V_{2x},\, V_{2y})$、発射台の速度が $(-V_3,\, 0)$（左向き）です。</p>
+
+        <p><strong>立式：</strong>台から見た小球の相対速度 $\vec{v}_{\text{rel}}$ は、</p>
+        $$\vec{v}_{\text{rel}} = \vec{v}_{\text{小球}} - \vec{v}_{\text{台}} = (V_{2x},\, V_{2y}) - (-V_3,\, 0) = (V_{2x}+V_3,\; V_{2y})$$
+        <p>台上では小球は斜面に沿って進む（拘束条件）ので、$\vec{v}_{\text{rel}}$ の向きが $\phi$ に一致します。したがって、</p>
+
         <div class="box-note">
           <strong>答え：</strong><br>
           $$\tan\phi = \frac{V_{2y}}{V_{2x} + V_3}$$
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>動く座標系（発射台）から見ると、小球は常に斜面に沿って（角度 $\phi$ で）運動して見えるという幾何学的拘束条件を利用します。</p>
+          <p>「台から見ると小球は常に斜面に沿って動く」という幾何学的拘束条件がカギ。相対速度 ＝ 小球の速度 − 台の速度 のベクトル引き算を正確に。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(3) ==================== -->
       <div class="card">
         <h3>設問(3)</h3>
-        <p><strong>狙い：</strong>外力が働かない方向における<span class="highlight">運動量保存則</span>の適用。</p>
-        <p><strong>設定：</strong>小球と発射台を一つの系とみなします。水平方向には外力（摩擦力など）が働かないため、系全体の水平方向の運動量は保存されます。</p>
-        <p><strong>立式・計算：</strong>初期状態では両者とも静止しているため、全運動量は $0$ です。打ち上げ時の水平方向の運動量の和も $0$ になります。小球の水平方向の運動量は $m V_{2x}$、発射台の水平方向の運動量は $-M V_3$（左向きを負）です。</p>
-        $$m V_{2x} + M (-V_3) = 0$$
-        
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          小球＋台の系に水平方向の外力は働かない（重力・垂直抗力はいずれも鉛直方向、床は滑らか）。初め両方とも静止しているので、水平方向の全運動量はずっとゼロのまま。
+        </div>
+
+        <p><strong>立式：</strong>水平方向の<span class="highlight">運動量保存則</span>（右向きを正）。初期状態では両者静止しているため全運動量は $0$ です。</p>
+        $$\underbrace{m \cdot V_{2x}}_{\text{小球（右向き）}} + \underbrace{M \cdot (-V_3)}_{\text{台（左向き）}} = 0$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$m V_{2x} - M V_3 = 0$$
+          $$mV_{2x} - MV_3 = 0$$
         </div>
+
+        <details>
+          <summary>補足：この式の物理的意味</summary>
+          <div class="details-content">
+            <p>$mV_{2x} = MV_3$ は「小球の右向きの運動量と台の左向きの運動量が常に等しい」ことを意味します。つまり小球が勢いよく飛び出すほど、台も大きな速さで反対方向に動きます（作用・反作用の結果）。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>系全体として水平方向に外力が働かないことに気づき、運動量保存則を適切に立てることが重要です。</p>
+          <p>「系に水平方向の外力がない → 水平方向の全運動量が保存」。台は左向きなので速度の符号は $-V_3$。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(4) ==================== -->
       <div class="card">
         <h3>設問(4)</h3>
-        <p><strong>狙い：</strong>相対運動の影響による速度ベクトルの向きの変化の数式的証明。</p>
-        <p><strong>設定・立式：</strong>床から見た小球の発射角度 $\phi'$ は、速度成分を用いて $\tan\phi' = \frac{V_{2y}}{V_{2x}}$ と表されます。設問(2)の結果より、$V_{2y} = (V_{2x} + V_3) \tan\phi$ です。これを代入します。</p>
-        <p><strong>計算：</strong></p>
-        $$\tan\phi' = \frac{(V_{2x} + V_3) \tan\phi}{V_{2x}} = \left( 1 + \frac{V_3}{V_{2x}} \right) \tan\phi$$
-        <p>ここで、小球は右へ、発射台は左へ動くことから $V_{2x} > 0$ かつ $V_3 > 0$ であるため、$1 + \frac{V_3}{V_{2x}} > 1$ となります。したがって、$\tan\phi' > \tan\phi$ が成り立ちます。</p>
-        
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          台が左へ逃げる分、小球は床から見ると「より上向き」に打ち出されたように見える。水平方向の速度が $V_{2x}$ に減る一方、鉛直方向の $V_{2y}$ は台の後退の影響を受けないため、相対的に角度が大きくなる。
+        </div>
+
+        <p><strong>立式：</strong>床から見た発射角を $\phi'$ とします。</p>
+        $$\tan\phi' = \frac{V_{2y}}{V_{2x}}$$
+        <p>設問(2)の結果 $\tan\phi = \dfrac{V_{2y}}{V_{2x}+V_3}$ を $V_{2y}$ について解くと、</p>
+        $$V_{2y} = (V_{2x}+V_3)\tan\phi$$
+        <p>これを $\tan\phi'$ に代入します。</p>
+        $$\tan\phi' = \frac{(V_{2x}+V_3)\tan\phi}{V_{2x}} = \frac{V_{2x}+V_3}{V_{2x}} \cdot \tan\phi = \left(1 + \frac{V_3}{V_{2x}}\right)\tan\phi$$
+        <p>ここで、小球は右へ打ち出され ($V_{2x} > 0$)、台は左へ動く ($V_3 > 0$) なので、</p>
+        $$1 + \frac{V_3}{V_{2x}} > 1$$
+        <p>したがって $\tan\phi' > \tan\phi$ であり、$0^\circ < \phi,\, \phi' < 90^\circ$ の範囲では $\tan$ は単調増加なので、</p>
+        $$\phi' > \phi$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          床から見た発射角度 $\phi'$ は $\tan\phi' = \frac{V_{2y}}{V_{2x}}$ であり、設問(2)より $V_{2y} = (V_{2x} + V_3)\tan\phi$ であるから、$\tan\phi' = \left(1 + \frac{V_3}{V_{2x}}\right)\tan\phi$ となる。$V_{2x}>0, V_3>0$ より $\tan\phi' > \tan\phi$ となり、$0^\circ < \phi, \phi' < 90^\circ$ の範囲では $\phi' > \phi$ となるため。
+          床から見た発射角度 $\phi'$ は $\tan\phi' = \dfrac{V_{2y}}{V_{2x}}$ であり、設問(2)より $V_{2y} = (V_{2x}+V_3)\tan\phi$ であるから、
+          $$\tan\phi' = \left(1 + \frac{V_3}{V_{2x}}\right)\tan\phi$$
+          $V_{2x}>0,\; V_3>0$ より $\tan\phi' > \tan\phi$。$0^\circ < \phi,\,\phi' < 90^\circ$ の範囲では $\phi' > \phi$。
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>直感的な「台が逃げる分、より上向きに打ち出されるように見える」という現象を、数式（$\tan$ の比較）を用いて論理的に説明します。</p>
+          <p>設問(2)の結果をフルに活用。$V_{2y}$ を消して $\tan\phi'$ を $\tan\phi$ で表す流れ。直感とも整合：台が逃げる → より上向きに飛ぶ。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(5) ==================== -->
       <div class="card">
         <h3>設問(5)</h3>
-        
-        <svg class="diagram-svg" viewBox="0 0 400 200" aria-label="斜方投射の軌道">
-          <line x1="20" y1="180" x2="380" y2="180" stroke="#333" stroke-width="2" />
-          <line x1="40" y1="190" x2="40" y2="20" stroke="#333" stroke-width="2" marker-end="url(#arrow-axis)" />
-          
-          <path d="M 40 180 Q 200 -20 360 180" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 4" />
-          
-          <line x1="40" y1="180" x2="100" y2="105" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red2)" />
-          <text x="110" y="100" font-size="14" fill="#ef4444">$v_0$</text>
-          <path d="M 70 180 A 30 30 0 0 0 65 150" fill="none" stroke="#333" stroke-width="1.5"/>
-          <text x="80" y="170" font-size="14" fill="#333">$\theta$</text>
 
-          <circle cx="200" cy="30" r="6" fill="#10b981" />
-          <line x1="200" y1="30" x2="280" y2="30" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-green2)" />
-          <text x="290" y="35" font-size="14" fill="#10b981">$v_0 \cos\theta$</text>
-          
-          <line x1="200" y1="30" x2="200" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2 2" />
-          <line x1="40" y1="30" x2="200" y2="30" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2 2" />
-          
-          <text x="15" y="35" font-size="14" fill="#333">$h$</text>
-          <text x="195" y="198" font-size="14" fill="#333">$l$</text>
+        <div id="sim-projectile" class="sim-embed"></div>
+        <script>
+          (function() {
+            var el = document.getElementById('sim-projectile');
+            if (!el) return;
+            var sketch = function(p) {
+              var v0 = 8, theta = p.PI / 3, g = 10;
+              var t = 0, dt = 0.016, isPlaying = true;
+              var t1 = v0 * p.sin(theta) / g;
+              var totalT = 2 * t1;
+              var hMax = v0 * v0 * p.sin(theta) * p.sin(theta) / (2 * g);
+              var lMax = v0 * v0 * p.sin(theta) * p.cos(theta) / g;
+              var xRange = v0 * v0 * p.sin(2 * theta) / g;
+              var sc, ox, oy;
 
-          <defs>
-            <marker id="arrow-axis" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333" /></marker>
-            <marker id="arrow-red2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
-            <marker id="arrow-green2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981" /></marker>
-          </defs>
-        </svg>
+              p.setup = function() { p.createCanvas(el.clientWidth, 300).parent(el); calcScale(); };
+              function calcScale() {
+                var mx = 50, my = 50;
+                sc = p.min((p.width - 2 * mx) / xRange, (p.height - my - 60) / hMax);
+                ox = mx; oy = p.height - 50;
+              }
+              function resetSim() { t = 0; }
+              function w2s(wx, wy) { return { x: ox + wx * sc, y: oy - wy * sc }; }
+              function drawArrow(x1, y1, x2, y2, col) {
+                p.stroke(col); p.strokeWeight(2); p.line(x1, y1, x2, y2);
+                var a = p.atan2(y2 - y1, x2 - x1);
+                p.fill(col); p.noStroke();
+                p.triangle(x2, y2, x2 - 7 * p.cos(a - 0.4), y2 - 7 * p.sin(a - 0.4), x2 - 7 * p.cos(a + 0.4), y2 - 7 * p.sin(a + 0.4));
+              }
 
-        <p><strong>狙い：</strong>斜方投射における鉛直方向の運動（<span class="highlight">鉛直投げ上げ</span>）の解析。</p>
-        <p><strong>設定：</strong>初速 $v_0$、角度 $\theta$。鉛直方向の初速は $v_0 \sin\theta$ です。最高点では鉛直方向の速度が $0$ になります。</p>
-        <p><strong>立式・計算：</strong>鉛直方向の速度 $v_y = v_0 \sin\theta - g t$、高さ $y = v_0 \sin\theta \cdot t - \frac{1}{2} g t^2$ です。<br>
-        最高点に達する時刻 $t_1$ では $v_y = 0$ より、</p>
-        $$0 = v_0 \sin\theta - g t_1 \implies t_1 = \frac{v_0 \sin\theta}{g}$$
-        <p>最高点の高さ $h$ は $t = t_1$ を代入して、</p>
-        $$h = v_0 \sin\theta \left( \frac{v_0 \sin\theta}{g} \right) - \frac{1}{2} g \left( \frac{v_0 \sin\theta}{g} \right)^2 = \frac{v_0^2 \sin^2\theta}{2g}$$
-        
+              p.draw = function() {
+                p.background(250, 251, 253);
+                if (isPlaying && t < totalT + 0.3) t = p.min(t + dt, totalT);
+                var cx = v0 * p.cos(theta) * t;
+                var cy = v0 * p.sin(theta) * t - 0.5 * g * t * t;
+                if (cy < 0) { cy = 0; cx = xRange; }
+                var vx = v0 * p.cos(theta);
+                var vy = v0 * p.sin(theta) - g * t;
+                var gnd = w2s(0, 0);
+
+                p.fill(225, 228, 232); p.noStroke();
+                p.rect(0, gnd.y, p.width, p.height - gnd.y);
+                p.stroke(190); p.strokeWeight(2); p.line(0, gnd.y, p.width, gnd.y);
+
+                p.noFill(); p.stroke(200, 210, 230); p.strokeWeight(1.5);
+                p.drawingContext.setLineDash([4, 4]);
+                p.beginShape();
+                for (var tt = 0; tt <= totalT; tt += 0.02) {
+                  var fp = w2s(v0 * p.cos(theta) * tt, p.max(v0 * p.sin(theta) * tt - 0.5 * g * tt * tt, 0));
+                  p.vertex(fp.x, fp.y);
+                }
+                p.endShape(); p.drawingContext.setLineDash([]);
+
+                if (t > 0.01) {
+                  p.noFill(); p.stroke(59, 130, 246, 160); p.strokeWeight(2.5);
+                  p.beginShape();
+                  for (var tt2 = 0; tt2 <= p.min(t, totalT); tt2 += 0.015) {
+                    var tp = w2s(v0 * p.cos(theta) * tt2, p.max(v0 * p.sin(theta) * tt2 - 0.5 * g * tt2 * tt2, 0));
+                    p.vertex(tp.x, tp.y);
+                  }
+                  p.endShape();
+                }
+
+                var top = w2s(lMax, hMax);
+                p.stroke(16, 185, 129, 120); p.strokeWeight(1.5);
+                p.drawingContext.setLineDash([4, 4]);
+                p.line(top.x, top.y, top.x, gnd.y);
+                p.line(ox, top.y, top.x, top.y);
+                p.drawingContext.setLineDash([]);
+                p.noStroke(); p.fill(16, 185, 129);
+                p.textAlign(p.RIGHT, p.CENTER); p.textSize(13);
+                p.text('h', ox - 6, top.y);
+                p.textAlign(p.CENTER, p.TOP);
+                p.text('l', top.x, gnd.y + 4);
+
+                if (t >= t1 - 0.05) {
+                  drawArrow(top.x, top.y, top.x + 35, top.y, p.color(16, 185, 129));
+                  p.noStroke(); p.fill(16, 185, 129);
+                  p.textAlign(p.LEFT, p.CENTER); p.textSize(11);
+                  p.text('v\u2080cos\u03B8', top.x + 38, top.y - 1);
+                }
+                p.fill(16, 185, 129, 50); p.noStroke();
+                p.ellipse(top.x, top.y, 14, 14);
+
+                var bp = w2s(cx, cy);
+                if (t > 0.02 && t < totalT - 0.02) {
+                  var aLen = 3.5;
+                  drawArrow(bp.x, bp.y, bp.x + vx * aLen, bp.y, p.color(59, 130, 246));
+                  if (p.abs(vy) > 0.3) drawArrow(bp.x, bp.y, bp.x, bp.y - vy * aLen, p.color(239, 68, 68));
+                }
+                p.fill(59, 130, 246); p.noStroke();
+                p.ellipse(bp.x, bp.y, 14, 14);
+                p.fill(255, 255, 255, 160); p.ellipse(bp.x - 2, bp.y - 2, 4, 4);
+
+                p.fill(255, 255, 255, 230); p.stroke(210, 212, 218); p.strokeWeight(1);
+                p.rect(8, 8, 165, 86, 6); p.noStroke();
+                p.textAlign(p.LEFT, p.TOP); p.textSize(12);
+                p.fill(60); p.text('t = ' + t.toFixed(2) + ' s', 18, 16);
+                p.fill(59, 130, 246); p.text('v\u2093 = ' + vx.toFixed(1) + ' m/s', 18, 34);
+                p.fill(239, 68, 68); p.text('v\u1D67 = ' + vy.toFixed(1) + ' m/s', 18, 52);
+                p.fill(60); p.text('y = ' + cy.toFixed(2) + ' m', 18, 70);
+
+                var legendY = gnd.y + 16;
+                p.textSize(10); p.textAlign(p.LEFT, p.TOP);
+                p.fill(59, 130, 246); p.text('\u2192 v\u2093(水平:一定)', ox, legendY);
+                p.fill(239, 68, 68); p.text('\u2191 v\u1D67(鉛直:減少\u21920)', ox + 100, legendY);
+                p.fill(16, 185, 129); p.text('\u25CB 最高点', ox + 225, legendY);
+              };
+              p.windowResized = function() { p.resizeCanvas(el.clientWidth, 300); calcScale(); };
+              window._simProjectile = { play: function() { isPlaying = true; }, pause: function() { isPlaying = false; }, reset: resetSim };
+            };
+            new p5(sketch);
+            if (window.SimUtils) SimUtils.createControls(el, {
+              onPlay: function() { if (window._simProjectile) window._simProjectile.play(); },
+              onPause: function() { if (window._simProjectile) window._simProjectile.pause(); },
+              onReset: function() { if (window._simProjectile) window._simProjectile.reset(); }
+            });
+          })();
+        </script>
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          最高点では鉛直速度がゼロになる瞬間。「上に投げたボールが一瞬止まる瞬間」と同じ。シミュレーションで<span style="color:#ef4444;">赤矢印（鉛直速度）</span>が最高点でゼロになるのを確認しよう。
+        </div>
+
+        <p><strong>設定：</strong>初速 $v_0$、発射角 $\theta$ で斜方投射された小球を考えます。</p>
+        <ul>
+          <li>水平方向の初速：$v_0\cos\theta$（一定）</li>
+          <li>鉛直方向の初速：$v_0\sin\theta$（重力で減速）</li>
+        </ul>
+
+        <p><strong>最高点の時刻 $t_1$：</strong>鉛直方向の速度が $0$ になる条件から、</p>
+        $$v_y = v_0\sin\theta - gt = 0$$
+        $$gt_1 = v_0\sin\theta$$
+        $$\therefore\quad t_1 = \frac{v_0\sin\theta}{g}$$
+
+        <p><strong>最高点の高さ $h$：</strong>$t = t_1$ を鉛直方向の位置の式に代入します。</p>
+        $$h = v_0\sin\theta \cdot t_1 - \frac{1}{2}g\,t_1^2$$
+        $$= v_0\sin\theta \cdot \frac{v_0\sin\theta}{g} - \frac{1}{2}g\left(\frac{v_0\sin\theta}{g}\right)^2$$
+        $$= \frac{v_0^2\sin^2\theta}{g} - \frac{1}{2} \cdot \frac{v_0^2\sin^2\theta}{g}$$
+        $$= \frac{v_0^2\sin^2\theta}{2g}$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$t_1 = \frac{v_0 \sin\theta}{g}, \quad h = \frac{v_0^2 \sin^2\theta}{2g}$$
+          $$t_1 = \frac{v_0\sin\theta}{g},\quad h = \frac{v_0^2\sin^2\theta}{2g}$$
         </div>
+
+        <details>
+          <summary>別解：エネルギー保存で $h$ を求める</summary>
+          <div class="details-content">
+            <p>最高点では鉛直速度がゼロで水平速度 $v_0\cos\theta$ だけが残るので、打ち上げ地点と最高点でエネルギー保存を適用すると、</p>
+            $$\frac{1}{2}mv_0^2 = \frac{1}{2}m(v_0\cos\theta)^2 + mgh$$
+            $$mgh = \frac{1}{2}m\bigl(v_0^2 - v_0^2\cos^2\theta\bigr) = \frac{1}{2}mv_0^2\sin^2\theta$$
+            $$h = \frac{v_0^2\sin^2\theta}{2g}$$
+            <p>運動方程式を使わずに $h$ が得られます。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>斜方投射の最高点では鉛直速度がゼロ、という条件が計算の起点です。</p>
+          <p>最高点 ＝ 鉛直速度ゼロ。この条件から $t_1$ を出し、$t_1$ を高さの式に代入する2ステップ。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(6) ==================== -->
       <div class="card">
         <h3>設問(6)</h3>
-        <p><strong>狙い：</strong>斜方投射における水平方向の運動（等速直線運動）の解析。</p>
-        <p><strong>設定：</strong>水平方向の初速は $v_0 \cos\theta$ で一定です。</p>
-        <p><strong>立式・計算：</strong>水平移動距離 $l = (v_0 \cos\theta) \cdot t_1$ です。設問(5)で求めた $t_1$ を代入します。</p>
-        $$l = v_0 \cos\theta \cdot \frac{v_0 \sin\theta}{g} = \frac{v_0^2 \sin\theta \cos\theta}{g}$$
-        
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          水平方向には力が働かないので等速直線運動。速さ $v_0\cos\theta$ で時間 $t_1$ だけ進んだ距離が $l$。
+        </div>
+
+        <p><strong>立式・計算：</strong>水平方向は加速度ゼロの等速運動なので、</p>
+        $$l = v_0\cos\theta \cdot t_1$$
+        <p>設問(5)で求めた $t_1 = \dfrac{v_0\sin\theta}{g}$ を代入すると、</p>
+        $$l = v_0\cos\theta \cdot \frac{v_0\sin\theta}{g} = \frac{v_0^2\sin\theta\cos\theta}{g}$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$l = \frac{v_0^2 \sin\theta \cos\theta}{g}$$
+          $$l = \frac{v_0^2\sin\theta\cos\theta}{g}$$
         </div>
+
+        <details>
+          <summary>補足：2倍角の公式で書き直す</summary>
+          <div class="details-content">
+            <p>$\sin\theta\cos\theta = \frac{1}{2}\sin 2\theta$ を用いると $l = \dfrac{v_0^2\sin 2\theta}{2g}$ とも書けます。これは全水平到達距離（飛距離）$R = \dfrac{v_0^2\sin 2\theta}{g}$ のちょうど半分であり、放物線の対称性から当然です。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>水平方向は等速運動なので、時間 $t_1$ を掛けるだけで距離が出ます。</p>
+          <p>水平方向は「等速」なので速さ×時間で距離。$t_1$ は設問(5)の結果をそのまま使う。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(7) ==================== -->
       <div class="card">
         <h3>設問(7)</h3>
-        
-        <svg class="diagram-svg" viewBox="0 0 520 220" aria-label="図4：台上の小球との衝突">
-          <!-- 座標 -->
-          <line x1="60" y1="190" x2="480" y2="190" stroke="#334155" stroke-width="2"/>
-          <line x1="60" y1="190" x2="60" y2="30" stroke="#334155" stroke-width="2"/>
-          <text x="485" y="195" font-size="12" fill="#334155">x</text>
-          <text x="54" y="24" font-size="12" fill="#334155">y</text>
 
-          <!-- 床 -->
-          <rect x="60" y="190" width="420" height="8" fill="#cbd5e1"/>
-
-          <!-- 台（右端） -->
-          <rect x="360" y="80" width="120" height="110" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
-          <text x="404" y="75" font-size="12" fill="#64748b">台</text>
-
-          <!-- 高さ H -->
-          <line x1="350" y1="190" x2="350" y2="80" stroke="#ef4444" stroke-width="2"/>
-          <line x1="346" y1="190" x2="354" y2="190" stroke="#ef4444" stroke-width="2"/>
-          <line x1="346" y1="80" x2="354" y2="80" stroke="#ef4444" stroke-width="2"/>
-          <text x="330" y="140" font-size="12" fill="#ef4444">$H$</text>
-
-          <!-- 距離 L -->
-          <line x1="60" y1="205" x2="360" y2="205" stroke="#10b981" stroke-width="2"/>
-          <line x1="60" y1="201" x2="60" y2="209" stroke="#10b981" stroke-width="2"/>
-          <line x1="360" y1="201" x2="360" y2="209" stroke="#10b981" stroke-width="2"/>
-          <text x="200" y="218" font-size="12" fill="#10b981">$L$</text>
-
-          <!-- 小球2（台上） -->
-          <circle cx="420" cy="80" r="10" fill="#ef4444"/>
-          <text x="408" y="65" font-size="12" fill="#ef4444">小球2</text>
-
-          <!-- 小球1（投射）と最高点 -->
-          <path d="M 80 190 Q 220 20 360 80" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 4"/>
-          <circle cx="360" cy="80" r="8" fill="#3b82f6"/>
-          <text x="330" y="60" font-size="12" fill="#3b82f6">最高点</text>
-          <text x="70" y="175" font-size="12" fill="#3b82f6">小球1</text>
-
-          <!-- g -->
-          <line x1="100" y1="55" x2="100" y2="95" stroke="#334155" stroke-width="2" marker-end="url(#g-arrow)"/>
-          <text x="85" y="50" font-size="12" fill="#334155">$g$</text>
-
+        <svg class="diagram-svg" viewBox="0 0 435 200" aria-label="小球m₁の斜方投射と最高点でのm₂との衝突">
           <defs>
-            <marker id="g-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#334155" /></marker>
+            <marker id="q7-ab"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#3b82f6"/></marker>
+            <marker id="q7-ar"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#ef4444"/></marker>
+            <marker id="q7-ar2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#ef4444"/></marker>
+            <marker id="q7-ag"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#10b981"/></marker>
+            <marker id="q7-ag2" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#10b981"/></marker>
+            <marker id="q7-ad"  viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
           </defs>
+          <!-- 床 -->
+          <line x1="20" y1="170" x2="420" y2="170" stroke="#94a3b8" stroke-width="2.5"/>
+          <line x1="28" y1="170" x2="20" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="40" y1="170" x2="32" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="52" y1="170" x2="44" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="64" y1="170" x2="56" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="76" y1="170" x2="68" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <line x1="88" y1="170" x2="80" y2="178" stroke="#94a3b8" stroke-width="1"/>
+          <!-- 発射台（小型楔）: (35,170)-(75,170)-(75,148) -->
+          <polygon points="35,170 75,170 75,148" fill="#e8edf5" stroke="#64748b" stroke-width="1.5"/>
+          <!-- 発射点 (55,170) から v₀ 矢印（θ≈35°方向）-->
+          <line x1="55" y1="170" x2="84" y2="151" stroke="#475569" stroke-width="2" marker-end="url(#q7-ad)"/>
+          <text x="87" y="148" font-size="13" fill="#475569" font-style="italic">v₀</text>
+          <!-- θ 角の弧 -->
+          <line x1="55" y1="170" x2="102" y2="170" stroke="#cbd5e1" stroke-width="1"/>
+          <path d="M 80,170 A 25,25 0 0 1 76.6,158" fill="none" stroke="#475569" stroke-width="1.2"/>
+          <text x="82" y="167" font-size="12" fill="#475569" font-style="italic">θ</text>
+          <!-- 軌道（発射点→最高点：半放物線、三次ベジェ）-->
+          <!-- 接線: t=0 で θ方向, t=1 で水平 → C1=(121,125) C2=(185,83) P1=(260,83) -->
+          <path d="M 55,170 C 121,125, 185,83, 260,83" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="6 3"/>
+          <!-- 軌道途中の m₁ -->
+          <circle cx="155" cy="112" r="9" fill="#3b82f6"/>
+          <text x="164" y="108" font-size="11" fill="#3b82f6" font-style="italic">m₁</text>
+          <!-- 台（プラットフォーム）: 上面 y=97, x:235〜395 -->
+          <rect x="235" y="97" width="160" height="8" fill="#64748b" rx="2"/>
+          <!-- 左脚 -->
+          <line x1="248" y1="105" x2="248" y2="170" stroke="#64748b" stroke-width="2.5"/>
+          <!-- 右脚 -->
+          <line x1="383" y1="105" x2="383" y2="170" stroke="#64748b" stroke-width="2.5"/>
+          <!-- 台上の小球 m₂（中心(260,83), r=14, 台上面 y=97 から 14px 上） -->
+          <circle cx="260" cy="83" r="14" fill="#ef4444"/>
+          <text x="254" y="87" font-size="11" fill="white" font-weight="bold">m₂</text>
+          <!-- 最高点での水平速度 v₀cosθ -->
+          <line x1="274" y1="83" x2="314" y2="83" stroke="#10b981" stroke-width="2" marker-end="url(#q7-ag)"/>
+          <text x="317" y="79" font-size="11" fill="#10b981">v₀cosθ</text>
+          <!-- H 寸法（垂直：床 y=170 から 台上面 y=97 まで）-->
+          <line x1="260" y1="97"  x2="415" y2="97"  stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="55"  y1="170" x2="415" y2="170" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="3 3"/>
+          <line x1="412" y1="170" x2="412" y2="97" stroke="#ef4444" stroke-width="1.5"
+                marker-start="url(#q7-ar2)" marker-end="url(#q7-ar)"/>
+          <text x="417" y="137" font-size="14" fill="#ef4444" font-style="italic">H</text>
+          <!-- L 寸法（水平：発射点 x=55 から 最高点 x=260 まで）-->
+          <line x1="55"  y1="186" x2="260" y2="186" stroke="#10b981" stroke-width="1.5"
+                marker-start="url(#q7-ag2)" marker-end="url(#q7-ag)"/>
+          <text x="157" y="197" font-size="14" fill="#10b981" text-anchor="middle" font-style="italic">L</text>
         </svg>
 
-        <p><strong>狙い：</strong>与えられた到達点座標 $(L, H)$ から、必要な初期力学的エネルギーを逆算します。</p>
-        <p><strong>設定・立式：</strong>設問(5)(6)の結果において、$h = H$、$l = L$ が成り立つための $v_0$ を求め、力学的エネルギー $E_0 = \frac{1}{2} m_1 v_0^2$ を計算します。</p>
-        <ul>
-          <li>$H = \frac{v_0^2 \sin^2\theta}{2g} \implies v_0^2 \sin^2\theta = 2gH$</li>
-          <li>$L = \frac{v_0^2 \sin\theta \cos\theta}{g}$ と $v_0^2 \sin^2\theta = 2gH$ より、$v_0^2 \cos^2\theta = \dfrac{L^2 g}{2H}$</li>
-        </ul>
-        <p><strong>計算：</strong>初速度の2乗は $v_0^2 = v_0^2 \sin^2\theta + v_0^2 \cos^2\theta$ であるため、</p>
-        $$v_0^2 = 2gH + \frac{L^2 g}{2H} = \frac{g(4H^2 + L^2)}{2H}$$
-        <p>求める力学的エネルギー $E_0$ は、初期の運動エネルギーに等しい（基準高さを床とする）ため、</p>
-        $$E_0 = \frac{1}{2} m_1 v_0^2 = \frac{m_1 g (4H^2 + L^2)}{4H}$$
-        
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          最高点 $(l,\, h)$ がちょうど台の端 $(L,\, H)$ に一致するようにしたい。設問(5)(6)の結果を $H,\, L$ で書き直して $v_0$ を求め、$E_0 = \frac{1}{2}m_1 v_0^2$ を計算する。$\theta$ は消去する。
+        </div>
+
+        <p><strong>手順：</strong>設問(5)(6)で $h = H$, $l = L$ とおきます。</p>
+        $$H = \frac{v_0^2\sin^2\theta}{2g} \quad\Longrightarrow\quad v_0^2\sin^2\theta = 2gH \quad\cdots\text{①}$$
+        $$L = \frac{v_0^2\sin\theta\cos\theta}{g} \quad\Longrightarrow\quad v_0^2\sin\theta\cos\theta = gL \quad\cdots\text{②}$$
+
+        <p><strong>$v_0^2\cos^2\theta$ を求める：</strong>②の両辺を2乗し、①で割ります。</p>
+        $$\text{② の2乗: } v_0^4\sin^2\theta\cos^2\theta = g^2L^2$$
+        $$v_0^2\cos^2\theta = \frac{g^2L^2}{v_0^2\sin^2\theta} \overset{\text{①}}{=} \frac{g^2L^2}{2gH} = \frac{gL^2}{2H} \quad\cdots\text{③}$$
+
+        <p><strong>$v_0^2$ を求める：</strong>$\sin^2\theta + \cos^2\theta = 1$ を利用します。</p>
+        $$v_0^2 = v_0^2\sin^2\theta + v_0^2\cos^2\theta \overset{\text{①③}}{=} 2gH + \frac{gL^2}{2H}$$
+        $$= \frac{4gH^2 + gL^2}{2H} = \frac{g(4H^2+L^2)}{2H}$$
+
+        <p><strong>$E_0$ を求める：</strong></p>
+        $$E_0 = \frac{1}{2}m_1 v_0^2 = \frac{1}{2}m_1 \cdot \frac{g(4H^2+L^2)}{2H} = \frac{m_1 g(4H^2+L^2)}{4H}$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$E_0 = \frac{m_1 g (4H^2 + L^2)}{4H}$$
+          $$E_0 = \frac{m_1 g(4H^2+L^2)}{4H}$$
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>$\theta$ を消去するには、$\sin^2\theta + \cos^2\theta = 1$ を「速度成分の2乗和」で使うのが近道です。</p>
+          <p>$\theta$ の消去テクニック：$\sin^2\theta + \cos^2\theta = 1$ の両辺に $v_0^2$ を掛けた形 $v_0^2 = v_0^2\sin^2\theta + v_0^2\cos^2\theta$ を使い、それぞれを①③で置き換える。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(8) ==================== -->
       <div class="card">
         <h3>設問(8)</h3>
 
-        <svg class="diagram-svg" viewBox="0 0 400 150" aria-label="衝突前後の速度ベクトル">
-          <text x="20" y="40" font-size="14" fill="#333" font-weight="bold">【衝突前】</text>
-          <line x1="80" y1="50" x2="320" y2="50" stroke="#ccc" stroke-width="2" />
-          <circle cx="150" cy="40" r="10" fill="#3b82f6" />
-          <text x="142" y="30" font-size="12" fill="#3b82f6">$m_1$</text>
-          <line x1="165" y1="40" x2="215" y2="40" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue3)" />
-          <text x="170" y="25" font-size="12" fill="#3b82f6">$v_0 \cos\theta$</text>
-          
-          <circle cx="240" cy="40" r="10" fill="#ef4444" />
-          <text x="232" y="30" font-size="12" fill="#ef4444">$m_2$</text>
-          <text x="255" y="45" font-size="12" fill="#ef4444">静止</text>
+        <div id="sim-collision" class="sim-embed"></div>
+        <script>
+          (function() {
+            var el = document.getElementById('sim-collision');
+            if (!el) return;
+            var sketch = function(p) {
+              var m1 = 1, m2 = 2, e = 0.7, u = 4;
+              var phase = 0, t = 0, dt = 0.016, isPlaying = true;
+              var x1, x2, v1, v2, v1After, v2After, flashAlpha = 0;
+              var W, H, ballY;
 
-          <text x="20" y="110" font-size="14" fill="#333" font-weight="bold">【衝突後】</text>
-          <line x1="80" y1="120" x2="320" y2="120" stroke="#ccc" stroke-width="2" />
-          <circle cx="180" cy="110" r="10" fill="#3b82f6" />
-          <text x="172" y="95" font-size="12" fill="#3b82f6">$m_1$</text>
-          <line x1="165" y1="110" x2="115" y2="110" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue3)" />
-          <text x="130" y="95" font-size="12" fill="#3b82f6">$v_1$</text>
-          
-          <circle cx="210" cy="110" r="10" fill="#ef4444" />
-          <text x="202" y="95" font-size="12" fill="#ef4444">$m_2$</text>
-          <line x1="225" y1="110" x2="275" y2="110" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red3)" />
-          <text x="240" y="95" font-size="12" fill="#ef4444">$v_2$</text>
+              p.setup = function() { W = el.clientWidth; H = 340; p.createCanvas(W, H).parent(el); resetSim(); };
+              function calcAfter() { v1After = (m2 * e - m1) / (m1 + m2) * u; v2After = m1 * (1 + e) / (m1 + m2) * u; }
+              function resetSim() { phase = 0; t = 0; calcAfter(); x1 = W * 0.15; x2 = W * 0.55; v1 = u * 30; v2 = 0; flashAlpha = 0; }
 
-          <defs>
-            <marker id="arrow-blue3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" /></marker>
-            <marker id="arrow-red3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
-          </defs>
-        </svg>
+              function drawBall(x, y, r, col, label) {
+                p.fill(col); p.noStroke(); p.ellipse(x, y, r * 2, r * 2);
+                p.fill(255, 255, 255, 140); p.ellipse(x - r * 0.3, y - r * 0.3, r * 0.4, r * 0.4);
+                p.fill(255); p.textAlign(p.CENTER, p.CENTER); p.textSize(11); p.text(label, x, y + 1);
+              }
+              function drawVelArrow(x, y, vel, col) {
+                if (p.abs(vel) < 0.2) return;
+                var len = vel * 12;
+                p.stroke(col); p.strokeWeight(2.5); p.line(x, y, x + len, y);
+                var a = vel > 0 ? 0 : p.PI; p.fill(col); p.noStroke();
+                p.triangle(x + len, y, x + len - 7 * p.cos(a - 0.45), y - 7 * p.sin(a - 0.45), x + len - 7 * p.cos(a + 0.45), y - 7 * p.sin(a + 0.45));
+              }
+              function drawEnergyBars(bx, by, barH) {
+                var keBefore = 0.5 * m1 * u * u;
+                var keA1 = 0.5 * m1 * v1After * v1After;
+                var keA2 = 0.5 * m2 * v2After * v2After;
+                var dE = keBefore - keA1 - keA2;
+                var barW = 36, gap = 14;
 
-        <p><strong>狙い：</strong>最高点における水平方向の衝突に対する<span class="highlight">運動量保存則</span>の適用。</p>
-        <p><strong>設定：</strong>右向きを正とします。最高点では小球1の鉛直方向の速度は $0$ であり、水平方向に速さ $v_0 \cos\theta$ で運動しています。衝突後、小球1は速さ $v_1$ で逆方向（左向き）へ、小球2は速さ $v_2$ で右方向へ進みます。</p>
-        <p><strong>立式・計算：</strong></p>
-        $$m_1 v_0 \cos\theta = -m_1 v_1 + m_2 v_2$$
-        
+                p.fill(240, 242, 245); p.stroke(200); p.strokeWeight(1);
+                p.rect(bx, by, barW, barH, 4);
+                p.noStroke(); p.fill(59, 130, 246);
+                p.rect(bx, by, barW, barH, 0, 0, 4, 4);
+                p.fill(60); p.noStroke(); p.textAlign(p.CENTER, p.TOP); p.textSize(9);
+                p.text('E\u2081(衝突前)', bx + barW / 2, by + barH + 4);
+
+                var bx2 = bx + barW + gap;
+                var r1 = keA1 / keBefore, r2 = keA2 / keBefore, rD = dE / keBefore;
+                p.fill(240, 242, 245); p.stroke(200); p.strokeWeight(1);
+                p.rect(bx2, by, barW, barH, 4);
+                p.noStroke();
+                p.fill(59, 130, 246, 180); p.rect(bx2, by + barH - r1 * barH, barW, r1 * barH, 0, 0, 4, 4);
+                p.fill(239, 68, 68, 180); p.rect(bx2, by + barH - (r1 + r2) * barH, barW, r2 * barH);
+                p.fill(245, 158, 11, 180); p.rect(bx2, by + barH - (r1 + r2 + rD) * barH, barW, rD * barH, 4, 4, 0, 0);
+                p.fill(60); p.textAlign(p.CENTER, p.TOP); p.textSize(9);
+                p.text('衝突後', bx2 + barW / 2, by + barH + 4);
+
+                var lx = bx2 + barW + gap + 4;
+                p.textAlign(p.LEFT, p.TOP); p.textSize(10);
+                p.fill(59, 130, 246); p.rect(lx, by + 2, 10, 10); p.fill(60); p.text(' m\u2081 KE', lx + 13, by + 1);
+                p.fill(239, 68, 68); p.rect(lx, by + 18, 10, 10); p.fill(60); p.text(' m\u2082 KE', lx + 13, by + 17);
+                p.fill(245, 158, 11); p.rect(lx, by + 34, 10, 10); p.fill(60); p.text(' \u0394E(損失)', lx + 13, by + 33);
+                p.textSize(10); p.fill(60);
+                p.text('\u0394E/E\u2081 = ' + (rD * 100).toFixed(1) + '%', lx, by + 54);
+              }
+
+              p.draw = function() {
+                p.background(250, 251, 253); W = p.width; ballY = 90;
+                p.stroke(220); p.strokeWeight(1); p.line(30, ballY, W - 30, ballY);
+                p.noStroke(); p.fill(60); p.textAlign(p.CENTER, p.TOP); p.textSize(11);
+
+                if (phase === 0) {
+                  if (isPlaying) { x1 += v1 * dt; if (x1 + 18 >= x2 - 22) { x1 = x2 - 40; phase = 1; t = 0; flashAlpha = 255; } }
+                  p.text('\u3010\u885d\u7a81\u524d\u3011 m\u2081 \u304c\u53f3\u3078 v\u2080cos\u03B8 \u3067\u63a5\u8fd1', W / 2, 18);
+                  drawBall(x1, ballY, 18, p.color(59, 130, 246), 'm\u2081');
+                  drawBall(x2, ballY, 22, p.color(239, 68, 68), 'm\u2082');
+                  drawVelArrow(x1 + 22, ballY, u, p.color(59, 130, 246));
+                  p.fill(239, 68, 68); p.textAlign(p.CENTER, p.TOP); p.textSize(10); p.text('\u9759\u6b62', x2, ballY + 26);
+                } else if (phase === 1) {
+                  if (isPlaying) t += dt; if (flashAlpha > 0) flashAlpha -= 8;
+                  if (t > 0.4) { phase = 2; t = 0; v1 = -v1After * 30; v2 = v2After * 30; }
+                  p.text('\u3010\u885d\u7a81\u4e2d\u3011', W / 2, 18);
+                  if (flashAlpha > 0) { p.fill(255, 230, 100, flashAlpha); p.noStroke(); p.ellipse((x1 + x2) / 2, ballY, 60, 60); }
+                  drawBall(x1, ballY, 18, p.color(59, 130, 246), 'm\u2081');
+                  drawBall(x2, ballY, 22, p.color(239, 68, 68), 'm\u2082');
+                } else {
+                  if (isPlaying) { x1 += v1 * dt; x2 += v2 * dt; }
+                  p.text('\u3010\u885d\u7a81\u5f8c\u3011 m\u2081 \u306f\u5de6\u3078 v\u2081\u3001m\u2082 \u306f\u53f3\u3078 v\u2082', W / 2, 18);
+                  drawBall(x1, ballY, 18, p.color(59, 130, 246), 'm\u2081');
+                  drawBall(x2, ballY, 22, p.color(239, 68, 68), 'm\u2082');
+                  if (v1After > 0) drawVelArrow(x1 - 22, ballY, -v1After, p.color(59, 130, 246));
+                  else drawVelArrow(x1 + 22, ballY, -v1After, p.color(59, 130, 246));
+                  drawVelArrow(x2 + 26, ballY, v2After, p.color(239, 68, 68));
+                }
+                drawEnergyBars(W * 0.1, 140, 160);
+                p.fill(255, 255, 255, 220); p.stroke(210); p.strokeWeight(1);
+                p.rect(W - 160, 8, 150, 62, 6); p.noStroke(); p.fill(60);
+                p.textAlign(p.LEFT, p.TOP); p.textSize(11);
+                p.text('m\u2081 = ' + m1 + ', m\u2082 = ' + m2, W - 150, 14);
+                p.text('e = ' + e.toFixed(2), W - 150, 30);
+                p.text('u = v\u2080cos\u03B8 = ' + u, W - 150, 46);
+              };
+              p.windowResized = function() { p.resizeCanvas(el.clientWidth, 340); resetSim(); };
+              window._simCollision = { play: function() { isPlaying = true; }, pause: function() { isPlaying = false; }, reset: resetSim };
+            };
+            new p5(sketch);
+            if (window.SimUtils) SimUtils.createControls(el, {
+              onPlay: function() { if (window._simCollision) window._simCollision.play(); },
+              onPause: function() { if (window._simCollision) window._simCollision.pause(); },
+              onReset: function() { if (window._simCollision) window._simCollision.reset(); }
+            });
+          })();
+        </script>
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          最高点では小球1の鉛直速度はゼロで、水平方向の速さ $v_0\cos\theta$ だけが残っている。小球2は台の上で静止。したがって衝突は水平方向だけの1次元問題になる。
+        </div>
+
+        <p><strong>設定：</strong>右向きを正とします。</p>
+        <ul>
+          <li>衝突前：小球1の速度 $= +v_0\cos\theta$、小球2の速度 $= 0$</li>
+          <li>衝突後：小球1は左へ速さ $v_1$ → 速度 $= -v_1$、小球2は右へ速さ $v_2$ → 速度 $= +v_2$</li>
+        </ul>
+
+        <p><strong>立式：</strong>水平方向の<span class="highlight">運動量保存則</span>より、</p>
+        $$\underbrace{m_1 \cdot v_0\cos\theta + m_2 \cdot 0}_{\text{衝突前}} = \underbrace{m_1 \cdot (-v_1) + m_2 \cdot v_2}_{\text{衝突後}}$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$m_1 v_0 \cos\theta = -m_1 v_1 + m_2 v_2$$
+          $$m_1 v_0\cos\theta = -m_1 v_1 + m_2 v_2 \quad\cdots\text{①}$$
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>「速さ」 $v_1$ は左向きなので、速度として扱うときは $-v_1$ と符号を付けます。</p>
+          <p>$v_1, v_2$ は「速さ」（正の値）で定義されている。$v_1$ は左向きなので速度として扱うときは $-v_1$ と符号を付ける。ここを間違えると設問(9)(10)にも響く。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(9) ==================== -->
       <div class="card">
         <h3>設問(9)</h3>
-        <p><strong>狙い：</strong><span class="highlight">反発係数</span>の定義式と運動量保存則を連立し、衝突後の各物体の速度を決定します。</p>
-        <p><strong>立式・計算：</strong>反発係数を $e$ として式を立てます。</p>
-        $$e = \frac{v_1 + v_2}{v_0 \cos\theta}$$
-        <p>これより $v_2 = e v_0 \cos\theta - v_1$ を運動量保存式に代入します。</p>
-        $$(m_1 + m_2) v_1 = (m_2 e - m_1) v_0 \cos\theta$$
-        $$v_1 = \frac{m_2 e - m_1}{m_1 + m_2} v_0 \cos\theta$$
-        $$v_2 = \frac{m_1(1 + e)}{m_1 + m_2} v_0 \cos\theta$$
-        
+
+        <p><strong>反発係数の定義：</strong>衝突後の相対速度の大きさ ÷ 衝突前の相対速度の大きさ。</p>
+        <p>衝突前の相対速度（接近速度）は $v_0\cos\theta - 0 = v_0\cos\theta$。衝突後の相対速度（離反速度）は、小球2が右に $v_2$ で進み小球1が左に $v_1$ で進むので $v_2 - (-v_1) = v_1 + v_2$。</p>
+        $$e = \frac{v_1 + v_2}{v_0\cos\theta} \quad\cdots\text{②}$$
+
+        <p><strong>連立：</strong>①と②を連立して $v_1, v_2$ を求めます。</p>
+
+        <p>まず②を $v_2$ について解きます。</p>
+        $$v_2 = ev_0\cos\theta - v_1 \quad\cdots\text{②'}$$
+
+        <p>②'を①に代入します。</p>
+        $$m_1 v_0\cos\theta = -m_1 v_1 + m_2(ev_0\cos\theta - v_1)$$
+        $$m_1 v_0\cos\theta = -m_1 v_1 + m_2 e\,v_0\cos\theta - m_2 v_1$$
+        $$m_1 v_0\cos\theta = -(m_1 + m_2)v_1 + m_2 e\,v_0\cos\theta$$
+
+        <p>$v_1$ の項を左辺に移項します。</p>
+        $$(m_1 + m_2)v_1 = m_2 e\,v_0\cos\theta - m_1 v_0\cos\theta$$
+        $$(m_1 + m_2)v_1 = (m_2 e - m_1)\,v_0\cos\theta$$
+        $$\therefore\quad v_1 = \frac{m_2 e - m_1}{m_1 + m_2}\,v_0\cos\theta$$
+
+        <p>$v_2$ は②'に代入して求めます。</p>
+        $$v_2 = ev_0\cos\theta - \frac{m_2 e - m_1}{m_1 + m_2}\,v_0\cos\theta$$
+        $$= \frac{e(m_1+m_2) - (m_2 e - m_1)}{m_1 + m_2}\,v_0\cos\theta$$
+        $$= \frac{em_1 + em_2 - m_2 e + m_1}{m_1 + m_2}\,v_0\cos\theta$$
+        $$= \frac{m_1(1+e)}{m_1 + m_2}\,v_0\cos\theta$$
+
         <div class="box-note">
           <strong>答え：</strong><br>
-          $$v_1 = \frac{m_2 e - m_1}{m_1 + m_2} v_0 \cos\theta, \quad v_2 = \frac{m_1(1 + e)}{m_1 + m_2} v_0 \cos\theta$$
+          $$v_1 = \frac{m_2 e - m_1}{m_1 + m_2}\,v_0\cos\theta,\quad v_2 = \frac{m_1(1+e)}{m_1 + m_2}\,v_0\cos\theta$$
         </div>
+
+        <details>
+          <summary>補足：$v_1$ の符号について</summary>
+          <div class="details-content">
+            <p>問題文では「小球1は跳ね返って左向きに進む」ことを前提にしています。これが成り立つには $v_1 > 0$、つまり $m_2 e > m_1$ が必要です。</p>
+            <p>例えば $m_1 = m_2$ で $e = 1$（完全弾性衝突）なら $v_1 = 0$（小球1は停止し、小球2が $v_0\cos\theta$ で飛ぶ）。これはニュートンのゆりかごと同じ現象です。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>別解：衝突の一般公式を使う</summary>
+          <div class="details-content">
+            <p>質量 $m_1$ の物体が速度 $u$ で静止した質量 $m_2$ に衝突するとき、衝突後の速度は一般に、</p>
+            $$v_1' = \frac{m_1 - m_2 e}{m_1+m_2}\,u, \quad v_2' = \frac{m_1(1+e)}{m_1+m_2}\,u$$
+            <p>本問では $u = v_0\cos\theta$ であり、小球1は「跳ね返る（速度が負になる）」ので、速さは $|v_1'| = \frac{m_2 e - m_1}{m_1+m_2}\,v_0\cos\theta$ となり、同じ結果が得られます。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>運動量保存＋反発係数の2本立ては衝突の定石です。符号の扱いだけ丁寧に。</p>
+          <p>衝突の定石：「運動量保存 ＋ 反発係数」の2式を連立して2つの未知数 $v_1, v_2$ を求める。片方を消去 → 代入の流れ。</p>
         </div>
       </div>
 
+      <!-- ==================== 設問(10) ==================== -->
       <div class="card">
         <h3>設問(10)</h3>
+
+        <div class="intuition">
+          <div class="intuition-title">直感的理解</div>
+          衝突でエネルギーの一部が熱や音に変わって失われる。$e = 1$（完全弾性衝突）なら損失ゼロ、$e = 0$（完全非弾性衝突）なら損失最大。
+        </div>
+
+        <p><strong>設定：</strong>衝突直前の小球1の運動エネルギーを $E_1$ とおきます。</p>
+        $$E_1 = \frac{1}{2}m_1(v_0\cos\theta)^2$$
+
+        <p><strong>衝突後の運動エネルギーの合計 $E_2$：</strong>設問(9)の結果を代入します。</p>
+        $$E_2 = \frac{1}{2}m_1 v_1^2 + \frac{1}{2}m_2 v_2^2$$
+        $$= \frac{1}{2}m_1\left(\frac{m_2 e - m_1}{m_1+m_2}\right)^2(v_0\cos\theta)^2 + \frac{1}{2}m_2\left(\frac{m_1(1+e)}{m_1+m_2}\right)^2(v_0\cos\theta)^2$$
+        $$= \frac{(v_0\cos\theta)^2}{2(m_1+m_2)^2}\Bigl[m_1(m_2 e - m_1)^2 + m_2 \cdot m_1^2(1+e)^2\Bigr]$$
+
+        <p><strong>損失エネルギー $\Delta E$：</strong></p>
+        $$\Delta E = E_1 - E_2 = \frac{1}{2}m_1(v_0\cos\theta)^2 - E_2$$
+
+        <p>直接計算するより、次の衝突エネルギー損失の公式を利用する方が簡潔です。</p>
+
+        <details>
+          <summary>公式の導出（衝突エネルギー損失の一般式）</summary>
+          <div class="details-content">
+            <p>運動量保存式①より $m_1 v_0\cos\theta = -m_1 v_1 + m_2 v_2$。反発係数②より $v_1 + v_2 = ev_0\cos\theta$。</p>
+            <p>$\Delta E$ は衝突前後の運動エネルギーの差であり、</p>
+            $$\Delta E = \frac{1}{2}m_1(v_0\cos\theta)^2 - \frac{1}{2}m_1 v_1^2 - \frac{1}{2}m_2 v_2^2$$
+            $$= \frac{1}{2}\bigl[m_1(v_0\cos\theta)^2 - m_1 v_1^2 - m_2 v_2^2\bigr]$$
+            <p>①と②を使って整理すると（途中計算は省略）、</p>
+            $$\Delta E = \frac{1}{2}\frac{m_1 m_2}{m_1+m_2}(1-e^2)(v_0\cos\theta)^2$$
+          </div>
+        </details>
+
+        <p>この公式を $E_1 = \frac{1}{2}m_1(v_0\cos\theta)^2$ で割ると、</p>
+        $$\frac{\Delta E}{E_1} = \frac{m_2}{m_1+m_2}(1-e^2)$$
+        <p>つまり、</p>
+        $$\Delta E = E_1 \cdot \frac{m_2}{m_1+m_2} \cdot (1-e^2)$$
 
         <div class="energy-bar-wrap">
           <div class="energy-bar">
             <div class="bar-outer">
-              <div class="bar-fill fill-e1">
-                <span>$E_1$</span>
-              </div>
+              <div class="bar-fill" style="height:100%; background:#3b82f6;"><span>$E_1$</span></div>
             </div>
             <div class="bar-label">衝突前</div>
           </div>
-          <div style="display:flex; align-items:center; font-weight:bold; font-size:1.5rem; color:#64748b;">=</div>
+          <div style="display:flex; align-items:center; font-weight:bold; font-size:1.3rem; color:#94a3b8;">=</div>
           <div class="energy-bar">
             <div class="bar-outer">
-              <div class="bar-fill fill-delta">
-                <span>$\Delta E$</span>
-              </div>
-              <div class="bar-fill fill-e2">
-                <span>$E_2$</span>
-              </div>
+              <div class="bar-fill" style="height:60%; background:#10b981;"></div>
+              <div class="bar-fill" style="height:40%; bottom:60%; background:#f59e0b; border-radius:4px 4px 0 0;"><span>$\Delta E$</span></div>
             </div>
             <div class="bar-label">衝突後</div>
           </div>
+          <div style="font-size:0.8rem; color:#64748b; align-self:center; max-width:110px;">
+            <span style="color:#10b981;">■</span> 残った運動KE<br>
+            <span style="color:#f59e0b;">■</span> 損失 $\Delta E$
+          </div>
         </div>
 
-        <p><strong>狙い：</strong>衝突で失われる運動エネルギーの減少量 $\Delta E$ を $E_1$ の形に整理して空欄を埋めます。</p>
-        <p><strong>設定：</strong>衝突直前の小球1の運動エネルギーを $E_1 = \frac{1}{2} m_1 (v_0 \cos\theta)^2$ とします。</p>
-        <p><strong>計算：</strong>一般式 $\Delta E = \frac{1}{2} \frac{m_1 m_2}{m_1 + m_2} (1 - e^2) (v_0 \cos\theta)^2$ を用いると、</p>
-        $$\Delta E = E_1 (1 - e^2) \frac{m_2}{m_1 + m_2}$$
-        
         <div class="box-note">
-          <strong>答え：</strong><br>
+          <strong>答え（空欄）：</strong><br>
           $$1 - e^2$$
         </div>
+
+        <details>
+          <summary>補足：$1 - e^2$ の意味を確認</summary>
+          <div class="details-content">
+            <ul>
+              <li>$e = 1$（完全弾性衝突）→ $1 - e^2 = 0$ → 損失ゼロ（エネルギー保存）</li>
+              <li>$e = 0$（完全非弾性衝突）→ $1 - e^2 = 1$ → 最大損失</li>
+              <li>$0 < e < 1$ → 損失は $e$ が小さいほど大きい</li>
+            </ul>
+            <p>$1 - e^2 = (1-e)(1+e)$ と因数分解もでき、$e$ が $1$ に近いほど損失は急激に小さくなることが分かります。</p>
+          </div>
+        </details>
+
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>失われるエネルギーは「換算質量 × (1−e²) × 相対速度²」に比例、という形を覚えておくと一瞬で整理できます。</p>
+          <p>衝突のエネルギー損失公式 $\Delta E = \frac{1}{2}\frac{m_1 m_2}{m_1+m_2}(1-e^2) \cdot (\text{相対速度})^2$ を覚えておくと一瞬で整理できる。公式を忘れても、設問(9)の $v_1, v_2$ を使って $E_1 - E_2$ を地道に計算すれば同じ結果を得られる。</p>
         </div>
       </div>
 
