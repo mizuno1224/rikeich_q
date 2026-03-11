@@ -246,6 +246,18 @@
           "problems": [
             { "id": "2025_1", "title": "前期 問題Ⅰ", "youtubeUrl": "https://youtu.be/eDr8MCoPBVg" }
           ]
+        },
+        {
+          "fieldName": "2026年度",
+          "folderId": "2026",
+          "problems": [
+            {
+              "id": "2026_zenki_1",
+              "title": "前期 大問1",
+              "desc": "ばね発射台と運動量保存（固定・自由の比較）",
+              "explanationPath": "data/explanations/exam_national/nagoya/2026/2026_zenki_1.html"
+            }
+          ]
         }
       ]
     },

@@ -41,13 +41,13 @@
           <li><strong>設問(1)</strong>：固定された発射台から打ち上げられる小球の速さの導出</li>
           <li><strong>設問(2)</strong>：可動式発射台における小球の速度成分と台の速さの幾何学的関係</li>
           <li><strong>設問(3)</strong>：小球と可動式発射台からなる系の水平方向の運動量保存則</li>
-          <li><strong>設問(4)</strong>：床の観測者から見た発射角度が発射台の角度より大きくなる理由の数式的説明</li>
+          <li><strong>設問(4)</strong>：床の観測者から見た時の小球が発射される角度が発射台の角度より大きくなる理由</li>
           <li><strong>設問(5)</strong>：斜方投射された小球が最高点に達するまでの時刻と高さの導出</li>
           <li><strong>設問(6)</strong>：斜方投射された小球が最高点に達するまでに動いた水平距離の導出</li>
           <li><strong>設問(7)</strong>：指定された位置（最高点）で衝突させるために必要な初期力学的エネルギーの導出</li>
           <li><strong>設問(8)</strong>：最高点における小球同士の衝突前後の水平方向の運動量保存則</li>
           <li><strong>設問(9)</strong>：反発係数を用いた衝突後の各小球の速さの導出</li>
-          <li><strong>設問(10)</strong>：衝突によって失われた力学的エネルギーの計算（空欄補充形式）</li>
+          <li><strong>設問(10)</strong>：衝突によって失われた力学的エネルギーの計算（空欄補充）</li>
         </ul>
         
         <div class="box-note">
@@ -79,6 +79,9 @@
           <text x="270" y="95" font-size="14" fill="#ef4444">$d \sin\phi$</text>
           <line x1="150" y1="110" x2="250" y2="48" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)" />
           <text x="190" y="70" font-size="14" fill="#333">$d$</text>
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333" /></marker>
+          </defs>
         </svg>
 
         <p><strong>狙い：</strong>固定された斜面における、ばねの弾性力による打ち上げ時の<span class="highlight">力学的エネルギー保存則</span>の適用。</p>
@@ -174,7 +177,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>直感的な「台が逃げる分、より上向きに打ち出されるように見える」という現象を、数式（$\tan$ の比較）を用いて論理的に説明する力が問われています。</p>
+          <p>直感的な「台が逃げる分、より上向きに打ち出されるように見える」という現象を、数式（$\tan$ の比較）を用いて論理的に説明します。</p>
         </div>
       </div>
 
@@ -183,17 +186,17 @@
         
         <svg class="diagram-svg" viewBox="0 0 400 200" aria-label="斜方投射の軌道">
           <line x1="20" y1="180" x2="380" y2="180" stroke="#333" stroke-width="2" />
-          <line x1="40" y1="190" x2="40" y2="20" stroke="#333" stroke-width="2" marker-end="url(#arrow)" />
+          <line x1="40" y1="190" x2="40" y2="20" stroke="#333" stroke-width="2" marker-end="url(#arrow-axis)" />
           
           <path d="M 40 180 Q 200 -20 360 180" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 4" />
           
-          <line x1="40" y1="180" x2="100" y2="105" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red)" />
+          <line x1="40" y1="180" x2="100" y2="105" stroke="#ef4444" stroke-width="3" marker-end="url(#arrow-red2)" />
           <text x="110" y="100" font-size="14" fill="#ef4444">$v_0$</text>
           <path d="M 70 180 A 30 30 0 0 0 65 150" fill="none" stroke="#333" stroke-width="1.5"/>
           <text x="80" y="170" font-size="14" fill="#333">$\theta$</text>
 
           <circle cx="200" cy="30" r="6" fill="#10b981" />
-          <line x1="200" y1="30" x2="280" y2="30" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-green)" />
+          <line x1="200" y1="30" x2="280" y2="30" stroke="#10b981" stroke-width="3" marker-end="url(#arrow-green2)" />
           <text x="290" y="35" font-size="14" fill="#10b981">$v_0 \cos\theta$</text>
           
           <line x1="200" y1="30" x2="200" y2="180" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2 2" />
@@ -201,6 +204,12 @@
           
           <text x="15" y="35" font-size="14" fill="#333">$h$</text>
           <text x="195" y="198" font-size="14" fill="#333">$l$</text>
+
+          <defs>
+            <marker id="arrow-axis" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#333" /></marker>
+            <marker id="arrow-red2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
+            <marker id="arrow-green2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981" /></marker>
+          </defs>
         </svg>
 
         <p><strong>狙い：</strong>斜方投射における鉛直方向の運動（<span class="highlight">鉛直投げ上げ</span>）の解析。</p>
@@ -217,7 +226,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>斜方投射の最高点における条件（鉛直方向の速度がゼロ）は、運動を解くための最も基本的な手がかりです。</p>
+          <p>斜方投射の最高点では鉛直速度がゼロ、という条件が計算の起点です。</p>
         </div>
       </div>
 
@@ -234,28 +243,68 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>水平方向には力が働かないため等速運動になるという事実を使い、時間 $t_1$ と掛け合わせるだけで容易に求まります。</p>
+          <p>水平方向は等速運動なので、時間 $t_1$ を掛けるだけで距離が出ます。</p>
         </div>
       </div>
 
       <div class="card">
         <h3>設問(7)</h3>
         
-        <figure class="fig-inline" aria-label="図4：台の上の小球との衝突">
-          <img src="【画像パス】" alt="図4：斜方投射された小球1が最高点で小球2と衝突する状況">
-          <figcaption>図4：最高点での衝突</figcaption>
-        </figure>
+        <svg class="diagram-svg" viewBox="0 0 520 220" aria-label="図4：台上の小球との衝突">
+          <!-- 座標 -->
+          <line x1="60" y1="190" x2="480" y2="190" stroke="#334155" stroke-width="2"/>
+          <line x1="60" y1="190" x2="60" y2="30" stroke="#334155" stroke-width="2"/>
+          <text x="485" y="195" font-size="12" fill="#334155">x</text>
+          <text x="54" y="24" font-size="12" fill="#334155">y</text>
+
+          <!-- 床 -->
+          <rect x="60" y="190" width="420" height="8" fill="#cbd5e1"/>
+
+          <!-- 台（右端） -->
+          <rect x="360" y="80" width="120" height="110" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+          <text x="404" y="75" font-size="12" fill="#64748b">台</text>
+
+          <!-- 高さ H -->
+          <line x1="350" y1="190" x2="350" y2="80" stroke="#ef4444" stroke-width="2"/>
+          <line x1="346" y1="190" x2="354" y2="190" stroke="#ef4444" stroke-width="2"/>
+          <line x1="346" y1="80" x2="354" y2="80" stroke="#ef4444" stroke-width="2"/>
+          <text x="330" y="140" font-size="12" fill="#ef4444">$H$</text>
+
+          <!-- 距離 L -->
+          <line x1="60" y1="205" x2="360" y2="205" stroke="#10b981" stroke-width="2"/>
+          <line x1="60" y1="201" x2="60" y2="209" stroke="#10b981" stroke-width="2"/>
+          <line x1="360" y1="201" x2="360" y2="209" stroke="#10b981" stroke-width="2"/>
+          <text x="200" y="218" font-size="12" fill="#10b981">$L$</text>
+
+          <!-- 小球2（台上） -->
+          <circle cx="420" cy="80" r="10" fill="#ef4444"/>
+          <text x="408" y="65" font-size="12" fill="#ef4444">小球2</text>
+
+          <!-- 小球1（投射）と最高点 -->
+          <path d="M 80 190 Q 220 20 360 80" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 4"/>
+          <circle cx="360" cy="80" r="8" fill="#3b82f6"/>
+          <text x="330" y="60" font-size="12" fill="#3b82f6">最高点</text>
+          <text x="70" y="175" font-size="12" fill="#3b82f6">小球1</text>
+
+          <!-- g -->
+          <line x1="100" y1="55" x2="100" y2="95" stroke="#334155" stroke-width="2" marker-end="url(#g-arrow)"/>
+          <text x="85" y="50" font-size="12" fill="#334155">$g$</text>
+
+          <defs>
+            <marker id="g-arrow" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#334155" /></marker>
+          </defs>
+        </svg>
 
         <p><strong>狙い：</strong>与えられた到達点座標 $(L, H)$ から、必要な初期力学的エネルギーを逆算します。</p>
         <p><strong>設定・立式：</strong>設問(5)(6)の結果において、$h = H$、$l = L$ が成り立つための $v_0$ を求め、力学的エネルギー $E_0 = \frac{1}{2} m_1 v_0^2$ を計算します。</p>
         <ul>
           <li>$H = \frac{v_0^2 \sin^2\theta}{2g} \implies v_0^2 \sin^2\theta = 2gH$</li>
-          <li>$L = \frac{v_0^2 \sin\theta \cos\theta}{g} \implies v_0^2 \cos^2\theta = \frac{L^2 g^2}{v_0^2 \sin^2\theta} = \frac{L^2 g^2}{2gH} = \frac{L^2 g}{2H}$</li>
+          <li>$L = \frac{v_0^2 \sin\theta \cos\theta}{g}$ と $v_0^2 \sin^2\theta = 2gH$ より、$v_0^2 \cos^2\theta = \dfrac{L^2 g}{2H}$</li>
         </ul>
         <p><strong>計算：</strong>初速度の2乗は $v_0^2 = v_0^2 \sin^2\theta + v_0^2 \cos^2\theta$ であるため、</p>
         $$v_0^2 = 2gH + \frac{L^2 g}{2H} = \frac{g(4H^2 + L^2)}{2H}$$
         <p>求める力学的エネルギー $E_0$ は、初期の運動エネルギーに等しい（基準高さを床とする）ため、</p>
-        $$E_0 = \frac{1}{2} m_1 v_0^2 = \frac{1}{2} m_1 \frac{g(4H^2 + L^2)}{2H} = \frac{m_1 g (4H^2 + L^2)}{4H}$$
+        $$E_0 = \frac{1}{2} m_1 v_0^2 = \frac{m_1 g (4H^2 + L^2)}{4H}$$
         
         <div class="box-note">
           <strong>答え：</strong><br>
@@ -263,7 +312,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>$\theta$ を消去するために、$\sin^2\theta + \cos^2\theta = 1$ を利用して速度成分の2乗和から全体の速度の2乗を導き出す数学的処理がポイントです。</p>
+          <p>$\theta$ を消去するには、$\sin^2\theta + \cos^2\theta = 1$ を「速度成分の2乗和」で使うのが近道です。</p>
         </div>
       </div>
 
@@ -275,7 +324,7 @@
           <line x1="80" y1="50" x2="320" y2="50" stroke="#ccc" stroke-width="2" />
           <circle cx="150" cy="40" r="10" fill="#3b82f6" />
           <text x="142" y="30" font-size="12" fill="#3b82f6">$m_1$</text>
-          <line x1="165" y1="40" x2="215" y2="40" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)" />
+          <line x1="165" y1="40" x2="215" y2="40" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue3)" />
           <text x="170" y="25" font-size="12" fill="#3b82f6">$v_0 \cos\theta$</text>
           
           <circle cx="240" cy="40" r="10" fill="#ef4444" />
@@ -286,23 +335,23 @@
           <line x1="80" y1="120" x2="320" y2="120" stroke="#ccc" stroke-width="2" />
           <circle cx="180" cy="110" r="10" fill="#3b82f6" />
           <text x="172" y="95" font-size="12" fill="#3b82f6">$m_1$</text>
-          <line x1="165" y1="110" x2="115" y2="110" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue)" />
+          <line x1="165" y1="110" x2="115" y2="110" stroke="#3b82f6" stroke-width="2" marker-end="url(#arrow-blue3)" />
           <text x="130" y="95" font-size="12" fill="#3b82f6">$v_1$</text>
           
           <circle cx="210" cy="110" r="10" fill="#ef4444" />
           <text x="202" y="95" font-size="12" fill="#ef4444">$m_2$</text>
-          <line x1="225" y1="110" x2="275" y2="110" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red)" />
+          <line x1="225" y1="110" x2="275" y2="110" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow-red3)" />
           <text x="240" y="95" font-size="12" fill="#ef4444">$v_2$</text>
+
+          <defs>
+            <marker id="arrow-blue3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" /></marker>
+            <marker id="arrow-red3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ef4444" /></marker>
+          </defs>
         </svg>
 
-        <p><strong>狙い：</strong>最高点における水平方向の分裂・衝突現象に対する<span class="highlight">運動量保存則</span>の適用。</p>
+        <p><strong>狙い：</strong>最高点における水平方向の衝突に対する<span class="highlight">運動量保存則</span>の適用。</p>
         <p><strong>設定：</strong>右向きを正とします。最高点では小球1の鉛直方向の速度は $0$ であり、水平方向に速さ $v_0 \cos\theta$ で運動しています。衝突後、小球1は速さ $v_1$ で逆方向（左向き）へ、小球2は速さ $v_2$ で右方向へ進みます。</p>
         <p><strong>立式・計算：</strong></p>
-        <ul>
-          <li>衝突前の系の運動量：$m_1 v_0 \cos\theta + m_2 \cdot 0$</li>
-          <li>衝突後の系の運動量：$m_1 (-v_1) + m_2 v_2$</li>
-        </ul>
-        <p>これらを等置します。</p>
         $$m_1 v_0 \cos\theta = -m_1 v_1 + m_2 v_2$$
         
         <div class="box-note">
@@ -311,7 +360,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>「速さ」として定義された $v_1$ が「逆方向」を向いているため、速度として扱う際に負の符号（$-v_1$）をつけることを忘れないように注意が必要です。</p>
+          <p>「速さ」 $v_1$ は左向きなので、速度として扱うときは $-v_1$ と符号を付けます。</p>
         </div>
       </div>
 
@@ -319,13 +368,11 @@
         <h3>設問(9)</h3>
         <p><strong>狙い：</strong><span class="highlight">反発係数</span>の定義式と運動量保存則を連立し、衝突後の各物体の速度を決定します。</p>
         <p><strong>立式・計算：</strong>反発係数を $e$ として式を立てます。</p>
-        $$e = - \frac{v_2 - (-v_1)}{0 - v_0 \cos\theta} = \frac{v_1 + v_2}{v_0 \cos\theta}$$
-        <p>これを変形し、$v_2 = e v_0 \cos\theta - v_1$ を設問(8)の式に代入します。</p>
-        $$m_1 v_0 \cos\theta = -m_1 v_1 + m_2 (e v_0 \cos\theta - v_1)$$
-        $$m_1 v_0 \cos\theta = -(m_1 + m_2) v_1 + m_2 e v_0 \cos\theta$$
-        $$(m_1 + m_2) v_1 = (m_2 e - m_1) v_0 \cos\theta \implies v_1 = \frac{m_2 e - m_1}{m_1 + m_2} v_0 \cos\theta$$
-        <p>次に $v_2$ を求めます。</p>
-        $$v_2 = e v_0 \cos\theta - \frac{m_2 e - m_1}{m_1 + m_2} v_0 \cos\theta = \frac{e(m_1 + m_2) - (m_2 e - m_1)}{m_1 + m_2} v_0 \cos\theta = \frac{m_1(1 + e)}{m_1 + m_2} v_0 \cos\theta$$
+        $$e = \frac{v_1 + v_2}{v_0 \cos\theta}$$
+        <p>これより $v_2 = e v_0 \cos\theta - v_1$ を運動量保存式に代入します。</p>
+        $$(m_1 + m_2) v_1 = (m_2 e - m_1) v_0 \cos\theta$$
+        $$v_1 = \frac{m_2 e - m_1}{m_1 + m_2} v_0 \cos\theta$$
+        $$v_2 = \frac{m_1(1 + e)}{m_1 + m_2} v_0 \cos\theta$$
         
         <div class="box-note">
           <strong>答え：</strong><br>
@@ -333,7 +380,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>運動量保存則の式と反発係数の式は、衝突問題を解く際の鉄板の組み合わせです。符号ミスに気をつけながら丁寧に連立方程式を解きましょう。</p>
+          <p>運動量保存＋反発係数の2本立ては衝突の定石です。符号の扱いだけ丁寧に。</p>
         </div>
       </div>
 
@@ -363,14 +410,10 @@
           </div>
         </div>
 
-        <p><strong>狙い：</strong>非弾性衝突において失われる力学的エネルギー（運動エネルギーの減少分）の計算。</p>
-        <p><strong>設定：</strong>衝突直前の小球1の運動エネルギーを $E_1 = \frac{1}{2} m_1 (v_0 \cos\theta)^2$ とします。衝突直後の運動エネルギーの和は $E_2 = \frac{1}{2} m_1 v_1^2 + \frac{1}{2} m_2 v_2^2$ です。</p>
-        <p><strong>立式・計算：</strong>失われたエネルギー $\Delta E = E_1 - E_2$ を計算します。<br>
-        重心系からの視点等を利用した公式 $\Delta E = \frac{1}{2} \frac{m_1 m_2}{m_1 + m_2} (1 - e^2) v_{rel}^2$ を用いると見通しが良くなります。ここでの相対速度の大きさは $v_{rel} = v_0 \cos\theta$ であるため、</p>
-        $$\Delta E = \frac{1}{2} \frac{m_1 m_2}{m_1 + m_2} (1 - e^2) (v_0 \cos\theta)^2$$
-        <p>ここで、$E_1 = \frac{1}{2} m_1 (v_0 \cos\theta)^2$ より、$(v_0 \cos\theta)^2 = \frac{2 E_1}{m_1}$ と書けます。これを代入すると、</p>
-        $$\Delta E = \frac{1}{2} \frac{m_1 m_2}{m_1 + m_2} (1 - e^2) \frac{2 E_1}{m_1} = E_1 (1 - e^2) \frac{m_2}{m_1 + m_2}$$
-        <p>問題文の形式 $\Delta E = E_1 \left( \square \right) \frac{m_2}{m_1 + m_2}$ と比較して空欄を埋めます。</p>
+        <p><strong>狙い：</strong>衝突で失われる運動エネルギーの減少量 $\Delta E$ を $E_1$ の形に整理して空欄を埋めます。</p>
+        <p><strong>設定：</strong>衝突直前の小球1の運動エネルギーを $E_1 = \frac{1}{2} m_1 (v_0 \cos\theta)^2$ とします。</p>
+        <p><strong>計算：</strong>一般式 $\Delta E = \frac{1}{2} \frac{m_1 m_2}{m_1 + m_2} (1 - e^2) (v_0 \cos\theta)^2$ を用いると、</p>
+        $$\Delta E = E_1 (1 - e^2) \frac{m_2}{m_1 + m_2}$$
         
         <div class="box-note">
           <strong>答え：</strong><br>
@@ -378,7 +421,7 @@
         </div>
         <div class="box-alert">
           <span class="box-alert-label">Point</span>
-          <p>衝突による運動エネルギーの減少量は、反発係数 $e$ を用いて $\frac{1}{2} \mu (1 - e^2) v_{rel}^2$ （$\mu$ は換算質量）と表せることを知っていると、計算量を大幅に削減できます。</p>
+          <p>失われるエネルギーは「換算質量 × (1−e²) × 相対速度²」に比例、という形を覚えておくと一瞬で整理できます。</p>
         </div>
       </div>
 

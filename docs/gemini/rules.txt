@@ -4,6 +4,6 @@
 ・各card内の順序：h3（設問名）→ 図・シミュ（あれば）→ 解説 → box-note（答え）→ box-alert（Point）。この順序を崩さない。
 ・Point：各設問の最後に必ず1つ。<div class="box-alert"><span class="box-alert-label">Point</span><p>...</p></div>。ページ末尾に「解法のポイントまとめ」のような別ブロックは作らない。
 ・全体のポイント：冒頭の「解法の指針」内の box-note に「全体を貫くポイント」として箇条書きでまとめる。
-・数式：インライン $...$、ディスプレイ $$...$$。添字は C_\mathrm{A} のように \mathrm を使う。
-・ハイライト：重要語は <span class="highlight">語</span> で囲む。
+・数式：インライン \( ... \) または $...$、ディスプレイ $$...$$。添字は C_\mathrm{A} のように \mathrm を使う。
+・ハイライト：重要語は（HTML出力のステップでのみ）<span class="highlight">語</span> で囲む。レビュー用のステップ（HTML禁止）ではタグを使わない。
 ・図の配置：設問の h3 の直後（解説文の前）に置く。種類は SVG / Canvas+script / energy-bar-wrap / sim-embed(p5) のいずれか。

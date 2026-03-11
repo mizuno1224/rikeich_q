@@ -12,3 +12,9 @@ docs/gemini/ — アーカイブ（参考用）
 【このフォルダのファイル】
 ・custom-instruction.txt, step1〜4.txt, template.html, rules.txt, cursor-prompt.txt, import.html
 ・上記は参考用に残してあり、新規の解説作成では使用しない。
+
+【Gem で解説 HTML を生成して流し込む場合】
+・explanation-format-instruction.html … Gem に渡す「形式指示＋サンプル」用 HTML。
+  冒頭の HTML コメントに「Gem への指示」がまとまっており、この形式で出力すれば
+  data/explanations/ にそのまま流し込める。シミュ・画像は「差し込み用プレースホルダ」
+  を置き、後から Cursor や手作業で p5.js や <img>/<figure> を差し込む。

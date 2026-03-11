@@ -1,14 +1,20 @@
 【ステップ4：完成HTMLの出力】
 
-このチャットの**これまでのメッセージ**（ステップ1のJSON、ステップ2の解説本文、ステップ3の図・シミュ設計書）と、添付の **template.html** を参照し、以下を実行してください。
+このチャットの**これまでのメッセージ**（ステップ1のJSON、ステップ2のレビュー用解説、ステップ3の差し込み計画）と、添付の **template.html**（または explanation-format-instruction.html のサンプル構造）を参照し、以下を実行してください。
 
 ■ やること
 1. template.html の【ここに〜】のプレースホルダを、ステップ1・2・3の内容で埋める。
 2. 解法の指針：ステップ2の「解法の指針」で置き換え。問題の構成は問(1)・問(2)のように設問1つずつ。
-3. 各設問：ステップ2の解説本文で card 内を埋める。ステップ3の設計書に従い、該当する設問の h3 の直後に図（SVG / chart-wrap+canvas+script / energy-bar-wrap / sim-embed）を挿入する。図はできる限り実装する（SVG は線・円・text で描画、Canvas は script で描画）。p5 は &lt;div class="sim-embed"&gt; と「// p5 sketch: 設計書の〜を実装」のコメントだけでも可。
+3. 各設問：ステップ2の解説（狙い→立式→計算→結論）を、HTMLの <p>, <ul>, $$...$$ に落とし込んで card 内を埋める。
+4. 図・シミュ・画像：ステップ3の計画に従い、該当する設問の h3 の直後に挿入する。
+   - SVG/Canvas/エネルギー棒グラフは「軽量に」実装してよい。
+   - **シミュ（p5.js）は実装コードを書かない**。必ず次のプレースホルダのみ置く：&lt;div id="sim-xxx" class="sim-embed"&gt;&lt;/div&gt;
+   - **画像はプレースホルダのみ**。&lt;figure class="fig-inline"&gt;...&lt;/figure&gt; を置き、src は【画像パス】のままにする。
 4. 各 card の順序を厳守：h3 → 図 → 解説 → &lt;div class="box-note"&gt;答え&lt;/div&gt; → &lt;div class="box-alert"&gt;&lt;span class="box-alert-label"&gt;Point&lt;/span&gt;&lt;p&gt;...&lt;/p&gt;&lt;/div&gt;
 5. 添付の **rules.txt** のルールをすべて満たす。
 6. &lt;style&gt; 内に .box-alert { max-width: 100%; width: 100%; margin-left: 0; margin-right: 0; box-sizing: border-box; } を含める。
+7. 形式：フラットスクロール（タブなし）。<div class="card"> を上から順に並べる。
+8. 出力の厳守：HTMLは 1 本だけ（<!DOCTYPE html> から </html>）。前置き・後書きの文章は禁止。
 
 ■ 出力
 完成した**1つのHTMLファイル全体**をコードブロックで出力する。説明文は最小限にし、HTMLのコードを省略せずにすべて出力すること。CSSパス（../../../../../css/）はそのままでよい。
